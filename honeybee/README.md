@@ -104,6 +104,12 @@ decision. Those requests go out together (`concurrency` in flight) and the clock
 comparable across policies and replay exactly. A failed or invalid answer falls back to the local rule, and the
 fallback count is shown.
 
+## Pilot
+
+On 5 matched classic seeds, Jev picked the best site 5/5 times (local rule 5/5, random 3/5), at about $0.019 per run.
+With 15% misinformed scouts it dropped to 3/5 (local rule 2/5), and both decided faster. Five seeds do not separate
+the policies. See `docs/pilot_2026-09-30.md`.
+
 ## Runs, checks and comparisons
 
 Each run writes `honeybee/runs/<timestamp>_<scenario>_<policy>_s<seed>/` with `config.json` (config, sites, prompt
