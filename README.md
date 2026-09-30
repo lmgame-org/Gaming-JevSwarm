@@ -86,7 +86,14 @@ shortened vision, false alarm, predator withdrawal, and calm.
 python3 tests/test_checks.py
 python3 -m jevswarm.batch --policies local_rule local_react random fixed_school --seeds 10
 python3 -m jevswarm.batch --policies jev local_rule --seeds 5      # calls Jev: about $0.6 per episode
+python3 -m jevswarm.causal --policy jev --seeds 5                  # branch at the first local escape
 ```
+
+`causal.py` runs the doc's propagation intervention. It runs a live controlled source episode until the first fish
+applies ESCAPE (the witness), then replays that exact prefix twice. One branch permits the witness's action and the
+other replaces it with CONTINUE for one interval; both share every random stream. Over the next 3 s it compares, among
+fish that have never seen a predator, how many reached fast-swim speed or applied BURST, and the evaluator's indirect
+responses.
 
 `tests/test_checks.py` covers the doc's required checks. All of them pass:
 
@@ -109,4 +116,4 @@ python3 -m jevswarm.batch --policies jev local_rule --seeds 5      # calls Jev: 
 - The analyst is a convenience for the viewer. Its answers are not measurements.
 - Parameters are the doc's starting values. They have not been tuned and frozen yet, and the indirect-response
   metric is noisy because ordinary schooling turns also count as cues.
-- There is no branch-at-first-escape causal intervention yet. The replay log contains what that intervention needs.
+- The causal check does not yet trace observational visibility paths (who saw whom move), which the doc suggests alongside it.

@@ -91,6 +91,8 @@ class Engine:
         self.subscribers = []
         self.sub_lock = threading.Lock()
         self.lock = threading.RLock()
+        self.branch = None           # causal.Branch: replay a recorded prefix, then optionally override one action
+        self.applied_log = []
         self.predictions = []
         self.bankroll = 1000.0
         self.pred_id = 0
@@ -203,6 +205,7 @@ class Engine:
                 if kk in meta:
                     rec[kk] = meta[kk]
         self.last_decision[i] = rec
+        self.applied_log.append((self.t, i, cid, source))
         self._log("decisions", rec)
 
     # ------------------------------------------------------------ decisions
@@ -331,6 +334,11 @@ class Engine:
             cands = C.build(frame.obs)
             self.seq[i] += 1
             k = self.barrier_k
+            if self.branch is not None:
+                pre = self.branch.get(i, k, cands)
+                if pre is not None:
+                    applied.append((i, pre[0], cands, frame, pre[1], policies.one_hot(cands, pre[0]), {}, k))
+                    continue
             if self.policy.remote:
                 self.stats["requests"] += 1
                 pending[self.executor.submit(self._remote_call, i, self.seq[i], k, self.t, frame, cands)] = (i, frame, cands, k)

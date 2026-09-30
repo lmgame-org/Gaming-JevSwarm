@@ -229,6 +229,23 @@ def test_replay_equivalence():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def test_branch_prefix_matches_source():
+    """Source finds a witness; permit and suppress branches both run from the same replayed prefix."""
+    from jevswarm.causal import run_branch, run_source
+    tmp = tempfile.mkdtemp()
+    try:
+        cfg = {"policy": "local_react", "seed": 2, "scenario": "flank", "mode": "controlled", "n_fish": 16,
+               "attack_s": 5}
+        found, table = run_source(dict(cfg), tmp)
+        assert found, "expected a local escape"
+        w, K, _ = found
+        A = run_branch(dict(cfg), table, K, w, False, 1.0, tmp)
+        B = run_branch(dict(cfg), table, K, w, True, 1.0, tmp)
+        assert A["naive_fish"] == B["naive_fish"]
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):
