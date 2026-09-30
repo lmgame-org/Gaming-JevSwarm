@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jev-swarm</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<section id="launch">
+  <header class="bar">
+    <div class="brand">jev-swarm <span>fish schooling under predator attack, one Jev decision per fish</span></div>
+  </header>
+  <div class="launch-body">
+    <div class="launch-intro">
+      <p>Each fish picks a short action from its <b>own local view only</b>. A predator attacks after the settling period.
+        Choose hyperparameters below, then launch. Most settings can be changed live from the viewer.</p>
+      <div id="scenarioCards" class="cards"></div>
+    </div>
+    <form id="cfgForm"></form>
+    <div class="launch-side">
+      <div class="panel">
+        <h3>Models and keys</h3>
+        <div id="keyStatus" class="small"></div>
+        <div class="row gap">
+          <button type="button" id="testJev">Test Jev</button>
+          <button type="button" id="testChat">Test chat model</button>
+        </div>
+        <pre id="testOut" class="small out"></pre>
+      </div>
+      <div class="panel">
+        <h3>Load estimate</h3>
+        <div id="estimate" class="small"></div>
+      </div>
+      <div class="panel">
+        <h3>Recent runs</h3>
+        <div id="runsList" class="small"></div>
+      </div>
+      <button id="launchBtn" class="primary big">Launch simulation</button>
+      <div id="launchErr" class="err"></div>
+    </div>
+  </div>
+</section>
+
+<section id="dash" hidden>
+  <header class="bar">
+    <div class="brand">jev-swarm</div>
+    <div class="clock"><span id="clock">0.0 s</span><div class="prog"><div id="progFill"></div></div></div>
+    <button id="playBtn" title="Pause / resume (space)">Pause</button>
+    <button id="stepBtn" title="Advance one decision interval">Step</button>
+    <label class="inline">Speed <input id="speed" type="range" min="-3" max="3" step="0.1" value="0"><span id="speedVal">1.0x</span></label>
+    <label class="inline">Policy <select id="livePolicy"></select></label>
+    <label class="inline">Pick by <select id="liveSampling"><option value="sample">sample</option><option value="argmax">argmax</option></select></label>
+    <span id="modeTag" class="tag"></span>
+    <span class="grow"></span>
+    <button id="newRun">New run</button>
+  </header>
+
+  <div class="views">
+    <div class="panel world-panel">
+      <div class="panel-head">
+        <h3>World <span class="muted">(viewer only, never sent to fish)</span></h3>
+        <div class="tools">
+          <span class="seg" id="clickMode">
+            <button data-mode="select" class="on">Select fish</button>
+            <button data-mode="predator">Place predator</button>
+            <button data-mode="rock">Add rock</button>
+          </span>
+          <button id="falseAlarm" title="Force the selected (or a random) fish to burst for 2 s">False alarm</button>
+          <button id="withdrawBtn">Withdraw predators</button>
+        </div>
+      </div>
+      <canvas id="world"></canvas>
+      <div class="toggles">
+        <label><input type="checkbox" id="tTrails" checked> trails</label>
+        <label><input type="checkbox" id="tCone" checked> selected fish vision</label>
+        <label><input type="checkbox" id="tEnergy"> energy</label>
+        <label><input type="checkbox" id="tAction" checked> action colours</label>
+        <label><input type="checkbox" id="tLabels"> ids</label>
+        <label><input type="checkbox" id="tPredVision"> predator vision</label>
+        <label class="inline">Vision <input id="liveRange" type="range" min="2" max="30" step="0.5"><span id="rangeVal"></span></label>
+        <label class="inline">Turbidity <input id="liveTurb" type="range" min="0" max="0.9" step="0.05"><span id="turbVal"></span></label>
+      </div>
+      <div id="legend" class="legend"></div>
+    </div>
+
+    <div class="side-views">
+      <div class="panel">
+        <div class="panel-head"><h3>Fish <span id="selId">-</span> local view <span class="muted">forward is up</span></h3>
+          <span id="selAction" class="tag"></span></div>
+        <canvas id="local"></canvas>
+        <div class="small muted">Bright = in the observation. Dashed = in range and FOV but occluded, dropped or over capacity.
+          Faint = outside range or in the blind sector. Grey wedges are occlusion shadows.</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Candidate probabilities</h3><span id="decMeta" class="small muted"></span></div>
+        <div id="probs"></div>
+        <details><summary>Exact observation sent to the policy</summary><pre id="obsJson" class="out"></pre></details>
+      </div>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="panel">
+      <h3>School <span class="muted">(evaluator metrics)</span></h3>
+      <div id="metricCards" class="metric-cards"></div>
+      <canvas id="spark" height="150"></canvas>
+    </div>
+    <div class="panel">
+      <h3>Inference</h3>
+      <div id="infCards" class="metric-cards"></div>
+      <div id="errors" class="small err"></div>
+    </div>
+    <div class="panel">
+      <h3>Speculate <span class="muted">bankroll <b id="bankroll">1000</b></span></h3>
+      <div class="predict-form">
+        <select id="pKind"></select>
+        <select id="pOp"><option>&gt;=</option><option>&lt;=</option></select>
+        <input id="pVal" type="number" step="any" value="40">
+        <input id="pAt" type="number" step="any" placeholder="T (s)" title="Only for 'Captures by time T'">
+        <input id="pStake" type="number" value="50" min="1" title="Stake">
+        <button id="pGo">Bet</button>
+      </div>
+      <div class="small muted">Earlier bets pay more (odds shrink as the episode runs). Interventions are allowed and logged.</div>
+      <div id="predList" class="pred-list"></div>
+    </div>
+    <div class="panel">
+      <h3>Event log</h3>
+      <div id="events" class="events"></div>
+      <h3>Ask the analyst <span class="muted" id="analystModel"></span></h3>
+      <div class="row gap"><input id="aQ" placeholder="What is the school doing right now, and why?"><button id="aGo">Ask</button></div>
+      <div id="aOut" class="small out"></div>
+    </div>
+  </div>
+  <div id="endBanner" class="end" hidden></div>
+</section>
+
+<script src="/app.js"></script>
+</body>
+</html>
