@@ -143,7 +143,7 @@ function initDash() {
 function connect() {
   if (es) es.close();
   es = new EventSource("/api/stream");
-  es.onmessage = (m) => { frame = JSON.parse(m.data); if (frame.series) lastSeries = frame.series; render(); };
+  es.onmessage = (m) => { frame = JSON.parse(m.data); if (frame.series) lastSeries = frame.series; FX.onFrame(frame); render(); };
 }
 
 function worldTransform(cv) {
@@ -155,12 +155,6 @@ function worldTransform(cv) {
   }
   const s = cv.width / W;
   return {s, dpr, X: (x) => x * s, Y: (y) => (H - y) * s};
-}
-
-function drawFish(g, x, y, h, len, color, s) {
-  g.save(); g.translate(x, y); g.rotate(-h);
-  g.beginPath(); g.moveTo(len * 0.6, 0); g.lineTo(-len * 0.4, len * 0.28); g.lineTo(-len * 0.25, 0); g.lineTo(-len * 0.4, -len * 0.28); g.closePath();
-  g.fillStyle = color; g.fill(); g.restore();
 }
 
 function render() {
@@ -177,7 +171,7 @@ function render() {
   if (document.activeElement !== $("#liveTurb")) $("#liveTurb").value = f.cfg.turbidity;
   $("#turbVal").textContent = (+f.cfg.turbidity).toFixed(2);
   $("#speedVal").textContent = `${(+f.cfg.speed).toFixed(2)}x`;
-  drawWorld(); drawPanels();
+  updateTrails(); drawPanels();
   if (f.done && f.summary && $("#endBanner").hidden) {
     const s = f.summary;
     $("#endBanner").hidden = false;
@@ -187,32 +181,9 @@ function render() {
   }
 }
 
-function drawWorld() {
-  const cv = $("#world"), g = cv.getContext("2d"), f = frame;
-  const {s, X, Y} = worldTransform(cv);
-  g.clearRect(0, 0, cv.width, cv.height);
-  g.strokeStyle = "#1d3a4d"; g.lineWidth = 1;
-  for (let x = 0; x <= f.w; x += 10) { g.beginPath(); g.moveTo(X(x), 0); g.lineTo(X(x), cv.height); g.stroke(); }
-  for (let y = 0; y <= f.h; y += 10) { g.beginPath(); g.moveTo(0, Y(y)); g.lineTo(cv.width, Y(y)); g.stroke(); }
-  for (const [x, y, r] of f.rocks) { g.fillStyle = "#56636b"; g.beginPath(); g.arc(X(x), Y(y), r * s, 0, 7); g.fill(); }
-  for (const [x, y, r] of f.food) { g.fillStyle = "#b6e05c55"; g.beginPath(); g.arc(X(x), Y(y), r * s, 0, 7); g.fill(); }
-  const sel = f.fish.find((q) => q[0] === selected);
-  if (sel && $("#tCone").checked) {
-    const R = f.cfg.vision_range * (1 - f.cfg.turbidity), half = f.cfg.fov_deg / 2 * Math.PI / 180;
-    g.fillStyle = "#3fc1c91c"; g.strokeStyle = "#3fc1c966";
-    g.beginPath(); g.moveTo(X(sel[1]), Y(sel[2]));
-    g.arc(X(sel[1]), Y(sel[2]), R * s, -sel[3] - half, -sel[3] + half); g.closePath(); g.fill(); g.stroke();
-  }
-  if ($("#tPredVision").checked) {
-    for (const p of f.preds) {
-      const R = SCHEMA.defaults.pred_vision, half = Math.PI / 2;
-      g.fillStyle = "#ff335512"; g.beginPath(); g.moveTo(X(p[1]), Y(p[2]));
-      g.arc(X(p[1]), Y(p[2]), R * s, -p[3] - half, -p[3] + half); g.closePath(); g.fill();
-    }
-  }
-  const tr = $("#tTrails").checked;
+function updateTrails() {
   const alive = new Set();
-  for (const q of f.fish) {
+  for (const q of frame.fish) {
     alive.add(q[0]);
     let t = trails.get(q[0]); if (!t) { t = []; trails.set(q[0], t); }
     const last = t[t.length - 1];
@@ -220,31 +191,6 @@ function drawWorld() {
     if (t.length > 40) t.shift();
   }
   for (const k of [...trails.keys()]) if (!alive.has(k)) trails.delete(k);
-  if (tr) {
-    g.lineWidth = 1;
-    for (const [k, t] of trails) {
-      if (t.length < 2) continue;
-      g.strokeStyle = k === selected ? "#ffffff88" : "#8fb3c433"; g.beginPath();
-      t.forEach(([x, y], i) => i ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y))); g.stroke();
-    }
-  }
-  const useAct = $("#tAction").checked, useE = $("#tEnergy").checked, lab = $("#tLabels").checked;
-  for (const q of f.fish) {
-    const [id, x, y, h, v, e, kind, src] = q;
-    let col = useAct ? COLORS[kind] || "#ccc" : "#cfe3ec";
-    if (useE) col = `hsl(${Math.round(120 * e)},70%,55%)`;
-    drawFish(g, X(x), Y(y), h, Math.max(7, 1.3 * s), col, s);
-    if (src === "fallback") { g.strokeStyle = "#f4a25988"; g.beginPath(); g.arc(X(x), Y(y), 0.7 * s, 0, 7); g.stroke(); }
-    if (id === selected) { g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(X(x), Y(y), Math.max(8, 1.1 * s), 0, 7); g.stroke(); }
-    if (lab) { g.fillStyle = "#9fb3bf"; g.font = `${Math.max(9, 0.8 * s)}px sans-serif`; g.fillText(id, X(x) + 5, Y(y) - 5); }
-  }
-  for (const p of f.preds) {
-    drawFish(g, X(p[1]), Y(p[2]), p[3], Math.max(14, 2.4 * s), p[4] === "withdraw" ? "#ff335588" : "#ff3355", s);
-    g.fillStyle = "#ff7a8a"; g.font = "11px sans-serif"; g.fillText(`P${p[0]} ${p[4]}`, X(p[1]) + 10, Y(p[2]) - 8);
-  }
-  for (const [t, id] of f.captures) if (f.t - t < 3) {
-    g.fillStyle = `rgba(255,80,80,${1 - (f.t - t) / 3})`; g.font = "bold 12px sans-serif"; g.fillText("✕", 6, 14);
-  }
 }
 
 function drawPanels() {
@@ -280,8 +226,15 @@ function drawSpark() {
   const xa = frame.cfg.attack_s / T * W; g.strokeStyle = "#ef5b5b66"; g.beginPath(); g.moveTo(xa, 0); g.lineTo(xa, H); g.stroke();
   if (frame.cfg.withdraw_s > 0) { const xw = frame.cfg.withdraw_s / T * W; g.strokeStyle = "#6cc56c66"; g.beginPath(); g.moveTo(xw, 0); g.lineTo(xw, H); g.stroke(); }
   lines.forEach(([name, c, fn], k) => {
-    g.strokeStyle = c; g.lineWidth = 1.5 * dpr; g.beginPath();
+    const gr = g.createLinearGradient(0, 0, 0, H);
+    gr.addColorStop(0, c + "40"); gr.addColorStop(1, c + "00");
+    g.beginPath();
+    S.forEach((r, i) => { const x = r.t / T * W, y = H - fn(r) * H; i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    g.lineTo(S[S.length - 1].t / T * W, H); g.lineTo(S[0].t / T * W, H); g.closePath();
+    if (k === 0) { g.fillStyle = gr; g.fill(); }
+    g.strokeStyle = c; g.lineWidth = 1.8 * dpr; g.shadowColor = c; g.shadowBlur = 6 * dpr; g.beginPath();
     S.forEach((r, i) => { const x = r.t / T * W, y = H - fn(r) * H; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+    g.shadowBlur = 0;
     g.fillStyle = c; g.font = `${10 * dpr}px sans-serif`; g.fillText(name, 4 * dpr + k * 80 * dpr, cv.height - 2 * dpr);
   });
 }
@@ -311,6 +264,11 @@ function drawLocal(d) {
   g.fillStyle = "#0f3346"; g.beginPath(); g.moveTo(cx, cy);
   g.arc(cx, cy, R * s, -Math.PI / 2 - half, -Math.PI / 2 + half); g.closePath(); g.fill();
   g.setLineDash([4, 4]); g.strokeStyle = "#3fc1c9aa"; g.beginPath(); g.arc(cx, cy, R * s, 0, 7); g.stroke(); g.setLineDash([]);
+  g.strokeStyle = "#3fc1c922"; for (const k of [0.25, 0.5, 0.75]) { g.beginPath(); g.arc(cx, cy, R * s * k, 0, 7); g.stroke(); }
+  const sw = (performance.now() / 1500) % (2 * Math.PI);
+  const sg = g.createConicGradient ? g.createConicGradient(sw - 0.6, cx, cy) : null;
+  if (sg) { sg.addColorStop(0, "rgba(63,193,201,0)"); sg.addColorStop(0.095, "rgba(63,193,201,0.22)"); sg.addColorStop(0.1, "rgba(63,193,201,0)");
+    g.fillStyle = sg; g.beginPath(); g.arc(cx, cy, R * s, 0, 7); g.fill(); }
   // occlusion shadows behind every body in range (fish, predators, rocks)
   const occ = v.entities.filter((e) => Math.hypot(e.x, e.y) < R).map((e) => [e.x, e.y, e.kind === "fish" ? v.fish_r : v.pred_r]).concat(v.rocks);
   g.fillStyle = "#52667033";
