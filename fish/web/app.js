@@ -4,7 +4,7 @@ const api = async (path, body) => {
   const r = await fetch(path, body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
   return r.json();
 };
-const COLORS = {ALIGN: "#3fc1c9", COHERE: "#4d8df0", FOLLOW: "#b07cf2", ESCAPE: "#ef5b5b", FLEE_WITH: "#ff8c42", BURST: "#f4c95d",
+const COLORS = {ALIGN: "#3fc1c9", COHERE: "#4d8df0", FOLLOW: "#b07cf2", ESCAPE: "#ef5b5b", ESCAPE_GROUP: "#ff5fa2", ESCAPE_SELFISH: "#c77dff", FLEE_WITH: "#ff8c42", BURST: "#f4c95d",
   SCAN: "#9fb3bf", RECOVER: "#6cc56c", CONTINUE: "#e6eef2", FORAGE: "#b6e05c"};
 let SCHEMA = null, cfg = {}, frame = null, selected = 0, clickMode = "select", es = null, trails = new Map(), lastSeries = [];
 
@@ -198,7 +198,13 @@ function drawPanels() {
   const mc = (v, l) => `<div class="mc"><b>${v ?? "–"}</b><span>${l}</span></div>`;
   $("#metricCards").innerHTML = mc(`${r.alive}/${f.cfg.n_fish}`, "alive") + mc(r.captures, "captures") + mc(r.polarization, "polarization") +
     mc(r.largest_component, "largest group") + mc(r.components, "groups (6 BL)") + mc(r.mean_energy, "mean energy") +
-    mc(r.depleted, "depleted frac") + mc(r.contacts, "contacts");
+    mc(r.depleted, "depleted frac") + mc(r.contacts, "contacts") + mc(r.misses ?? 0, "strikes spoiled (crowd)");
+  const mix = f.escape_mix || {}, tot = Object.values(mix).reduce((a, b) => a + b, 0);
+  const lab = {solo: ["solo", COLORS.ESCAPE], cooperative: ["cooperative", COLORS.ESCAPE_GROUP],
+    selfish: ["selfish herd", COLORS.ESCAPE_SELFISH], flee_with: ["flee with neighbour", COLORS.FLEE_WITH]};
+  $("#metricCards").innerHTML += `<div class="mc" style="grid-column:1/-1"><span>escape strategies so far</span><div class="mixbar">` +
+    Object.entries(lab).map(([k, [name, c]]) => { const v = mix[k] || 0; return v ? `<i style="flex:${v};background:${c}" title="${name}: ${v}"></i>` : ""; }).join("") +
+    `</div><span>${tot ? Object.entries(lab).filter(([k]) => mix[k]).map(([k, [name]]) => `${name} ${Math.round(100 * mix[k] / tot)}%`).join(" · ") : "none yet"}</span></div>`;
   const pct = (x) => x == null ? "–" : `${(100 * x).toFixed(1)}%`;
   $("#infCards").innerHTML = mc(st.policy, "policy") + mc(r.achieved_hz, "achieved Hz / fish") + mc(st.latency_p50, "latency p50 s") +
     mc(st.latency_p95, "latency p95 s") + mc(r.decision_age, "decision age s") + mc(pct(st.fallback_fraction), "fallback") +

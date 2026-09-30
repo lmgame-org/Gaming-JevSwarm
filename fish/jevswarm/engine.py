@@ -769,6 +769,7 @@ class Engine:
             "t": round(self.t, 2), "episode_s": self.cfg["episode_s"], "paused": self.paused, "done": self.done,
             "fish": fish, "preds": preds, "rocks": w.rocks, "food": w.food, "w": w.w, "h": w.h,
             "captures": [[round(c[0], 1), c[1]] for c in w.captures[-20:]],
+            "escape_mix": self.evaluator.escape_counts,
             "row": self.row, "series": self.evaluator.series[-400:][::2] if self.tick_n % 30 == 0 else None,
             "stats": self.inference_summary(), "events": self.events[-40:], "errors": self.errors[-5:],
             "predictions": self.predictions, "bankroll": round(self.bankroll, 1),

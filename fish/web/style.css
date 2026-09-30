@@ -99,3 +99,5 @@ legend { color: var(--accent); font-weight: 600; padding: 0 4px; }
   .lower { grid-template-columns: 1fr; }
   #cfgForm { grid-template-columns: 1fr; }
 }
+.mixbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: #183547; margin: 4px 0; }
+.mixbar i { display: block; height: 100%; }

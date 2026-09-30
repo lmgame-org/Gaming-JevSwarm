@@ -6,7 +6,7 @@ const FX = (() => {
   const lastKind = new Map(), lastPos = new Map();
   const pulses = [], particles = [], bubbles = [];
   let bg = null, bgKey = "", seenCaptures = 0, t0 = performance.now();
-  const PULSE_KINDS = new Set(["ESCAPE", "FLEE_WITH", "BURST"]);
+  const PULSE_KINDS = new Set(["ESCAPE", "ESCAPE_GROUP", "ESCAPE_SELFISH", "FLEE_WITH", "BURST"]);
 
   function onFrame(f) {
     const now = performance.now();
@@ -17,7 +17,7 @@ const FX = (() => {
       const [id, x, y, , , , kind] = q;
       const was = lastKind.get(id);
       if (was !== undefined && was !== kind && PULSE_KINDS.has(kind))
-        pulses.push({x, y, born: now, color: COLORS[kind] || "#fff", big: kind === "ESCAPE"});
+        pulses.push({x, y, born: now, color: COLORS[kind] || "#fff", big: kind.startsWith("ESCAPE")});
       lastKind.set(id, kind);
       lastPos.set(id, [x, y]);
     }
