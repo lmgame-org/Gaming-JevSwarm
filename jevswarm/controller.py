@@ -41,6 +41,10 @@ def apply(cid, spec, snapshot, heading, t, source):
         p = next((e for e in obs["visible_predators"] if e["slot"] == spec["slot"]), None)
         if p is not None:
             a.fixed_h = heading + math.radians(p["bearing_deg"]) + math.pi + math.radians(spec["offset"])
+    elif k == "FLEE_WITH":
+        e = next((e for e in obs["visible_fish"] if e["slot"] == spec["slot"]), None)
+        if e is not None:
+            a.fixed_h = heading + math.radians(e["heading_relative_deg"])
     elif k == "FOLLOW":
         slots = [e["slot"] for e in obs["visible_fish"]]
         if spec["slot"] in slots:
@@ -59,6 +63,8 @@ def target_valid(spec, snapshot):
         return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_fish"])
     if k == "ESCAPE":
         return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_predators"])
+    if k == "FLEE_WITH":
+        return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_fish"])
     if k == "FORAGE":
         return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_food"])
     return True
@@ -75,7 +81,7 @@ def desired(a, frame, pos, heading, cfg, t):
         v = cruise if k == "CONTINUE" else cruise * 0.4
     elif k == "SCAN":
         v = cruise * 0.6
-    elif k in ("BURST", "ESCAPE"):
+    elif k in ("BURST", "ESCAPE", "FLEE_WITH"):
         v = burst
     elif k == "ALIGN":
         if fw:
@@ -133,4 +139,4 @@ def desired(a, frame, pos, heading, cfg, t):
 
 
 def is_burst(spec):
-    return spec["kind"] in ("BURST", "ESCAPE")
+    return spec["kind"] in ("BURST", "ESCAPE", "FLEE_WITH")

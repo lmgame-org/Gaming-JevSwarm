@@ -122,7 +122,7 @@ def test_request_fields_are_local_only():
     allowed_top = {"self", "vision", "visible_fish", "visible_predators", "visible_obstacles", "visible_food",
                    "visible_fish_summary"}
     allowed_item = {"slot", "range", "bearing_deg", "heading_relative_deg", "speed_estimate",
-                    "turn_rate_estimate_deg_s", "kind", "radius"}
+                    "turn_rate_estimate_deg_s", "kind", "radius", "motion"}
     for i, fr in e.frames.items():
         o = fr.obs
         assert set(o) <= allowed_top, set(o) - allowed_top
@@ -244,6 +244,25 @@ def test_branch_prefix_matches_source():
         assert A["naive_fish"] == B["naive_fish"]
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_flee_with_fast_neighbour():
+    """A visibly fast neighbour (beyond the 3 closest) is labelled, followable, and offers FLEE_WITH its heading."""
+    fish = [(200, 200, 0.0), (202, 200, 0.0), (201, 202, 0.0), (201, 198, 0.0), (206, 203, 1.0)]
+    w, cfg = make_world(fish, escape_cues=True)
+    tr = Tracker()
+    obs_of(w, cfg, t=0.0, tracker=tr)
+    w.fish_pos[4] = (206 + 1.2 * math.cos(1.0), 203 + 1.2 * math.sin(1.0))   # 4 BL/s over 0.3 s
+    fr = obs_of(w, cfg, t=0.3, tracker=tr)
+    fast = [e for e in fr.obs["visible_fish"] if e["motion"] == "fast"]
+    assert len(fast) == 1 and fast[0]["slot"] == "n3", fast
+    c = C.build(fr.obs)
+    assert "FOLLOW_n3" in c and "FLEE_WITH_n3" in c
+    a = ctl.apply("FLEE_WITH_n3", c["FLEE_WITH_n3"], fr, 0.0, 0.0, "t")
+    assert abs(a.fixed_h - math.radians(fast[0]["heading_relative_deg"])) < 1e-9
+    assert ctl.desired(a, fr, w.fish_pos[0], 0.0, cfg, 0.0)[1] == cfg["burst"]
+    w2, cfg2 = make_world(fish, escape_cues=False)
+    assert not any(k.startswith("FLEE_WITH") for k in C.build(obs_of(w2, cfg2).obs))
 
 
 if __name__ == "__main__":

@@ -6,10 +6,13 @@ import json
 import math
 import os
 
-from .candidates import DECISION_INSTRUCTION, criteria
+from .candidates import criteria, instruction
 from .llm import JevClient, LLMClient, LLMError
 
-PROMPT_HASH = hashlib.sha256(DECISION_INSTRUCTION.encode()).hexdigest()[:12]
+
+
+def prompt_hash(cfg):
+    return hashlib.sha256(instruction(cfg).encode()).hexdigest()[:12]
 
 
 def one_hot(cands, cid):
@@ -41,9 +44,9 @@ class LocalRule:
                               if (e["speed_estimate"] or 0) >= self.cfg["cruise"] + 1.0
                               or abs(e["turn_rate_estimate_deg_s"] or 0) >= 60]
             if fast:
-                cid = f"FOLLOW_{fast[0]['slot']}"
-                if cid in cands:
-                    return one_hot(cands, cid), {}
+                for cid in (f"FLEE_WITH_{fast[0]['slot']}", f"FOLLOW_{fast[0]['slot']}"):
+                    if cid in cands:
+                        return one_hot(cands, cid), {}
         if obs["self"]["energy"] < 0.3:
             return one_hot(cands, "RECOVER"), {}
         if "ALIGN" in cands:
@@ -80,11 +83,12 @@ class Jev:
     remote = True
 
     def __init__(self, cfg):
+        self.cfg = cfg
         self.client = JevClient(cfg["jev_provider"], cfg["jev_model"], cfg["jev_key"],
                                 timeout=cfg["request_timeout_s"])
 
     def decide(self, obs, cands, state_json):
-        q = {"action": {"type": "choice", "instructions": DECISION_INSTRUCTION, "criteria": criteria(cands)}}
+        q = {"action": {"type": "choice", "instructions": instruction(self.cfg), "criteria": criteria(cands)}}
         answers, meta = self.client.ask(state_json, q, retries=0)
         a = answers.get("action") or {}
         raw = a.get("probabilities") or {}
@@ -98,17 +102,18 @@ class Chat:
     """A chat model asked for a distribution over the same candidates (comparison selector)."""
     name = "chat"
     remote = True
-    SYSTEM = (DECISION_INSTRUCTION + " You receive one fish's local observation as JSON and a map of "
+    SYSTEM = (" You receive one fish's local observation as JSON and a map of "
               "available action ids to descriptions. Reply with a JSON object {\"probabilities\": {id: p}} "
               "over the available ids only, summing to 1.")
 
     def __init__(self, cfg):
+        self.cfg = cfg
         self.client = LLMClient("openai", cfg["chat_model"], cfg["chat_key"], timeout=cfg["request_timeout_s"] * 3,
                                 temperature=1.0)
 
     def decide(self, obs, cands, state_json):
         user = json.dumps({"observation": obs, "available_actions": criteria(cands)})
-        out = self.client.chat(self.SYSTEM, user, json_mode=True, max_tokens=400, retries=0)
+        out = self.client.chat(instruction(self.cfg) + self.SYSTEM, user, json_mode=True, max_tokens=400, retries=0)
         raw = out.get("probabilities", out) if isinstance(out, dict) else {}
         return normalize(raw, cands), {"raw": raw, "model": self.client.model}
 

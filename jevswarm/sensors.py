@@ -17,6 +17,8 @@ import numpy as np
 PRED_ID = 100000
 ROCK_ID = 200000
 FOOD_ID = 300000
+FAST_MARGIN = 1.0          # BL/s above own cruise speed -> "fast" (same threshold as the evaluator's speed cue)
+SHARP_TURN_DEG_S = 60.0    # = 30 deg within 0.5 s, the evaluator's turn cue
 
 
 def wrap(a):
@@ -212,6 +214,7 @@ def perceive(world, i, t, rng, tracker, prev_action, cfg, memory=None):
     fr_ = Frame()
     fr_.t = t
     use_motion = cfg.get("motion_estimates", True)
+    cues = use_motion and cfg.get("escape_cues", False)
 
     def entry(prefix, n, m):
         e = {"slot": f"{prefix}{n}", "range": _r(m[0]), "bearing_deg": int(round(math.degrees(m[1]))),
@@ -219,6 +222,16 @@ def perceive(world, i, t, rng, tracker, prev_action, cfg, memory=None):
         mv = est.get(m[3]) if use_motion else None
         e["speed_estimate"] = _r(mv[0]) if mv else None
         e["turn_rate_estimate_deg_s"] = int(round(mv[1])) if mv else None
+        if cues:
+            # qualitative label derived only from this fish's own estimates of what it sees
+            if not mv:
+                e["motion"] = "unknown"
+            elif mv[0] >= cfg["cruise"] + FAST_MARGIN:
+                e["motion"] = "fast"
+            elif abs(mv[1]) >= SHARP_TURN_DEG_S:
+                e["motion"] = "sharp_turn"
+            else:
+                e["motion"] = "normal"
         return e
 
     vf = []
@@ -270,6 +283,9 @@ def perceive(world, i, t, rng, tracker, prev_action, cfg, memory=None):
         "visible_obstacles": vo,
         "visible_food": vq,
     }
+    if cues:
+        obs["self"]["cruise_speed"] = _r(cfg["cruise"])
+        obs["self"]["burst_speed"] = _r(cfg["burst"])
     if vf:
         sx = sum(math.cos(math.radians(e["heading_relative_deg"])) for e in vf)
         sy = sum(math.sin(math.radians(e["heading_relative_deg"])) for e in vf)
@@ -279,6 +295,9 @@ def perceive(world, i, t, rng, tracker, prev_action, cfg, memory=None):
             "mean_heading_relative_deg": int(round(math.degrees(math.atan2(sy, sx)))),
             "mean_speed_estimate": _r(sum(sp) / len(sp)) if sp else None,
         }
+        if cues:
+            obs["visible_fish_summary"]["fast_or_sharp_turning_count"] = sum(
+                e["motion"] in ("fast", "sharp_turn") for e in vf)
     else:
         obs["visible_fish_summary"] = {"count": 0}
     if memory is not None:

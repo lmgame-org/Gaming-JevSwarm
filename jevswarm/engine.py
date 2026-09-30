@@ -136,8 +136,8 @@ class Engine:
         self.run_dir = os.path.join(run_root, name)
         os.makedirs(self.run_dir, exist_ok=True)
         safe = {k: v for k, v in self.cfg.items()}
-        safe["prompt_hash"] = policies.PROMPT_HASH
-        safe["decision_instruction"] = C.DECISION_INSTRUCTION
+        safe["prompt_hash"] = policies.prompt_hash(self.cfg)
+        safe["decision_instruction"] = C.instruction(self.cfg)
         with open(os.path.join(self.run_dir, "config.json"), "w") as f:
             json.dump(safe, f, indent=1)
         for k in ("decisions", "events", "metrics"):
@@ -654,7 +654,7 @@ class Engine:
             "fallback_fraction": round(s["fallbacks"] / max(s["applied"], 1), 3),
             "policy_fraction": round(s["policy_applied"] / max(s["applied"], 1), 3),
             "model_versions": sorted(self.model_versions),
-            "prompt_hash": policies.PROMPT_HASH,
+            "prompt_hash": policies.prompt_hash(self.cfg),
         })
         return s
 

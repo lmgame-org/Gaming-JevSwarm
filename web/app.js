@@ -4,7 +4,7 @@ const api = async (path, body) => {
   const r = await fetch(path, body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
   return r.json();
 };
-const COLORS = {ALIGN: "#3fc1c9", COHERE: "#4d8df0", FOLLOW: "#b07cf2", ESCAPE: "#ef5b5b", BURST: "#f4c95d",
+const COLORS = {ALIGN: "#3fc1c9", COHERE: "#4d8df0", FOLLOW: "#b07cf2", ESCAPE: "#ef5b5b", FLEE_WITH: "#ff8c42", BURST: "#f4c95d",
   SCAN: "#9fb3bf", RECOVER: "#6cc56c", CONTINUE: "#e6eef2", FORAGE: "#b6e05c"};
 let SCHEMA = null, cfg = {}, frame = null, selected = 0, clickMode = "select", es = null, trails = new Map(), lastSeries = [];
 

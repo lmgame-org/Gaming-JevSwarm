@@ -156,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
                 j = JevClient(cfg["jev_provider"], cfg["jev_model"], cfg["jev_key"], timeout=20)
                 obs = {"self": {"speed": 2.0, "energy": 0.8, "previous_action": "ALIGN"},
                        "visible_fish": [], "visible_predators": [{"slot": "p0", "range": 5.0, "bearing_deg": 30}]}
-                ans, meta = j.ask(json.dumps(obs), {"action": {"type": "choice", "instructions": C.DECISION_INSTRUCTION,
+                ans, meta = j.ask(json.dumps(obs), {"action": {"type": "choice", "instructions": C.instruction(cfg),
                                                                "criteria": {"CONTINUE": "Keep heading",
                                                                             "ESCAPE_S": "Burst away from p0"}}})
                 return self._json({"ok": True, "model": meta.get("model"), "reply": ans,

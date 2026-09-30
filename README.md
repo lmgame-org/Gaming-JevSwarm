@@ -77,6 +77,11 @@ is reported. *Controlled*: at every 0.5 s barrier the engine snapshots all fish,
 all actions together, with a wall-clock deadline and a fallback on timeout. Physics pauses during inference, so this
 mode is comparable across policies and exactly replayable.
 
+**Escape cues** (`escape_cues`, on by default). Each visible neighbour is labelled `fast` or `sharp_turn` from the
+fish's own motion estimates. Fast neighbours become FOLLOW options, and a `FLEE_WITH nX` action lets a fish burst
+along a fleeing neighbour's heading. Without these cues Jev almost never joined a neighbour's escape. With them it
+does, but false alarms spread too. See `docs/pilot_2026-09-30.md`.
+
 **Scenarios:** first demo (flank attack, withdrawal at 80 s), flank, blind sector, rock blocks predator, two predators,
 shortened vision, false alarm, predator withdrawal, and calm.
 

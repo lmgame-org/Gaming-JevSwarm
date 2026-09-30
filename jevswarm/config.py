@@ -52,6 +52,7 @@ DEFAULTS = {
     "dropout": 0.02,
     "turbidity": 0.0,            # 0..1 shrinks the effective range
     "motion_estimates": True,    # ablation: remove neighbour motion estimates
+    "escape_cues": True,         # label fast / sharply turning neighbours, offer FLEE_WITH, cue-aware instruction
     "memory_s": 0.0,             # 0 = strict current view; up to 2 s own-observation memory
     # timing
     "physics_hz": 60,
@@ -164,6 +165,7 @@ SCHEMA = [
         ("dropout", "Detection dropout", "float", {"min": 0, "max": 1}),
         ("turbidity", "Turbidity (0..1)", "float", {"min": 0, "max": 0.95}),
         ("motion_estimates", "Neighbour motion estimates", "bool", {}),
+        ("escape_cues", "Neighbour escape cues (labels + FLEE_WITH)", "bool", {}),
         ("memory_s", "Own-observation memory (s, 0..2)", "float", {"min": 0, "max": 2}),
     ]),
     ("Timing and motion", [
@@ -189,7 +191,7 @@ SCHEMA = [
 
 # Settings the viewer may change while a run is live (logged as interventions).
 LIVE_KEYS = {"speed", "vision_range", "turbidity", "sampling", "policy", "fov_deg",
-             "max_visible_fish", "occlusion", "motion_estimates", "dropout"}
+             "max_visible_fish", "occlusion", "motion_estimates", "dropout", "escape_cues"}
 
 
 def coerce(cfg):
