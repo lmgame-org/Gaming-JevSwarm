@@ -56,6 +56,17 @@ class Evaluator:
         self.withdraw_t = None
         self.first_capture = None
         self.contact_samples = []
+        self.escape_counts = {}                    # escape strategy -> decisions applied
+        self.last_escape = [None] * world.n        # most recent escape strategy per fish
+        self.attack_rows = []                      # (lcf, polarization) while a predator is active
+
+    STRATEGY = {"ESCAPE": "solo", "ESCAPE_GROUP": "cooperative", "ESCAPE_SELFISH": "selfish", "FLEE_WITH": "flee_with"}
+
+    def note_action(self, i, kind):
+        s = self.STRATEGY.get(kind)
+        if s:
+            self.escape_counts[s] = self.escape_counts.get(s, 0) + 1
+            self.last_escape[i] = s
 
     def on_sensor(self, t, frames, attack_started):
         w = self.world
@@ -103,6 +114,9 @@ class Evaluator:
             "contacts": w.contacts,
         }
         row.update(extra)
+        row["misses"] = len(w.misses)
+        if any(p.active and p.mode != "withdraw" for p in w.predators):
+            self.attack_rows.append((lcf, pol))
         self.series.append(row)
         if w.captures and self.first_capture is None:
             self.first_capture = w.captures[0][0]
@@ -121,8 +135,22 @@ class Evaluator:
         last = self.series[-1] if self.series else {}
         minutes = max(t / 60.0, 1e-9) * max(w.n, 1)
         pursuits = [d for p in w.predators for d in p.pursuits]
+        by = {}
+        for i in range(w.n):
+            s = self.last_escape[i] or "never_escaped"
+            b = by.setdefault(s, {"fish": 0, "captured": 0})
+            b["fish"] += 1
+            b["captured"] += int(not w.alive[i])
+        for b in by.values():
+            b["capture_rate"] = round(b["captured"] / b["fish"], 3)
+        ar = self.attack_rows
         return {
             "t_end": round(t, 2),
+            "escape_mix": self.escape_counts,
+            "capture_rate_by_last_escape": by,
+            "strikes_spoiled_by_confusion": len(w.misses),
+            "attack_largest_component": round(float(np.mean([a for a, _ in ar])), 3) if ar else None,
+            "attack_polarization": round(float(np.mean([b for _, b in ar])), 3) if ar else None,
             "survival_fraction": round(float(w.alive.mean()), 3),
             "survivors": int(w.alive.sum()),
             "captures": len(w.captures),

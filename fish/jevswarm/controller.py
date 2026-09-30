@@ -10,6 +10,14 @@ import math
 from .sensors import wrap
 
 FOLLOW_GRACE_S = 0.5
+ORIENT_RADIUS = 4.0          # Couzin-style zones: separation < sep_radius < orientation < attraction (vision)
+
+# How much background social steering (align + attract toward visible fish) each action keeps.
+# 0 = the action's own heading only. Scaled by cfg["social_weight"].
+SOCIAL = {"CONTINUE": 1.0, "SCAN": 0.5, "RECOVER": 0.8, "ALIGN": 0.0, "COHERE": 0.0, "FOLLOW": 0.3,
+          "FORAGE": 0.3, "BURST": 0.25, "ESCAPE": 0.0, "ESCAPE_GROUP": 0.0, "ESCAPE_SELFISH": 0.0,
+          "FLEE_WITH": 0.5}
+ESCAPE_KINDS = ("ESCAPE", "ESCAPE_GROUP", "ESCAPE_SELFISH")
 
 
 class ActionState:
@@ -37,10 +45,12 @@ def apply(cid, spec, snapshot, heading, t, source):
         a.fixed_h = heading + spec["turn"] * math.radians(90)
     elif k == "BURST":
         a.fixed_h = heading + math.radians(spec["dir"])
-    elif k == "ESCAPE":
+    elif k in ESCAPE_KINDS:
+        # the away-from-predator direction is fixed from the observed bearing at application time;
+        # it is never updated from the predator's hidden position afterwards
         p = next((e for e in obs["visible_predators"] if e["slot"] == spec["slot"]), None)
         if p is not None:
-            a.fixed_h = heading + math.radians(p["bearing_deg"]) + math.pi + math.radians(spec["offset"])
+            a.fixed_h = heading + math.radians(p["bearing_deg"]) + math.pi + math.radians(spec.get("offset", 0))
     elif k == "FLEE_WITH":
         e = next((e for e in obs["visible_fish"] if e["slot"] == spec["slot"]), None)
         if e is not None:
@@ -61,7 +71,7 @@ def target_valid(spec, snapshot):
     k = spec["kind"]
     if k == "FOLLOW":
         return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_fish"])
-    if k == "ESCAPE":
+    if k in ESCAPE_KINDS:
         return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_predators"])
     if k == "FLEE_WITH":
         return any(e["slot"] == spec["slot"] for e in snapshot.obs["visible_fish"])
@@ -83,6 +93,29 @@ def desired(a, frame, pos, heading, cfg, t):
         v = cruise * 0.6
     elif k in ("BURST", "ESCAPE", "FLEE_WITH"):
         v = burst
+    elif k == "ESCAPE_GROUP":
+        # cooperative escape: flee the observed threat while matching and staying with visible neighbours
+        v = burst
+        ax, ay = math.cos(a.fixed_h), math.sin(a.fixed_h)
+        if fw:
+            mx = sum(math.cos(x) for x in frame.fish_heading_world) / len(fw)
+            my = sum(math.sin(x) for x in frame.fish_heading_world) / len(fw)
+            cx = sum(p[0] for p in fw) / len(fw) - pos[0]
+            cy = sum(p[1] for p in fw) / len(fw) - pos[1]
+            cd = math.hypot(cx, cy) or 1.0
+            ax, ay = ax + 0.8 * mx + 0.5 * cx / cd, ay + 0.8 * my + 0.5 * cy / cd
+        h = math.atan2(ay, ax)
+    elif k == "ESCAPE_SELFISH":
+        # selfish herd: dive toward the nearest visible neighbours on the side away from the threat,
+        # putting their bodies between this fish and the predator
+        v = burst
+        ax, ay = math.cos(a.fixed_h), math.sin(a.fixed_h)
+        far = [p for p in fw if (p[0] - pos[0]) * ax + (p[1] - pos[1]) * ay > 0] or list(fw)
+        far.sort(key=lambda p: (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2)
+        if far:
+            tx = sum(p[0] for p in far[:2]) / len(far[:2])
+            ty = sum(p[1] for p in far[:2]) / len(far[:2])
+            h = math.atan2(ty - pos[1], tx - pos[0])
     elif k == "ALIGN":
         if fw:
             sx = sum(math.cos(x) for x in frame.fish_heading_world)
@@ -117,8 +150,32 @@ def desired(a, frame, pos, heading, cfg, t):
             if t - a.lost_t > FOLLOW_GRACE_S:
                 a.kind = "CONTINUE"
                 a.fixed_h = a.last_h
-    # superimpose separation from visible fish and avoidance of visible obstacles
     ux, uy = math.cos(h), math.sin(h)
+    # background social steering from visible fish only: orientation zone aligns, beyond it attracts
+    w_soc = SOCIAL.get(k, 0.0) * cfg.get("social_weight", 0.0)
+    if w_soc > 0 and fw:
+        mx = my = cx = cy = 0.0
+        n_o = n_a = 0
+        for (x, y), hw in zip(fw, frame.fish_heading_world):
+            d = math.hypot(x - pos[0], y - pos[1])
+            if d < ORIENT_RADIUS:
+                mx += math.cos(hw)
+                my += math.sin(hw)
+                n_o += 1
+            else:
+                cx += (x - pos[0]) / d
+                cy += (y - pos[1]) / d
+                n_a += 1
+        if n_o:
+            m = math.hypot(mx, my) or 1.0
+            ux += w_soc * mx / m
+            uy += w_soc * my / m
+        if n_a:
+            m = math.hypot(cx, cy) or 1.0
+            wa = w_soc * (0.6 + 0.8 * n_a / (n_a + n_o))   # pull harder when most neighbours are far
+            ux += wa * cx / m
+            uy += wa * cy / m
+    # superimpose separation from visible fish and avoidance of visible obstacles
     sep = cfg["sep_radius"]
     for (x, y) in fw:
         dx, dy = pos[0] - x, pos[1] - y
@@ -139,4 +196,4 @@ def desired(a, frame, pos, heading, cfg, t):
 
 
 def is_burst(spec):
-    return spec["kind"] in ("BURST", "ESCAPE", "FLEE_WITH")
+    return spec["kind"] in ("BURST", "FLEE_WITH") + ESCAPE_KINDS

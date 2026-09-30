@@ -16,7 +16,8 @@ import numpy as np
 
 from .engine import RUNS, Engine
 
-METRICS = ["survival_fraction", "captures", "time_to_first_capture", "largest_component", "polarization",
+METRICS = ["survival_fraction", "captures", "time_to_first_capture", "attack_largest_component",
+           "attack_polarization", "strikes_spoiled_by_confusion", "largest_component", "polarization",
            "recovery_s", "mean_energy", "contacts_per_fish_minute", "indirect_response_latency_mean"]
 T95 = {1: 12.71, 2: 4.30, 3: 3.18, 4: 2.78, 5: 2.57, 6: 2.45, 7: 2.36, 8: 2.31, 9: 2.26, 10: 2.23, 15: 2.13,
        20: 2.09, 29: 2.05}
@@ -75,6 +76,20 @@ def main():
         rec = [r for r in rows if r["policy"] == p and r.get("recovered") is not None]
         if rec:
             print(f"{p}: unrecovered fraction {sum(not r['recovered'] for r in rec) / len(rec):.2f}")
+    for p in a.policies:
+        mix, by = {}, {}
+        for r in rows:
+            if r["policy"] != p:
+                continue
+            for k, v in r["escape_mix"].items():
+                mix[k] = mix.get(k, 0) + v
+            for k, b in r["capture_rate_by_last_escape"].items():
+                t = by.setdefault(k, [0, 0])
+                t[0] += b["captured"]
+                t[1] += b["fish"]
+        tot = sum(mix.values()) or 1
+        print(f"{p}: escape mix " + ", ".join(f"{k} {v / tot:.0%}" for k, v in sorted(mix.items())) +
+              " | capture rate by last escape " + ", ".join(f"{k} {c / n:.2f} (n={n})" for k, (c, n) in sorted(by.items())))
     with open(os.path.join(out_dir, "table.json"), "w") as f:
         json.dump(table, f, indent=1)
     print(f"\nwrote {out_dir}")

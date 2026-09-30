@@ -171,7 +171,8 @@ def test_candidates_and_distribution():
     c = C.build(o)
     assert "CONTINUE" in c and "SCAN_L" in c and "SCAN_R" in c
     assert sum(k.startswith("FOLLOW_") for k in c) == 3, "FOLLOW limited to the 3 closest"
-    assert {k for k in c if k.startswith("ESCAPE_")} == {"ESCAPE_L", "ESCAPE_S", "ESCAPE_R"}
+    assert {k for k in c if k.startswith("ESCAPE_")} == {"ESCAPE_L", "ESCAPE_S", "ESCAPE_R", "ESCAPE_GROUP",
+                                                       "ESCAPE_SELFISH"}
     for v in c.values():
         assert set(v) <= {"kind", "desc", "slot", "turn", "offset", "dir"}, "no scores or recommendations"
     p = policies.normalize({"CONTINUE": 2, "ALIGN": 2, "BOGUS": 5}, c)

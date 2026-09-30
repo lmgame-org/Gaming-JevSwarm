@@ -32,13 +32,15 @@ class LocalRule:
     name = "local_rule"
     remote = False
 
-    def __init__(self, cfg, react=False):
+    def __init__(self, cfg, react=False, escape="ESCAPE_S"):
         self.cfg = cfg
         self.react = react
+        self.escape = escape
 
     def decide(self, obs, cands, state_json=None):
-        if "ESCAPE_S" in cands:
-            return one_hot(cands, "ESCAPE_S"), {}
+        for cid in (self.escape, "ESCAPE_S"):
+            if cid in cands:
+                return one_hot(cands, cid), {}
         if self.react:
             fast = cands and [e for e in obs["visible_fish"][:3]
                               if (e["speed_estimate"] or 0) >= self.cfg["cruise"] + 1.0
@@ -147,6 +149,10 @@ def make(name, cfg, run_dir=None):
         return LocalRule(cfg)
     if name == "local_react":
         return LocalRule(cfg, react=True)
+    if name == "local_coop":
+        return LocalRule(cfg, escape="ESCAPE_GROUP")
+    if name == "local_selfish":
+        return LocalRule(cfg, escape="ESCAPE_SELFISH")
     if name == "random":
         return Uniform(cfg)
     if name == "fixed_school":

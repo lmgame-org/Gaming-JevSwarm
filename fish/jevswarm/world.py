@@ -92,6 +92,7 @@ class World:
         self.contacts = 0
         self._contact_pairs = set()
         self.captures = []           # (t, fish, predator)
+        self.misses = []             # (t, fish, predator, crowd) strikes spoiled by the confusion effect
         self.speed_overrides = 0
 
     def _place_rocks(self, k):
@@ -258,6 +259,16 @@ class World:
         hit = md < self.cfg["capture_radius"]
         if hit.any():
             j = int(idx[np.nonzero(hit)[0][np.argmin(md[hit])]])
+            c = self.cfg.get("pred_confusion", 0.0)
+            if c > 0:
+                # confusion effect: other fish the predator can see crowding the target spoil the strike
+                seen = p._seen[0] if hasattr(p, "_seen") else np.zeros(0, int)
+                crowd = sum(1 for q in seen if q != j and self.alive[q]
+                            and np.hypot(*(self.fish_pos[q] - self.fish_pos[j])) < 2.0)
+                if self.rng.random() >= 1.0 / (1.0 + c * crowd):
+                    self.misses.append((t, j, p.pid, crowd))
+                    p.capture_cd = self.cfg["capture_cooldown_s"]
+                    return
             self.alive[j] = False
             self.captures.append((t, j, p.pid))
             p.captures += 1

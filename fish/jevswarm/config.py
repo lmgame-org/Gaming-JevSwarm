@@ -65,6 +65,7 @@ DEFAULTS = {
     "turn_deg_s": 180.0,
     "accel": 6.0,
     "sep_radius": 1.2,
+    "social_weight": 0.8,        # background local align + attract toward visible fish (0 = off, as in v1)
     "burst_drain": 0.10,
     "recover_rate": 0.06,
     "burst_off": 0.15,
@@ -81,6 +82,7 @@ DEFAULTS = {
     "pred_radius": 0.5,
     "capture_radius": 0.6,
     "capture_cooldown_s": 1.0,
+    "pred_confusion": 0.15,      # capture chance = 1 / (1 + c * fish the predator sees within 2 BL of its target)
     # policy and inference
     "policy": "jev",             # jev | chat | local_rule | local_react | random | fixed_school | replay
     "sampling": "sample",        # sample | argmax
@@ -103,6 +105,8 @@ POLICIES = {
     "chat": "Chat LLM (default gpt-6-astra) returns a distribution over the candidates",
     "local_rule": "Local rule: school with visible fish, flee visible predators",
     "local_react": "Local rule that also follows visibly fast or turning neighbours",
+    "local_coop": "local_rule, but escapes cooperatively (ESCAPE_GROUP) when a predator is visible",
+    "local_selfish": "local_rule, but uses the selfish-herd escape (ESCAPE_SELFISH)",
     "random": "Uniform random over the candidate set",
     "fixed_school": "Always ALIGN (or CONTINUE): what the steering controller alone gives",
     "replay": "Replay the applied actions of a recorded run without calling any model",
@@ -176,6 +180,7 @@ SCHEMA = [
         ("turn_deg_s", "Turn limit (deg/s)", "float", {"min": 10}),
         ("burst_drain", "Burst drain (/s)", "float", {"min": 0}),
         ("recover_rate", "RECOVER restore (/s)", "float", {"min": 0}),
+        ("social_weight", "Background schooling steering (0 = off)", "float", {"min": 0, "max": 3}),
     ]),
     ("Predator", [
         ("pred_vision", "Vision radius (BL)", "float", {"min": 1}),
@@ -186,12 +191,14 @@ SCHEMA = [
         ("pred_burst_s", "Burst duration (s)", "float", {"min": 0}),
         ("pred_cooldown_s", "Burst cooldown (s)", "float", {"min": 0}),
         ("capture_radius", "Capture radius (BL)", "float", {"min": 0.1}),
+        ("pred_confusion", "Confusion effect (0 = off)", "float", {"min": 0, "max": 2}),
     ]),
 ]
 
 # Settings the viewer may change while a run is live (logged as interventions).
 LIVE_KEYS = {"speed", "vision_range", "turbidity", "sampling", "policy", "fov_deg",
-             "max_visible_fish", "occlusion", "motion_estimates", "dropout", "escape_cues"}
+             "max_visible_fish", "occlusion", "motion_estimates", "dropout", "escape_cues", "social_weight",
+             "pred_confusion"}
 
 
 def coerce(cfg):

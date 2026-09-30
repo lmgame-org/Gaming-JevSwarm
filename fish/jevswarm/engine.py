@@ -186,6 +186,7 @@ class Engine:
         if ctl.is_burst(spec) and not w.burst_ok[i]:
             w.speed_overrides += 1
         self._update_desired(i)
+        self.evaluator.note_action(i, spec["kind"])
         self.stats["applied"] += 1
         if source in ("policy", "replay"):
             self.stats["policy_applied"] += 1

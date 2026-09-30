@@ -11,6 +11,7 @@ DECISION_INSTRUCTION = (
     "Remaining near visible fish can help, but following a neighbor may also be misleading. "
     "Rapid neighbor motion is evidence of possible danger, not proof of an unseen predator. "
     "No observed predator does not establish safety. "
+    "A predator usually catches an isolated fish more easily than one inside a dense group. "
     "Do not assume information outside your field of view."
 )
 
@@ -68,7 +69,17 @@ def build(obs):
             side = {"L": "veering left", "S": "straight away", "R": "veering right"}[k]
             c[f"ESCAPE_{k}"] = {
                 "kind": "ESCAPE", "slot": p["slot"], "offset": off,
-                "desc": f"Burst away from visible predator {p['slot']} (range {p['range']} BL), {side}."}
+                "desc": f"Solo escape: burst away from visible predator {p['slot']} (range {p['range']} BL), {side}, "
+                        f"ignoring neighbors."}
+        if vf:
+            c["ESCAPE_GROUP"] = {
+                "kind": "ESCAPE_GROUP", "slot": p["slot"],
+                "desc": (f"Cooperative escape: burst away from predator {p['slot']} while matching the heading of "
+                         f"and staying close to the {len(vf)} visible fish, so the group turns away together.")}
+            c["ESCAPE_SELFISH"] = {
+                "kind": "ESCAPE_SELFISH", "slot": p["slot"],
+                "desc": (f"Selfish-herd escape: burst toward the nearest visible neighbors on the side away from "
+                         f"predator {p['slot']}, putting their bodies between you and it.")}
     for k, d in BURST_DIRS.items():
         where = {"L": "60 deg to the left", "F": "straight ahead", "R": "60 deg to the right"}[k]
         c[f"BURST_{k}"] = {"kind": "BURST", "dir": d, "desc": f"Burst at high speed {where} (drains energy)."}
