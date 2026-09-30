@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jev-swarm honeybee</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<section id="launch">
+  <header class="bar">
+    <div class="brand">jev-swarm · honeybee <span>nest-site selection, one Jev decision per scout</span></div>
+  </header>
+  <div class="launch-body">
+    <div class="launch-intro">
+      <p>A swarm hangs from a branch and must pick one new home. Each scout acts only on the sites it inspected
+        itself and the waggle dances it happened to watch. When enough scouts are at one site at once (the quorum),
+        piping starts and the swarm lifts off. Pick a scenario, adjust the settings, then launch.</p>
+      <div id="scenarioCards" class="cards"></div>
+    </div>
+    <form id="cfgForm"></form>
+    <div class="launch-side">
+      <div class="panel">
+        <h3>Models and keys</h3>
+        <div id="keyStatus" class="small"></div>
+        <div class="row gap">
+          <button type="button" id="testJev">Test Jev</button>
+          <button type="button" id="testChat">Test chat model</button>
+        </div>
+        <pre id="testOut" class="small out"></pre>
+      </div>
+      <div class="panel">
+        <h3>Load and cost estimate</h3>
+        <div id="estimate" class="small"></div>
+      </div>
+      <div class="panel">
+        <h3>Recent runs</h3>
+        <div id="runsList" class="small"></div>
+      </div>
+      <button id="launchBtn" class="primary big">Launch simulation</button>
+      <button id="rejoinBtn" class="big" hidden>Return to the running simulation</button>
+      <div id="launchErr" class="err"></div>
+    </div>
+  </div>
+</section>
+
+<section id="dash" hidden>
+  <header class="bar">
+    <div class="brand">honeybee</div>
+    <div class="clock"><span id="clock">0:00</span><div class="prog"><div id="progFill"></div></div></div>
+    <button id="playBtn" title="Pause / resume (space)">Pause</button>
+    <button id="stepBtn" title="Advance 5 simulated minutes">Step 5 min</button>
+    <label class="inline">Speed <input id="speed" type="range" min="-1" max="2.2" step="0.05"><span id="speedVal"></span></label>
+    <label class="inline">Policy <select id="livePolicy"></select></label>
+    <label class="inline">Pick by <select id="liveSampling"><option value="sample">sample</option><option value="argmax">argmax</option></select></label>
+    <span id="runTag" class="tag"></span>
+    <span class="grow"></span>
+    <button id="newRun">New run</button>
+  </header>
+
+  <div class="views">
+    <div class="panel world-panel">
+      <div class="panel-head">
+        <h3>Landscape <span class="muted">(viewer only; scouts never see true quality)</span></h3>
+        <div class="tools">
+          <span class="seg" id="clickMode">
+            <button data-mode="select" class="on">Select scout</button>
+            <button data-mode="site">Add site</button>
+          </span>
+          <button id="stubbornBtn" title="Turn 5 random scouts stubborn">+5 stubborn</button>
+        </div>
+      </div>
+      <canvas id="world"></canvas>
+      <div class="toggles">
+        <label><input type="checkbox" id="tTrails" checked> flight lines</label>
+        <label><input type="checkbox" id="tTruth" checked> true quality</label>
+        <label><input type="checkbox" id="tRings" checked> distance rings</label>
+        <label><input type="checkbox" id="tIds"> scout ids</label>
+      </div>
+      <div id="legend" class="legend"></div>
+    </div>
+
+    <div class="side-views">
+      <div class="panel">
+        <div class="panel-head"><h3>Scout <span id="selId">-</span> <span id="selTraits" class="muted"></span></h3>
+          <span id="selState" class="tag"></span></div>
+        <div id="history" class="small history"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Last decision</h3><span id="decMeta" class="small muted"></span></div>
+        <div id="probs"></div>
+        <details open><summary>Exact observation sent to the policy</summary><pre id="obsJson" class="out"></pre></details>
+      </div>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="panel span2">
+      <div class="panel-head"><h3>Sites <span class="muted">quorum = <b id="qCount"></b> scouts present at once</span></h3></div>
+      <table id="siteTable" class="sites"></table>
+      <h3 class="mt">Dance support <span class="muted">(waggle circuits in the last 30 min)</span></h3>
+      <canvas id="support" height="170"></canvas>
+    </div>
+    <div class="panel">
+      <h3>Swarm <span class="muted">(evaluator metrics)</span></h3>
+      <div id="metricCards" class="metric-cards"></div>
+      <h3 class="mt">Live knobs <span class="muted">(logged as interventions)</span></h3>
+      <div id="knobs" class="knobs"></div>
+    </div>
+    <div class="panel">
+      <h3>Inference</h3>
+      <div id="infCards" class="metric-cards"></div>
+      <div id="errors" class="small err"></div>
+    </div>
+    <div class="panel">
+      <h3>Speculate <span class="muted">bankroll <b id="bankroll">1000</b></span></h3>
+      <div class="predict-form">
+        <select id="pKind">
+          <option value="winner">Swarm chooses site</option>
+          <option value="by_hour">Lift-off by hour</option>
+          <option value="correct">Swarm picks the best site</option>
+          <option value="split">Swarm splits</option>
+        </select>
+        <select id="pSite"></select>
+        <input id="pHour" type="number" step="0.25" value="3" title="Hours">
+        <select id="pYes"><option value="yes">yes</option><option value="no">no</option></select>
+        <input id="pStake" type="number" value="50" min="1" title="Stake">
+        <button id="pGo">Bet</button>
+      </div>
+      <div class="small muted">Site odds follow the current dance support, so betting against the crowd pays more.
+        Bets after the first quorum pay half.</div>
+      <div id="predList" class="pred-list"></div>
+    </div>
+    <div class="panel">
+      <h3>Event log</h3>
+      <div id="events" class="events"></div>
+      <h3 class="mt">Ask the analyst <span class="muted" id="analystModel"></span></h3>
+      <div class="row gap"><input id="aQ" placeholder="Is the swarm heading for the best site?"><button id="aGo">Ask</button></div>
+      <div id="aOut" class="small out"></div>
+    </div>
+  </div>
+  <div id="endBanner" class="end" hidden></div>
+</section>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 """Launch a sub-project from the repo root.
 
     python3 run.py fish       [--port 8777]   fish schooling under predator attack
-    python3 run.py honeybee   [--port 8778]   honeybee nest-site selection
+    python3 run.py honeybee   [--port 8779]   honeybee nest-site selection
     python3 run.py list
 """
 import os
