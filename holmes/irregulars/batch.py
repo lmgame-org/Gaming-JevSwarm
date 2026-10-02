@@ -61,7 +61,7 @@ def main():
     keys = [k for k, _ in sweeps]
     combos = list(itertools.product(*[vals for _, vals in sweeps])) or [()]
     caps = genius_costs(a.fair_to) if a.fair_to else {}
-    out_dir = os.path.join(RUNS, f"batch_{time.strftime('%Y%m%d-%H%M%S')}_{a.mode}")
+    out_dir = os.path.join(RUNS, f"batch_{time.strftime('%Y%m%d-%H%M%S')}_{a.mode}_{os.getpid()}")
     os.makedirs(out_dir, exist_ok=True)
     rows, episodes = [], []
     pkey = "policy" if a.mode == "solo" else "swarm_policy"
@@ -101,6 +101,13 @@ def main():
                    "calls": sum(r["inference"]["calls"] for r in res),
                    "fallbacks": sum(r["inference"]["fallbacks"] for r in res),
                    "wall_s": sum(r["wall_s"] for r in res)}
+            # end-to-end latency: real seconds per case (headless) and simulated hours until the answer
+            walls = sorted(r["wall_s"] for r in res)
+            sims = sorted((r["minutes"] if a.mode == "solo" else (r["outcome"] or {}).get("minute", r["minutes"])) / 60
+                          for r in res)
+            pct = lambda xs, q: xs[min(len(xs) - 1, int(q * len(xs)))]  # noqa: E731
+            row.update({"wall_s_mean": mean(walls), "wall_s_p50": pct(walls, 0.5), "wall_s_p90": pct(walls, 0.9),
+                        "sim_h_mean": mean(sims), "sim_h_p50": pct(sims, 0.5), "sim_h_p90": pct(sims, 0.9)})
             if a.mode == "solo":
                 row["visits_mean"] = mean([r["visits"] for r in res])
                 row["minutes_mean"] = mean([r["minutes"] for r in res])
@@ -114,7 +121,8 @@ def main():
             extra = (f"visits {row['visits_mean']:.1f}" if a.mode == "solo"
                      else f"quorum {row['quorum']}/{n} ticks {row['ticks_mean']:.1f}")
             print(f"{label:24s} {pol:7s} solved {k}/{n} [{lo:.2f},{hi:.2f}] parts {row['parts_mean']:.2f}/3 "
-                  f"{part} {extra} cost ${row['cost']:.4f}", flush=True)
+                  f"{part} {extra} cost ${row['cost']:.4f} | real s p50 {row['wall_s_p50']:.1f} p90 "
+                  f"{row['wall_s_p90']:.1f} | sim h p50 {row['sim_h_p50']:.1f} p90 {row['sim_h_p90']:.1f}", flush=True)
     with open(os.path.join(out_dir, "table.json"), "w") as f:
         json.dump(rows, f, indent=1, default=str)
     with open(os.path.join(out_dir, "episodes.json"), "w") as f:

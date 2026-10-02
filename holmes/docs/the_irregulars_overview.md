@@ -1,6 +1,6 @@
 # The Irregulars: background, design and results
 
-*jev-swarm / holmes, as of 2 October 2026 (hybrid swarm and Baker Street mode added the same day)*
+*jev-swarm / holmes, as of 2 October 2026 (hybrid swarm, Baker Street mode and the 20-case benchmark added the same day)*
 
 ## 1. Background
 
@@ -194,8 +194,9 @@ waits at Baker Street for them to report. `baker_street` follows that chain of c
 
 ## 3. Results
 
-All numbers use the same five seeded cases (seeds 1-5) unless noted. With five seeds most differences are
-within noise; the 95% intervals overlap widely.
+Sections 3.1-3.6 use the same five seeded cases (seeds 1-5) unless noted; with five seeds most differences are
+within noise. **Section 3.8 repeats every main setting on 20 cases with end-to-end latency; where the two
+disagree, trust 3.8.**
 
 ### 3.1 Solo: one detective
 
@@ -348,17 +349,61 @@ report solved 5/5, and with exact counting as that decider it costs almost nothi
 | Follow-up (Jev Solo; Jev swarm: honest, liars, 2 km) | $2.50 |
 | Hybrid round (hybrid 1 km and 2 km, 5 seeds each; hybrid_genius 2 km, 3 seeds; smoke tests) | $3.04 |
 | Baker Street round (gpt-6-astra Holmes $2.80 and counting Holmes $0.01 on 5 seeds; smoke test $0.12) | $2.93 |
-| **Total** | **about $13.00** |
+| 20-case benchmark (14 settings × 20 cases) | $32.16 |
+| **Total** | **about $45.00** |
 
 gpt-6-astra is costed from token counts at OpenRouter's list price ($10 per million input tokens, $1 cached, $50
 output), because OpenAI's API does not return a cost. Jev costs are as reported by OpenRouter.
 
+### 3.8 The 20-case benchmark: accuracy and end-to-end latency
+
+Every main setting on seeds 1-20, default case settings. **Sim time** is simulated case time from start to the
+final answer: Solo has 12 h and 20 visits, swarms and hybrids 8 h, Baker Street 12 h. **Ran to deadline** counts
+cases where the decider never committed early. **Real time** is wall-clock seconds from case start to final
+answer, run headless with up to 32 model calls in flight. Two lanes ran in parallel: the gpt-6-astra settings, and
+everything else. For swarms, a part counts only if a quorum was reached. Per-case rows:
+[benchmark_20seeds_2026-10-02.csv](benchmark_20seeds_2026-10-02.csv); details:
+[benchmark_20seeds_2026-10-02.md](benchmark_20seeds_2026-10-02.md).
+
+| Setting | Solved (95% CI) | Culprit / motive / hideout | Sim time p50 / p90 | Ran to deadline | Real time p50 / p90 | Calls / case | Cost / case |
+|---|---|---|---|---|---|---|---|
+| Solo · gpt-6-astra | 11/20 (0.34-0.74) | 17 / 14 / 19 | 10.9 h / 11.8 h | 13 | 81.3 s / 95.0 s | 19 | $0.347 |
+| Baker Street · gpt-6-astra Holmes, Jev boys | 19/20 (0.76-0.99) | 20 / 19 / 20 | 11.2 h / 12.0 h | 8 | 102.0 s / 155.1 s | 109 | $0.615 |
+| Solo · Jev | 5/20 (0.11-0.47) | 8 / 12 / 19 | 11.9 h / 12.0 h | 20 | 4.7 s / 5.0 s | 19 | $0.005 |
+| Solo · rule | 9/20 (0.26-0.66) | 13 / 16 / 20 | 9.2 h / 11.1 h | 18 | 0.0 s / 0.0 s | 0 | free |
+| Solo · random | 0/20 (0.00-0.16) | 1 / 5 / 3 | 11.9 h / 12.0 h | 20 | 0.0 s / 0.0 s | 0 | free |
+| Swarm · Jev · 1 km | 5/20 (0.11-0.47) | 7 / 7 / 11 | 4.0 h / 8.0 h | 9 | 16.9 s / 27.0 s | 1352 | $0.171 |
+| Swarm · rule · 1 km | 13/20 (0.43-0.82) | 13 / 13 / 13 | 6.5 h / 8.0 h | 7 | 0.3 s / 0.4 s | 0 | free |
+| Swarm · random · 1 km | 0/20 (0.00-0.16) | 0 / 0 / 0 | 8.0 h / 8.0 h | 20 | 0.2 s / 0.3 s | 0 | free |
+| Swarm · Jev · 2 km | 10/20 (0.30-0.70) | 12 / 17 / 19 | 2.2 h / 5.8 h | 1 | 12.4 s / 32.7 s | 993 | $0.130 |
+| Swarm · rule · 2 km | 18/20 (0.70-0.97) | 18 / 18 / 18 | 1.8 h / 8.0 h | 2 | 0.1 s / 0.4 s | 0 | free |
+| Hybrid · 1 km | 10/20 (0.30-0.70) | 10 / 10 / 10 | 8.0 h / 8.0 h | 10 | 28.1 s / 37.0 s | 2069 | $0.208 |
+| Hybrid · 2 km | 17/20 (0.64-0.95) | 17 / 18 / 18 | 2.5 h / 8.0 h | 2 | 9.7 s / 32.2 s | 1222 | $0.130 |
+| Baker Street · counting Holmes, Jev boys | 19/20 (0.76-0.99) | 19 / 20 / 20 | 6.5 h / 10.8 h | 1 | 4.7 s / 6.1 s | 67 | $0.002 |
+| Baker Street · counting Holmes, rule boys | 19/20 (0.76-0.99) | 19 / 19 / 20 | 8.2 h / 12.0 h | 6 | 0.0 s / 0.0 s | 0 | free |
+
+Wrong quorums: Jev swarm 1 km 6, Jev swarm 2 km 9, hybrid 2 km 1, rule swarm and hybrid 1 km none.
+
+- **The five-case pilot flattered Solo gpt-6-astra.** It solved all of seeds 1-5 but only 6 of seeds 6-20,
+  11/20 overall. All 9 failures ran out of visits or time: it usually had the culprit (17/20) but not a
+  corroborated motive (14/20).
+- **Baker Street is the most reliable setup.** gpt-6-astra as Holmes, with Wiggins and 12 Jev boys, solved 19/20
+  where gpt-6-astra alone solved 11/20. Holmes saw 70-100 reports per case instead of about 18 visits. It cost
+  $0.62 against $0.35 per case and took 102 s against 81 s of real time (median).
+- **Baker Street with exact counting is the best value:** 19/20, a median of 6.5 case hours to the answer,
+  under 5 s of real time and $0.002 per case.
+- **The fastest answers in case time come from the 2 km swarms:** a median of 1.8-2.5 h. The rule swarm solved
+  18/20 and the hybrid 17/20, with almost no wrong quorums. At 1 km they drop to 13/20 and 10/20.
+- **Jev deciding everything stays weak:** 5/20 Solo, 5/20 and 10/20 as a swarm, with 6 and 9 wrong quorums.
+- **Real time follows the slowest model in the loop.** gpt-6-astra settings take 80-155 s per case. Jev settings
+  take 5-37 s, set by how many ticks run until a quorum. Rule-only settings are instant.
+
 ## 4. Conclusions
 
-1. **A single strong model wins the head-to-head, narrowly once the swarm is designed well:** gpt-6-astra solved
-   5/5 for $0.34 a case. One Jev detective, or a hundred Jev Irregulars doing everything, managed 1-2/5. The
-   hybrid swarm (Jev gathers, exact counting votes) reached 4/5 with no wrong answers for $0.16-0.18 a case.
-   Organised the way Holmes runs them (section 3.5), the Irregulars matched the genius at 5/5.
+1. **On 20 cases the lone genius is not the winner** (section 3.8). gpt-6-astra alone solved 11/20, held back by
+   its 20 visits; Baker Street solved 19/20 with either gpt-6-astra or exact counting as Holmes. The five-case
+   pilot (gpt-6-astra 5/5, hybrid 4/5, Jev 1-2/5) happened to use easier cases. On 20 cases the hybrid swarm
+   solved 17/20 at 2 km and 10/20 at 1 km, and Jev deciding everything 5-10/20.
 2. **Jev is good at single-step judgements** (motive, hideout, which lead to follow) and weak at multi-clue
    elimination (the culprit). It also lacks a usable sense of when it is done.
 3. **Swarm success is mostly about the plumbing:** communication range, and whether the group can tell
