@@ -36,7 +36,10 @@ class Engine:
             self.fallback = S.Rule(c)
         else:
             self.game = W.SwarmGame(self.case, c)
-            self.policy = W.JevIrregular(c) if c["swarm_policy"] == "jev" else None
+            sp = c["swarm_policy"]
+            self.policy = W.JevIrregular(c, votes=sp == "jev") if sp in ("jev", "hybrid", "hybrid_genius") else None
+            self.hybrid = sp in ("hybrid", "hybrid_genius")
+            self.yard = W.YardGenius(c) if sp == "hybrid_genius" else None
         self.pool = ThreadPoolExecutor(max_workers=max(1, c["concurrency"]))
         self.bus = Broadcaster()
         self.cmds = queue.Queue()
@@ -267,6 +270,8 @@ class Engine:
                     self.stats["fallbacks"] += 1
             if not counted:
                 self._account({}, 0, src)
+            if self.hybrid and f is None:
+                vote = g.reflex(a, cands)[1]  # exact counting over the leads this Irregular holds
             g.apply(a, act, vote or {"culprit": None, "motive": None, "hideout": None})
             self.swarm_last[a.i] = {"tick": g.tick, "action": act, "vote": dict(a.vote), "source": src,
                                     "result": a.last_result}
@@ -275,6 +280,24 @@ class Engine:
         if c["budget_cap_usd"] > 0 and not self.capped and self.stats["cost"] >= c["budget_cap_usd"]:
             self.capped = True
             self._event("budget", f"swarm spent ${self.stats['cost']:.4f}: cap reached, reflex rule from now on")
+        if self.yard and self.yard.due(g, g.tick + 1 >= c["swarm_ticks"]):
+            t0 = time.time()
+            try:
+                ans, meta = self.yard.announce(g)
+                g.hub_answer = ans
+                with self._lock:
+                    s = self.stats
+                    s["calls"] += 1
+                    s["latencies"].append(time.time() - t0)
+                    for k in ("in", "out", "cached"):
+                        s[k] += meta.get(k, 0)
+                    s["cost"] += meta["cost"]
+                    s["hub_cost"] = s.get("hub_cost", 0.0) + meta["cost"]
+                    s["models"].add(meta["model"])
+                self._event("hub", f"Holmes at the Yard ({ans['leads']} leads): {ans['culprit']}/{ans['motive']}/"
+                                   f"{ans['hideout']}{' - sure' if ans['confident'] else ' - not sure yet'}. {ans['note']}")
+            except Exception as e:  # noqa: BLE001
+                self._fail(e)
         g.end_tick()
         top = g.tally()[:1]
         if top and g.tick % 2 == 0:
@@ -283,10 +306,16 @@ class Engine:
                                  f"(quorum {g.quorum_need()})")
         if g.ended:
             o = g.outcome
-            if o["quorum"]:
+            if o.get("closed_by") == "hub":
+                self._event("accuse", f"Holmes announces {o['culprit']}/{o['motive']}/{o['hideout']}: " +
+                            ", ".join(f"{k} {'right' if v else 'wrong'}" for k, v in o["ok"].items()))
+            elif o["quorum"]:
                 self._event("accuse", f"Quorum: {o['votes']} Irregulars agree on {o['culprit']}/{o['motive']}/"
                                       f"{o['hideout']}: " + ", ".join(f"{k} {'right' if v else 'wrong'}"
                                                                       for k, v in o["ok"].items()))
+            elif o.get("closed_by") == "timeout":
+                self._event("timeout", f"The case went cold after {g.tick} ticks: Holmes at the Yard was never sure "
+                                       f"(last answer {o['culprit']}/{o['motive']}/{o['hideout']})")
             else:
                 self._event("timeout", f"The case went cold after {g.tick} ticks: no quorum (best {o['votes']} of "
                                        f"{o['need']} votes)")
@@ -366,7 +395,8 @@ class Engine:
                 "fallbacks": s["fallbacks"], "timeouts": s["timeouts"], "by_source": s["by_source"],
                 "latency_p50": q(0.5), "latency_p95": q(0.95), "tokens_in": s["in"], "tokens_out": s["out"],
                 "tokens_cached": s["cached"], "cost": round(s["cost"], 5), "models": sorted(s["models"]),
-                "policy": self.policy_name, "capped": self.capped}
+                "policy": self.policy_name, "capped": self.capped, "hub_cost": round(s.get("hub_cost", 0.0), 5),
+                "hub_calls": self.yard.calls if getattr(self, "yard", None) else 0}
 
     # ------------------------------------------------------------------ viewer
     def frame(self, full=False):
@@ -396,7 +426,8 @@ class Engine:
                       "comm_range": self.cfg["comm_range"], "tally": [[list(k), n] for k, n in g.tally()[:8]],
                       "parts": {k: g.part_tally(k) for k in ("culprit", "motive", "hideout")},
                       "need": g.quorum_need(), "series": g.series, "coverage": g.coverage(),
-                      "outcome": g.outcome})
+                      "outcome": g.outcome, "hub": ({"leads": len(g.hub), "answer": g.hub_answer,
+                                                     "yard": self.case.specials["yard"]} if g.hub_on else None)})
         return f
 
     def irregular_detail(self, i):

@@ -24,6 +24,12 @@ INSTRUCTION = (
     "Irregulars lie, so trust facts that come from more than one place. The case is solved when enough Irregulars "
     "vote the same culprit, motive and hideout before the clock runs out. Choose your next action."
 )
+INSTRUCTION_HYBRID = (
+    "You are one of Wiggins's Baker Street Irregulars, a street child helping Sherlock Holmes with a murder case. "
+    "Your job is to gather and spread evidence: find leads, shout useful ones to Irregulars within earshot, tail "
+    "suspects, and call out liars. Your vote is worked out separately by counting the leads you hold, so pick the "
+    "action that gets the most useful, trustworthy evidence to the most Irregulars. Choose your next action."
+)
 Q_VOTE = ("Your current vote for the {what}. Answer UNSURE unless your leads support one answer; the case closes "
           "only when many Irregulars vote the same full answer.")
 
@@ -103,6 +109,10 @@ class SwarmGame:
     def __init__(self, case, cfg):
         self.case, self.cfg = case, cfg
         self.defend = cfg.get("corroboration", "address") == "address"
+        self.hub_on = cfg.get("swarm_policy") == "hybrid_genius"
+        self.hub = []              # leads that have reached Scotland Yard (shouted within range of it)
+        self.hub_keys = set()
+        self.hub_answer = None     # latest announcement from the genius at the Yard
         self.rng = random.Random(f"swarm-{cfg['seed']}")
         r = self.rng
         n = max(3, cfg["n_irregulars"])
@@ -414,6 +424,13 @@ class SwarmGame:
                 rec = {**rec, "implausible": True}
         for b in hearers:
             b.inbox.append(rec)
+        if self.hub_on and not rec.get("implausible"):
+            yard = self.case.by_id[self.case.specials["yard"]]
+            ax, ay = self.pos(a)
+            key = (rec["address"], rec["text"])
+            if (ax - yard["x"]) ** 2 + (ay - yard["y"]) ** 2 <= self.cfg["comm_range"] ** 2 and key not in self.hub_keys:
+                self.hub_keys.add(key)
+                self.hub.append({**rec, "tick": self.tick})
         x, y = self.pos(a)
         self.shares.append((a.i, x, y))
         return len(hearers)
@@ -430,7 +447,16 @@ class SwarmGame:
         self.series.append({"tick": self.tick, "top": top[1] if top else 0, "truth": dict(tally).get(truth, 0),
                             "firm": sum(1 for a in self.irr if a.full_vote()),
                             "frame": dict(tally).get(tuple(self.frame_up.values()), 0)})
-        if top and top[1] >= need:
+        h = self.hub_answer
+        if self.hub_on:  # the genius at the Yard closes the case; the Irregulars only gather
+            if h and h.get("confident"):
+                self.outcome = {**self._outcome((h["culprit"], h["motive"], h["hideout"]), 0, True), "closed_by": "hub"}
+                self.ended = True
+            elif self.tick >= cfg["swarm_ticks"]:
+                trip = (h["culprit"], h["motive"], h["hideout"]) if h else (top[0] if top else None)
+                self.outcome = {**self._outcome(trip, top[1] if top else 0, False), "closed_by": "timeout"}
+                self.ended = True
+        elif top and top[1] >= need:
             self.outcome = self._outcome(top[0], top[1], True)
             self.ended = True
         elif self.tick >= cfg["swarm_ticks"]:
@@ -488,19 +514,24 @@ class SwarmGame:
 
 
 class JevIrregular:
-    """One System One call per Irregular per tick: the action choice plus its three votes."""
+    """One System One call per Irregular per tick: the action choice plus its three votes. With votes=False (the
+    hybrid policies) Jev is asked only for the action; the votes come from exact counting (see SwarmGame.reflex)."""
     name, remote = "jev", True
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, votes=True):
         self.cfg = cfg
+        self.votes = votes
         self.client = JevClient(cfg["jev_provider"], cfg["jev_model"], cfg["jev_key"], timeout=cfg["request_timeout_s"])
 
     def decide(self, game, a, cands):
-        q = {"action": {"type": "choice", "instructions": INSTRUCTION, "criteria": cands}, **game.vote_questions()}
+        q = {"action": {"type": "choice", "instructions": INSTRUCTION if self.votes else INSTRUCTION_HYBRID,
+                        "criteria": cands}}
+        if self.votes:
+            q.update(game.vote_questions())
         state = json.dumps(game.observation(a), separators=(",", ":"))
         answers, meta = self.client.ask(state, q, retries=0)
-        out = {}
-        for k in ("action", "culprit", "motive", "hideout"):
+        out = {k: "UNSURE" for k in ("culprit", "motive", "hideout")}
+        for k in q:
             ans = answers.get(k) or {}
             valid = cands if k == "action" else q[k]["criteria"]
             probs = {x: float(p or 0) for x, p in (ans.get("probabilities") or {}).items() if x in valid}
@@ -522,3 +553,53 @@ class JevIrregular:
         u = meta.get("usage") or {}
         return out["action"], vote, {"model": meta.get("model"), "in": int(u.get("input_tokens") or 0),
                                      "out": int(u.get("output_tokens") or 0), "cost": float(u.get("cost") or 0)}
+
+
+class YardGenius:
+    """hybrid_genius: once per tick (when enough new leads have arrived, up to hub_max_calls) a chat model reads
+    every lead that has reached Scotland Yard and announces culprit, motive and hideout, and whether it is sure."""
+    FORMAT = ('Reply with one JSON object: {"thinking": "<at most 40 words>", "culprit": "<S id>", "motive": '
+              '"<M id>", "hideout": "<H id>", "confident": true or false}. Say confident only if the leads clearly '
+              'establish all three; the case closes as soon as you are confident.')
+
+    def __init__(self, cfg):
+        from swarmcore.llm import LLMClient
+        self.cfg = cfg
+        self.client = LLMClient("openai", cfg["chat_model"], cfg["chat_key"], timeout=120, temperature=1.0)
+        self.calls = 0
+        self.seen = 0
+
+    def due(self, game, last_tick):
+        new = len(game.hub) - self.seen
+        return self.calls < self.cfg["hub_max_calls"] and (new >= self.cfg["hub_min_new"] or (last_tick and new > 0))
+
+    def announce(self, game):
+        c = game.case
+        system = ("You are Sherlock Holmes at Scotland Yard. Street Irregulars shout leads to you; some leads are "
+                  "irrelevant, some are lies (from witnesses or from lying Irregulars), and true facts usually come "
+                  "from more than one address. " + self.FORMAT + "\n\nCASE BRIEF\n" + json.dumps(c.brief(), indent=0))
+        leads = [{"lead": r["text"], "claimed_address": c.label(r["address"]) if r["address"] in c.by_id else None,
+                  "reported_by_irregular": r["via"], "tick": r["tick"]} for r in game.hub]
+        user = json.dumps({"tick": game.tick, "ticks_left": self.cfg["swarm_ticks"] - game.tick,
+                           "leads_received": leads}, separators=(",", ":"))
+        out = self.client.chat(system, user, json_mode=True, max_tokens=1200, retries=1)
+        self.calls += 1
+        self.seen = len(game.hub)
+        u = self.client.last_usage or {}
+        tin = int(u.get("prompt_tokens") or 0)
+        cached = int((u.get("prompt_tokens_details") or {}).get("cached_tokens") or 0)
+        tout = int(u.get("completion_tokens") or 0)
+        cfg = self.cfg
+        cost = ((tin - cached) * cfg["chat_price_in"] + cached * cfg["chat_price_cached"] +
+                tout * cfg["chat_price_out"]) / 1e6
+        valid = {"culprit": [s["id"] for s in c.suspects], "motive": list(c.brief()["motives"]),
+                 "hideout": [h["id"] for h in c.hideouts]}
+        ans = {}
+        for k, ks in valid.items():
+            v = str(out.get(k) or "").strip().upper()
+            ans[k] = v if v in ks else None
+        ans["confident"] = bool(out.get("confident")) and all(ans[k] for k in valid)
+        ans["note"] = str(out.get("thinking") or "")[:300]
+        ans["leads"] = len(game.hub)
+        ans["tick"] = game.tick
+        return ans, {"model": self.client.model, "in": tin, "cached": cached, "out": tout, "cost": cost}

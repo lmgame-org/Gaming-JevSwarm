@@ -118,7 +118,9 @@ function estimate() {
   } else {
     const calls = cfg.n_irregulars * cfg.swarm_ticks;
     s = `Swarm: ${cfg.n_irregulars} Irregulars × up to ${cfg.swarm_ticks} ticks = at most <b>${calls.toLocaleString()}</b> decisions.`;
-    if (cfg.swarm_policy === "jev") s += `<br>Jev ≈ <b>$${(calls * 0.000105).toFixed(2)}</b> per case at most (~$0.0001 per call); each tick waits ≈ 2 s for its calls.`;
+    if (cfg.swarm_policy === "hybrid_genius") s += `<br>Jev actions only ≈ <b>$${(calls * 0.00006).toFixed(2)}</b> at most, plus up to ${cfg.hub_max_calls} gpt-6-astra calls at the Yard (≈ $0.02-0.05 each).`;
+    else if (cfg.swarm_policy === "hybrid") s += `<br>Jev actions only ≈ <b>$${(calls * 0.00006).toFixed(2)}</b> at most; votes are counted exactly (free).`;
+    else if (cfg.swarm_policy === "jev") s += `<br>Jev ≈ <b>$${(calls * 0.000105).toFixed(2)}</b> per case at most (~$0.0001 per call); each tick waits ≈ 2 s for its calls.`;
     else s += "<br>Offline policy: no API calls, free.";
     if (cfg.budget_cap_usd > 0) s += `<br>Capped at $${cfg.budget_cap_usd}; after that the reflex rule decides.`;
   }
@@ -246,6 +248,11 @@ function renderTally(f) {
     const ci = CASE ? Object.keys(CASE.brief.suspects).indexOf(c) : 0;
     return `<span style="color:${SUS_COLORS[ci % 16]}">●</span> ${c} ${n}`;
   }).join(" &nbsp; ") || "none") + "</div>";
+  if (f.hub) {
+    const A = f.hub.answer;
+    h = `<div class="small" style="margin-bottom:6px"><b>Holmes at Scotland Yard</b> has ${f.hub.leads} leads.
+      ${A ? `Latest: ${esc(name("culprit", A.culprit))} / ${A.motive} / ${A.hideout} ${A.confident ? "<b>(sure)</b>" : "(not sure yet)"}<br><span class="muted">${esc(A.note || "")}</span>` : "No announcement yet."}</div>` + h;
+  }
   $("#tally").innerHTML = h;
 }
 
@@ -446,6 +453,10 @@ function drawMap(c, cs, f, opt = {}) {
     for (const p of pulses) {
       const k = (now - p.t0) / 900; const [x, y] = P(p.x, p.y);
       g.strokeStyle = `rgba(217,164,65,${0.5 * (1 - k)})`; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, f.comm_range * v.s * k, 0, 7); g.stroke();
+    }
+    if (f.hub && A[f.hub.yard]) {  // the Yard's listening range
+      const [yx, yy] = P(A[f.hub.yard].x, A[f.hub.yard].y);
+      g.strokeStyle = "rgba(111,168,220,0.5)"; g.setLineDash([4, 4]); g.beginPath(); g.arc(yx, yy, f.comm_range * v.s, 0, 7); g.stroke(); g.setLineDash([]);
     }
     const order = CASE ? Object.keys(CASE.brief.suspects) : [];
     for (const r of f.irregulars) {

@@ -42,6 +42,8 @@ DEFAULTS = {
     "tail_success": 0.6,         # chance tailing the culprit reveals the hideout's district
     "corroboration": "address",  # liar defence: each witness address counts once; contradicting first-hand -> distrust
     "skip_unchanged": True,      # an Irregular whose view is unchanged since it chose WAIT waits again, no call
+    "hub_max_calls": 8,          # hybrid_genius: most genius calls per case
+    "hub_min_new": 3,            # hybrid_genius: new leads at the Yard before the genius is asked again
     "budget_cap_usd": 0.0,       # 0 = none; above it every Irregular falls back to the reflex rule
     # inference
     "sampling": "argmax",        # argmax | sample
@@ -67,6 +69,8 @@ POLICIES = {
 }
 SWARM_POLICIES = {
     "jev": "Jev per Irregular, reflex rule if a call is too slow or fails",
+    "hybrid": "Jev picks each Irregular's action; its votes come from exact counting of the leads it holds",
+    "hybrid_genius": "Jev Irregulars gather; a genius at Scotland Yard reads the leads that reach it and closes the case",
     "rule": "Reflex rule per Irregular: share what is new, walk to unvisited neighbours, vote when sure (free)",
     "random": "Random moves, shares and votes (free)",
 }
@@ -80,6 +84,9 @@ PRESETS = {
     "swarm": {"label": "Swarm: 100 Jev Irregulars", "overrides": {"mode": "swarm"}},
     "swarm_rule": {"label": "Swarm with the reflex rule (free)", "overrides": {"mode": "swarm", "swarm_policy": "rule"}},
     "swarm_liars": {"label": "Swarm with 15% lying Irregulars", "overrides": {"mode": "swarm", "liar_frac": 0.15}},
+    "swarm_hybrid": {"label": "Hybrid: Jev gathers, exact counting votes", "overrides": {"mode": "swarm", "swarm_policy": "hybrid"}},
+    "swarm_hybrid_genius": {"label": "Hybrid: Jev gathers, gpt-6-astra at the Yard decides",
+                            "overrides": {"mode": "swarm", "swarm_policy": "hybrid_genius", "comm_range": 200.0}},
     "swarm_quiet": {"label": "Swarm with short radio range", "overrides": {"mode": "swarm", "comm_range": 50.0}},
 }
 
@@ -126,6 +133,8 @@ SCHEMA = [
             "address": "each witness address counts once; caught liars are distrusted and refuted",
             "none": "count every lead heard (no defence)"}),
         ("skip_unchanged", "Skip the call when nothing changed since a WAIT", "bool", {}),
+        ("hub_max_calls", "Genius calls at the Yard (hybrid_genius)", "int", {"min": 1, "max": 64}),
+        ("hub_min_new", "New leads before asking the genius again", "int", {"min": 1, "max": 50}),
         ("budget_cap_usd", "Swarm $ cap (0 = none)", "float", {"min": 0}),
     ]),
     ("Models", [

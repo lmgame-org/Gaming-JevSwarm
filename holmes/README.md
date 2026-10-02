@@ -55,6 +55,8 @@ runs out it goes cold (the plurality answer is still logged).
 | `jev` | One Jev call per Irregular per tick (action choice + three votes). A call that fails or misses the per-call deadline falls back to the reflex rule for that tick |
 | `rule` | Reflex rule: share the most useful unshared lead when someone can hear, tail a suspect still in the running, follow pointers, walk to unvisited neighbours; vote what its own leads establish, or a clear local majority its leads allow |
 | `random` | Random actions and votes |
+| `hybrid` | Jev chooses each Irregular's action; its votes come from exact counting of the leads it holds (with the liar defence) |
+| `hybrid_genius` | Jev Irregulars gather; every lead shouted within range of Scotland Yard reaches a hub, and gpt-6-astra reads them and closes the case when sure (at most `hub_max_calls` calls) |
 
 **Liar defence** (`corroboration = address`, on by default; `none` turns it off):
 

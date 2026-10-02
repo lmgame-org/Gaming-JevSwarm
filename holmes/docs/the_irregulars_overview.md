@@ -1,6 +1,6 @@
 # The Irregulars: background, design and results
 
-*jev-swarm / holmes, as of 2 October 2026*
+*jev-swarm / holmes, as of 2 October 2026 (hybrid swarm added the same day)*
 
 ## 1. Background
 
@@ -107,6 +107,14 @@ cold. Each Irregular takes in at most 3 messages a tick and remembers 16 leads.
   running, follow pointers, walk to unvisited neighbours; vote what its own leads establish, or a clear local
   majority that its own leads allow.
 - **Random:** random actions and votes.
+- **Hybrid** (`hybrid`, added after the first results): Jev picks each Irregular's action (move, share, tail,
+  refute, wait), but its culprit/motive/hideout vote comes from exact counting over the leads it holds, the same
+  counting as the reflex rule, with the liar defence. Jev is asked only for the action, so each call is about 30%
+  cheaper.
+- **Hybrid with a genius at the Yard** (`hybrid_genius`): Jev Irregulars gather as in `hybrid`. Every lead
+  shouted within range of Scotland Yard reaches a hub (implausible claims are dropped). When at least 3 new
+  leads have arrived (at most 8 times a case), gpt-6-astra reads every lead at the hub and announces an answer
+  and whether it is sure. The case closes when it is sure; the Irregulars' own quorum does not close it.
 
 Adversaries and imperfections, each a knob:
 
@@ -213,7 +221,34 @@ waiting (50%). They commit to a wrong consensus more readily than the rule, whic
 - **Jev swarm with 15% liars (5 seeds):** 0/5 solved with or without the defence. With it, the final majority
   answer was less wrong: 1.6 of 3 parts right instead of 0.4.
 
-### 3.4 Genius vs swarm at similar spend
+### 3.4 Hybrid swarm: Jev gathers, exact counting votes
+
+Same seeds 1-5, defaults otherwise (quorum 30, 32 ticks, liar defence on, no liars).
+
+| Policy | Range | Solved | Wrong quorums | Ticks to close | Final majority, parts right | Cost per case |
+|---|---|---|---|---|---|---|
+| **hybrid** | 1 km | **4/5** | 0 | 18.8 | 3.0 | $0.18 |
+| **hybrid** | 2 km | **4/5** | 0 | 16.0 | 3.0 | $0.16 |
+| hybrid_genius (3 seeds) | 2 km | 2/3 | 0 | 22.7 | 3.0 | $0.41 ($0.17 of it gpt-6-astra) |
+| Jev swarm (votes from Jev) | 1 km | 1-2/5 | 1-2 | 22-27 | 2.0-2.2 | $0.19-0.27 |
+| Jev swarm | 2 km | 2/5 | 3 | 10.4 | 2.2 | $0.14 |
+| Reflex-rule swarm | 1 km / 2 km | 3/5 / 4/5 | 0 | 20.0 / 13.8 | 2.6 / 2.4 | free |
+| Solo gpt-6-astra | - | 5/5 | - | - | - | $0.34 |
+
+- **Splitting the jobs works.** Letting Jev decide only where to go and what to shout, and counting the leads
+  exactly for the vote, raised the Jev swarm from 1-2/5 to 4/5 at both ranges, with no wrong quorums.
+- **Seed 1 is the one miss everywhere.** No hybrid run reached a quorum on seed 1, but the final majority answer
+  was fully right every time. The rule swarm also failed seed 1, and the genius at the Yard saw the right
+  answer there but was never sure enough to close.
+- **Jev gathers better than the rule.** At 1 km, hybrid solved 4/5 while the reflex rule, with the same
+  counting but rule-chosen actions, solved 3/5. With 5 seeds that is suggestive, not proven.
+- **The genius at the Yard adds cost, not accuracy, here.** It solved 2 of 3 seeds for $0.41 per case, more than
+  Solo gpt-6-astra ($0.34). Leads reach the Yard only from Irregulars within range of it, so it waits on
+  partial evidence.
+- Caveats: hybrid_genius ran on 3 seeds only (spend guard). On seed 5 at 2 km, hybrid reached a $0.12 per-run
+  cap in its last ticks, and the reflex rule chose actions from then on.
+
+### 3.5 Genius vs swarm at similar spend
 
 | | Cost per case | Solved |
 |---|---|---|
@@ -222,34 +257,41 @@ waiting (50%). They commit to a wrong consensus more readily than the rule, whic
 | 100 Jev Irregulars, 2 km | $0.14 | 2/5 |
 | One Jev detective | $0.005 | 1-2/5 |
 | Reflex-rule swarm, 2 km | free | 4/5 (18/20) |
+| **Hybrid swarm (Jev actions + exact counting), 1 km or 2 km** | **$0.16-0.18** | **4/5** |
+| Hybrid + gpt-6-astra at the Yard, 2 km | $0.41 | 2/3 |
 
-On this task and at this budget, **one strong reasoner clearly beats a hundred cheap ones.** The swarm's
-advantage, coverage, is real (it sees every address at once), but each Irregular must still combine clues, and
-that is where Jev falls short. The rule swarm, which combines clues exactly, shows coverage plus correct local
-combination works well; the bottleneck is local reasoning quality, not the swarm structure.
+With Jev doing everything, **one strong reasoner clearly beats a hundred cheap ones.** The swarm's advantage,
+coverage, is real (it sees every address at once), but each Irregular must still combine clues, and that is where
+Jev falls short. **The hybrid closes most of the gap:** Jev gathers and spreads evidence, exact counting combines
+it, and the swarm solves 4/5 with no wrong answers for about half the genius's cost per case. The genius still
+leads on these five cases (5/5 against 4/5).
 
-### 3.5 Spend
+### 3.6 Spend
 
 | Round | Spend |
 |---|---|
 | Building and testing | about $0.45 |
 | First pilot (Solo: Jev, gpt-6-astra; Swarm: Jev honest and with liars) | $4.04 |
 | Follow-up (Jev Solo; Jev swarm: honest, liars, 2 km) | $2.50 |
-| **Total** | **about $7.00** |
+| Hybrid round (hybrid 1 km and 2 km, 5 seeds each; hybrid_genius 2 km, 3 seeds; smoke tests) | $3.04 |
+| **Total** | **about $10.00** |
 
 gpt-6-astra is costed from token counts at OpenRouter's list price ($10 per million input tokens, $1 cached, $50
 output), because OpenAI's API does not return a cost. Jev costs are as reported by OpenRouter.
 
 ## 4. Conclusions
 
-1. **A single strong model wins the head-to-head:** gpt-6-astra solved 5/5 for $0.34 a case. Neither one Jev
-   detective nor a hundred Jev Irregulars came close (1-2/5).
+1. **A single strong model wins the head-to-head, narrowly once the swarm is designed well:** gpt-6-astra solved
+   5/5 for $0.34 a case. One Jev detective, or a hundred Jev Irregulars doing everything, managed 1-2/5. The
+   hybrid swarm (Jev gathers, exact counting votes) reached 4/5 with no wrong answers for $0.16-0.18 a case.
 2. **Jev is good at single-step judgements** (motive, hideout, which lead to follow) and weak at multi-clue
    elimination (the culprit). It also lacks a usable sense of when it is done.
 3. **Swarm success is mostly about the plumbing:** communication range, and whether the group can tell
    independent evidence from repetition. With good plumbing, even a simple rule swarm solves 18/20.
 4. **Coordinated lying is the main threat to a vote-counting swarm,** and simple, local, physically grounded
    checks (where could this speaker have been?) recover much of the loss.
+5. **Give each part of the job to what does it best.** Cheap models choose where to look and what to share; exact
+   counting combines the evidence. That beat both "Jev does everything" and "rules do everything" at 1 km.
 
 ## 5. Limitations
 
@@ -264,8 +306,9 @@ output), because OpenAI's API does not return a cost. Jev costs are as reported 
 ## 6. Possible next steps
 
 - **More seeds:** 20 seeds of Jev Solo against the rule (about $0.10).
-- **A hybrid swarm:** Jev Irregulars gather and share, and a structured counter or one genius call per tick does
-  the elimination.
+- **Hybrid on more seeds and under liars:** 20 seeds at 1 km, and 5-15% liars (about $0.20 per case).
+- **A better Yard:** let the hub hear the whole city (or have Irregulars run leads to it), so the genius decides on
+  full evidence instead of partial evidence.
 - **Give Jev a decomposed culprit question:** for example, one yes/no per suspect ("is this suspect consistent
   with the notebook?") instead of a single ten-way choice.
 - **Smarter liars:** nearby, plausible fakes and false accusations, to test the defence properly.
@@ -280,6 +323,8 @@ cd holmes
 python3 -m irregulars.batch --mode solo  --policies jev chat rule random --seeds 5
 python3 -m irregulars.batch --mode swarm --policies jev rule random --seeds 5
 python3 -m irregulars.batch --mode swarm --policies rule --vary liar_frac=0,0.05,0.15 --seeds 20
+python3 -m irregulars.batch --mode swarm --policies hybrid --seeds 5 --set comm_range=200
+python3 -m irregulars.batch --mode swarm --policies hybrid_genius --seeds 3 --set comm_range=200 --max-usd 1.0
 python3 tests/test_checks.py
 ```
 

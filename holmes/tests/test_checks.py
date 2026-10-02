@@ -148,6 +148,40 @@ def test_defence_off_keeps_old_behaviour():
     assert c.remember({"address": own, "text": "something else", "fact": ["motive", "debt"], "via": 7}, 16, False)
 
 
+class _WaitPolicy:
+    """Stand-in for Jev in offline tests: always waits."""
+    name, remote = "jev", True
+
+    def decide(self, game, a, cands):
+        return "WAIT", {"culprit": "S1", "motive": "M1", "hideout": "H1"}, {"cost": 0.0}
+
+
+def test_hybrid_votes_come_from_counting():
+    e = Engine({"seed": 2, "mode": "swarm", "swarm_policy": "hybrid"}, realtime=False, log=False)
+    e.policy = _WaitPolicy()
+    e.step()
+    g = e.game
+    for a in g.irr[:20]:
+        expect = g.reflex(a, g.candidates(a))[1]
+        assert a.vote == expect or a.liar, (a.vote, expect)
+
+
+def test_yard_hub_collects_and_closes():
+    e = Engine({"seed": 2, "mode": "swarm", "swarm_policy": "hybrid_genius", "comm_range": 200}, realtime=False,
+               log=False)
+    e.policy = _WaitPolicy()
+    g = e.game
+    yard = g.case.specials["yard"]
+    a = g.irr[0]
+    a.at = yard
+    g._shout(a, {"address": a.at, "text": "test lead", "fact": ["bland"], "via": a.i, "fake": False})
+    assert any(r["text"] == "test lead" for r in g.hub)
+    t = g.case.truth_ids()
+    g.hub_answer = {**t, "confident": True}
+    g.end_tick()
+    assert g.ended and g.outcome["solved"] and g.outcome["closed_by"] == "hub"
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):
