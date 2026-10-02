@@ -60,6 +60,7 @@ class LLMClient:
         self.model = model or DEFAULT_MODELS[role].get(provider) or DEFAULT_MODELS["narrator"]["openai"]
         self.timeout = timeout
         self.temperature = temperature
+        self.last_usage = {}
 
     def chat(self, system, user, json_mode=True, max_tokens=1200, retries=2):
         key = read_key(self.key_path)
@@ -86,6 +87,7 @@ class LLMClient:
             try:
                 with urllib.request.urlopen(req, timeout=self.timeout) as r:
                     data = json.loads(r.read())
+                self.last_usage = data.get("usage") or {}
                 content = data["choices"][0]["message"]["content"] or ""
                 return parse_json(content) if json_mode else content
             except urllib.error.HTTPError as e:

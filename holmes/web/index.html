@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Irregulars</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<section id="launch">
+  <header class="bar">
+    <div class="brand">The Irregulars <span>jev-swarm · a seeded Holmes case, solved by one detective or a swarm</span></div>
+  </header>
+  <div class="launch-body">
+    <div class="launch-intro">
+      <p>A body has been found somewhere in London. Each address on the map holds one short lead: a witness, a
+        receipt, a footprint, a lie or nothing at all. <b>Solo</b>: one detective visits one address at a time and
+        then names the culprit, motive and hideout. <b>Swarm</b>: Wiggins's Irregulars spread over the city, each
+        seeing only its own corner and what neighbours shout, and the case closes when a quorum votes the same
+        answer. Pick a preset, adjust the knobs, then launch.</p>
+      <div id="presetCards" class="cards"></div>
+    </div>
+    <form id="cfgForm"></form>
+    <div class="launch-side">
+      <div class="panel">
+        <div class="panel-head"><h3>Case preview</h3><span id="pvInfo" class="small muted"></span></div>
+        <canvas id="preview"></canvas>
+        <div id="pvKinds" class="small muted"></div>
+      </div>
+      <div class="panel">
+        <h3>Models and keys</h3>
+        <div id="keyStatus" class="small"></div>
+        <div class="row gap">
+          <button type="button" id="testJev">Test Jev</button>
+          <button type="button" id="testChat">Test genius model</button>
+        </div>
+        <pre id="testOut" class="small out" hidden></pre>
+      </div>
+      <div class="panel">
+        <h3>Cost estimate</h3>
+        <div id="estimate" class="small"></div>
+      </div>
+      <div class="panel">
+        <h3>Recent runs</h3>
+        <div id="runsList" class="small"></div>
+      </div>
+      <button id="launchBtn" class="primary big">Launch</button>
+      <button id="rejoinBtn" class="big" hidden>Return to the running case</button>
+      <div id="launchErr" class="err"></div>
+    </div>
+  </div>
+</section>
+
+<section id="dash" hidden>
+  <header class="bar">
+    <div class="brand">The Irregulars <span id="modeTag"></span></div>
+    <div class="clock"><span id="clock">08:00</span><div class="prog"><div id="progFill"></div></div><span id="progText" class="small muted"></span></div>
+    <button id="playBtn" title="Pause / resume (space)">Pause</button>
+    <button id="stepBtn" title="One step">Step</button>
+    <label class="inline">Speed <input id="speed" type="range" min="-1" max="1.4" step="0.05"><span id="speedVal"></span></label>
+    <label class="inline"><input type="checkbox" id="tTruth"> reveal truth</label>
+    <span id="runTag" class="tag"></span>
+    <span class="grow"></span>
+    <button id="newRun">New run</button>
+  </header>
+
+  <div class="views">
+    <div class="panel map-panel">
+      <canvas id="map"></canvas>
+      <div id="tip" class="tip" hidden></div>
+      <div id="legend" class="legend small"></div>
+    </div>
+    <div class="side-views">
+      <div class="panel solo-only">
+        <div class="panel-head"><h3>Notebook</h3><span id="nbMeta" class="small muted"></span></div>
+        <div id="notebook" class="notebook"></div>
+      </div>
+      <div class="panel solo-only">
+        <div class="panel-head"><h3>What the detective believes</h3><span id="decMeta" class="small muted"></span></div>
+        <div id="belief"></div>
+        <div id="decNote" class="small muted"></div>
+      </div>
+      <div class="panel swarm-only">
+        <div class="panel-head"><h3>Votes <span class="muted">quorum <b id="need"></b></span></h3><span id="cov" class="small muted"></span></div>
+        <div id="tally"></div>
+        <canvas id="series" height="120"></canvas>
+      </div>
+      <div class="panel swarm-only">
+        <div class="panel-head"><h3>Irregular <span id="selId">-</span> <span id="selTraits" class="muted"></span></h3>
+          <span class="small muted">click a dot on the map</span></div>
+        <div id="irrDetail" class="small"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="panel span2">
+      <h3>Case brief <span class="muted">(what every detective is told)</span></h3>
+      <div id="brief" class="brief small"></div>
+    </div>
+    <div class="panel">
+      <h3>Your deduction <span class="muted">(speculate before the detective does)</span></h3>
+      <div class="guess-form">
+        <select id="gC"></select><select id="gM"></select><select id="gH"></select>
+        <button id="gGo">Lock in</button>
+      </div>
+      <div id="guesses" class="small"></div>
+      <h3 class="mt swarm-only">Live knobs <span class="muted">(logged)</span></h3>
+      <div id="knobs" class="knobs swarm-only"></div>
+    </div>
+    <div class="panel">
+      <h3>Inference</h3>
+      <div id="infCards" class="metric-cards"></div>
+      <div id="errors" class="small err"></div>
+    </div>
+    <div class="panel span2">
+      <h3>Event log</h3>
+      <div id="events" class="events small"></div>
+    </div>
+  </div>
+  <div id="endBanner" class="end" hidden></div>
+</section>
+
+<script src="/app.js"></script>
+</body>
+</html>

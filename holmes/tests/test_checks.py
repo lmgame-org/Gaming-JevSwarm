@@ -1,0 +1,139 @@
+"""Correctness checks for The Irregulars. Offline, no API calls.
+
+Run:  python3 tests/test_checks.py      (or: python3 -m pytest tests)
+"""
+import json
+import os
+import shutil
+import sys
+import tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import irregulars  # noqa: E402,F401  (puts common/ on the path)
+from irregulars.case import Case  # noqa: E402
+from irregulars.config import coerce  # noqa: E402
+from irregulars.engine import Engine  # noqa: E402
+from irregulars.solo import SoloGame  # noqa: E402
+from irregulars.swarm import SwarmGame  # noqa: E402
+
+
+def test_case_is_reproducible():
+    a, b = Case(coerce({"seed": 7})), Case(coerce({"seed": 7}))
+    assert a.truth == b.truth and a.leads == b.leads and a.edges == b.edges
+    assert Case(coerce({"seed": 8})).leads != a.leads
+
+
+def test_every_address_has_one_lead_and_map_is_connected():
+    for n in (20, 40, 100, 200):
+        c = Case(coerce({"seed": 3, "n_addresses": n}))
+        assert set(c.leads) == set(c.by_id)
+        assert len(c.path_len(c.addresses[0]["id"])) == len(c.addresses)
+
+
+def test_default_cases_are_solvable_by_counting():
+    for seed in range(1, 31):
+        assert all(Case(coerce({"seed": seed})).solvable.values()), seed
+
+
+def test_lies_are_single_and_contradict_key_facts():
+    c = Case(coerce({"seed": 4, "lie_rate": 0.3}))
+    lies = [l for l in c.leads.values() if l["lie"]]
+    assert lies
+    truth_facts = {tuple(f) for f in c.key_facts}
+    for l in lies:
+        assert tuple(l["fact"]) not in truth_facts
+
+
+def test_solo_observation_hides_truth_and_facts():
+    c = Case(coerce({"seed": 2}))
+    g = SoloGame(c, coerce({"seed": 2}))
+    g.visit(sorted(g.reachable())[0])
+    text = json.dumps(g.observation())
+    for banned in ('"fact"', '"lie"', '"truth"', "hide_found", "hide_not", '"culprit"'):
+        assert banned not in text, banned
+    assert c.suspect(c.truth["culprit"])["name"] in text  # it is listed, but only as one suspect among many
+
+
+def test_swarm_observation_is_local():
+    cfg = coerce({"seed": 2, "mode": "swarm"})
+    g = SwarmGame(Case(cfg), cfg)
+    a = g.irr[0]
+    text = json.dumps(g.observation(a))
+    for banned in ('"fact"', '"fake"', '"truth"', "liar", "frame_up"):
+        assert banned not in text, banned
+    assert len(g.observation(a)["my_leads"]) <= cfg["memory_cap"]
+
+
+def test_rule_beats_random_solo():
+    rule = sum(Engine({"seed": s, "policy": "rule"}, realtime=False, log=False).run_all()["parts"] for s in range(1, 11))
+    rnd = sum(Engine({"seed": s, "policy": "random"}, realtime=False, log=False).run_all()["parts"] for s in range(1, 11))
+    assert rule > rnd + 8, (rule, rnd)
+
+
+def test_solo_respects_budget_and_deadline():
+    for s in range(1, 6):
+        e = Engine({"seed": s, "policy": "random", "visit_budget": 7, "deadline_hours": 3}, realtime=False, log=False)
+        sm = e.run_all()
+        assert sm["visits"] <= 7 and sm["minutes"] <= 180 + 1e-6
+
+
+def test_swarm_quorum_closes_case():
+    e = Engine({"seed": 2, "mode": "swarm", "swarm_policy": "rule"}, realtime=False, log=False)
+    g = e.game
+    t = e.case.truth_ids()
+    for a in g.irr[:g.quorum_need()]:
+        a.vote = dict(t)
+    g.end_tick()
+    assert g.ended and g.outcome["quorum"] and g.outcome["solved"]
+
+
+def test_liars_push_one_wrong_answer():
+    e = Engine({"seed": 3, "mode": "swarm", "swarm_policy": "rule", "liar_frac": 0.2}, realtime=False, log=False)
+    g = e.game
+    liars = [a for a in g.irr if a.liar]
+    assert len(liars) == 20 and all(a.vote == g.frame_up for a in liars)
+    assert g.frame_up["culprit"] != e.case.truth["culprit"]
+
+
+def test_stubborn_vote_locks():
+    e = Engine({"seed": 1, "mode": "swarm", "swarm_policy": "rule", "stubborn_frac": 1.0}, realtime=False, log=False)
+    g = e.game
+    a = g.irr[0]
+    g.apply(a, "WAIT", {"culprit": "S1", "motive": "M1", "hideout": "H1"})
+    g.apply(a, "WAIT", {"culprit": "S2", "motive": "M2", "hideout": "H2"})
+    assert a.vote["culprit"] == "S1" and a.locked
+
+
+def test_run_logs_and_no_keys_written():
+    d = tempfile.mkdtemp()
+    try:
+        e = Engine({"seed": 1, "policy": "rule"}, realtime=False, runs_dir=d)
+        e.run_all()
+        files = os.listdir(e.run_dir)
+        assert {"config.json", "case.json", "decisions.jsonl", "events.jsonl", "summary.json"} <= set(files)
+        cfg = json.load(open(os.path.join(e.run_dir, "config.json")))["cfg"]
+        assert not any(k.endswith("_key") for k in cfg)
+        for name in files:
+            assert "sk-" not in open(os.path.join(e.run_dir, name)).read()
+    finally:
+        shutil.rmtree(d)
+
+
+def test_swarm_rule_solves_some_honest_cases():
+    solved = sum(Engine({"seed": s, "mode": "swarm", "swarm_policy": "rule"}, realtime=False, log=False)
+                 .run_all()["solved"] for s in range(1, 11))
+    assert solved >= 4, solved
+
+
+if __name__ == "__main__":
+    fails = 0
+    for name, fn in list(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("ok  ", name)
+            except AssertionError as e:
+                fails += 1
+                print("FAIL", name, e)
+    sys.exit(1 if fails else 0)
