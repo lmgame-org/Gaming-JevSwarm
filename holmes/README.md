@@ -115,4 +115,5 @@ a cost, so chat calls are costed at the list price set on the launch screen ($10
 $50 / M output by default, OpenRouter's published price for `gpt-6-astra`). Keys are read at call time and never
 logged, written to run logs or sent to the browser.
 
-Results: [docs/pilot_2026-10-01.md](docs/pilot_2026-10-01.md).
+Overview (background, design, results): [docs/the_irregulars_overview.md](docs/the_irregulars_overview.md).
+Detailed results: [docs/pilot_2026-10-01.md](docs/pilot_2026-10-01.md).
