@@ -182,6 +182,51 @@ def test_yard_hub_collects_and_closes():
     assert g.ended and g.outcome["solved"] and g.outcome["closed_by"] == "hub"
 
 
+def _baker(**over):
+    return Engine({"preset": "baker_street_counting", "boy_policy": "rule", "seed": 2, **over}, realtime=False,
+                  log=False)
+
+
+def test_baker_street_reports_travel_back_before_holmes_sees_them():
+    e = _baker(wiggins=False)
+    g = e.game
+    e.step()  # Holmes plans, boys scatter
+    assert not g.notebook and all(b.state == "out" for b in g.boys if b.assignment)
+    seen = 0
+    while not g.notebook and not e.ended:
+        e.step()
+        seen += 1
+    first = g.notebook[0]
+    assert first["reached_holmes_tick"] > first["seen_tick"] or first["address"] == g.baker
+
+
+def test_baker_street_conflicting_reports_are_contested():
+    e = _baker()
+    g = e.game
+    addr = sorted(g.case.by_id)[5]
+    g.notebook = [{"address": addr, "text": "one story", "fact": ["motive", "debt"], "boy": 1, "seen_tick": 0},
+                  {"address": addr, "text": "another story", "fact": ["motive", "revenge"], "boy": 2, "seen_tick": 0}]
+    facts, contested, distrust = g.holmes_facts()
+    assert addr in contested and not facts
+    g.notebook.append({"address": addr, "text": "one story", "fact": ["motive", "debt"], "boy": 3, "seen_tick": 1})
+    facts, contested, distrust = g.holmes_facts()
+    assert 2 in distrust and len(facts) == 1
+
+
+def test_baker_street_bribed_boys_report_fakes():
+    e = _baker(liar_frac=0.5)
+    g = e.game
+    liar = next(b for b in g.boys if b.liar)
+    liar.at = g.baker
+    rec = g._report(liar, sorted(g.case.by_id)[3])
+    assert rec["fake"]
+
+
+def test_baker_street_rule_holmes_solves_most():
+    solved = sum(_baker(seed=s).run_all()["solved"] for s in range(1, 11))
+    assert solved >= 7, solved
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):

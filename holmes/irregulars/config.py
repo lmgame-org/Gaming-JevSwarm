@@ -42,6 +42,14 @@ DEFAULTS = {
     "tail_success": 0.6,         # chance tailing the culprit reveals the hideout's district
     "corroboration": "address",  # liar defence: each witness address counts once; contradicting first-hand -> distrust
     "skip_unchanged": True,      # an Irregular whose view is unchanged since it chose WAIT waits again, no call
+    "holmes": "chat",            # baker_street: who Holmes is (chat = gpt-6-astra, rule = exact counting + rule planner)
+    "boy_policy": "jev",         # baker_street: the boys' small local choices (jev | rule)
+    "wiggins": True,             # baker_street: Wiggins splits the boys and carries reports from a forward post
+    "pay": "shilling_guinea",    # baker_street: shilling_guinea (eager boys, guinea for the key lead) | none
+    "walk_m_per_min": 100.0,     # baker_street: a running boy's speed
+    "hq_max_calls": 12,          # baker_street: most times Holmes re-plans in a case
+    "hq_min_new": 2,             # baker_street (no Wiggins): new reports before Holmes re-plans
+    "errand_max": 4,             # baker_street: addresses per assignment
     "hub_max_calls": 8,          # hybrid_genius: most genius calls per case
     "hub_min_new": 3,            # hybrid_genius: new leads at the Yard before the genius is asked again
     "budget_cap_usd": 0.0,       # 0 = none; above it every Irregular falls back to the reflex rule
@@ -71,6 +79,7 @@ SWARM_POLICIES = {
     "jev": "Jev per Irregular, reflex rule if a call is too slow or fails",
     "hybrid": "Jev picks each Irregular's action; its votes come from exact counting of the leads it holds",
     "hybrid_genius": "Jev Irregulars gather; a genius at Scotland Yard reads the leads that reach it and closes the case",
+    "baker_street": "Scatter and gather as in the stories: Holmes at 221B directs Wiggins and the boys, who run back to report",
     "rule": "Reflex rule per Irregular: share what is new, walk to unvisited neighbours, vote when sure (free)",
     "random": "Random moves, shares and votes (free)",
 }
@@ -81,6 +90,12 @@ PRESETS = {
     "rule": {"label": "Solo with the rule baseline (free)", "overrides": {"policy": "rule"}},
     "liars": {"label": "Many lying witnesses (lie rate 0.4)", "overrides": {"lie_rate": 0.4}},
     "small": {"label": "Small case: 40 addresses, 6 suspects", "overrides": {"n_addresses": 40, "n_suspects": 6}},
+    "baker_street": {"label": "Baker Street: Holmes (gpt-6-astra), Wiggins and a dozen boys",
+                     "overrides": {"mode": "swarm", "swarm_policy": "baker_street", "n_irregulars": 12,
+                                   "swarm_ticks": 48}},
+    "baker_street_counting": {"label": "Baker Street with Holmes as exact counting (Jev boys)",
+                              "overrides": {"mode": "swarm", "swarm_policy": "baker_street", "n_irregulars": 12,
+                                            "swarm_ticks": 48, "holmes": "rule"}},
     "swarm": {"label": "Swarm: 100 Jev Irregulars", "overrides": {"mode": "swarm"}},
     "swarm_rule": {"label": "Swarm with the reflex rule (free)", "overrides": {"mode": "swarm", "swarm_policy": "rule"}},
     "swarm_liars": {"label": "Swarm with 15% lying Irregulars", "overrides": {"mode": "swarm", "liar_frac": 0.15}},
@@ -136,6 +151,18 @@ SCHEMA = [
         ("hub_max_calls", "Genius calls at the Yard (hybrid_genius)", "int", {"min": 1, "max": 64}),
         ("hub_min_new", "New leads before asking the genius again", "int", {"min": 1, "max": 50}),
         ("budget_cap_usd", "Swarm $ cap (0 = none)", "float", {"min": 0}),
+    ]),
+    ("Baker Street (scatter and gather)", [
+        ("holmes", "Holmes", "choice", {"chat": "gpt-6-astra reads the reports and plans",
+                                        "rule": "exact counting with a rule planner (free)"}),
+        ("boy_policy", "Boys' local choices", "choice", {"jev": "Jev", "rule": "rule (free)"}),
+        ("wiggins", "Wiggins collects reports at a forward post", "bool", {}),
+        ("pay", "Pay", "choice", {"shilling_guinea": "a shilling a day, a guinea for the key lead (eager boys)",
+                                  "none": "unpaid (boys give up after two calls)"}),
+        ("walk_m_per_min", "Boys' running speed (m/min)", "float", {"min": 20}),
+        ("hq_max_calls", "Most times Holmes re-plans", "int", {"min": 1, "max": 64}),
+        ("hq_min_new", "New reports before re-planning (no Wiggins)", "int", {"min": 1, "max": 20}),
+        ("errand_max", "Addresses per assignment", "int", {"min": 1, "max": 8}),
     ]),
     ("Models", [
         ("sampling", "Use Jev's distribution by", "choice", {"argmax": "argmax", "sample": "sampling (seeded)"}),

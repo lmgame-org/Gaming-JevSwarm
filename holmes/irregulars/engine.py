@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, wait
 from swarmcore.web import Broadcaster, redact
 
 from . import solo as S
+from . import squad as Q
 from . import swarm as W
 from .case import Case
 from .config import LIVE_KEYS, coerce
@@ -30,10 +31,19 @@ class Engine:
         self.case = Case(c)
         self.mode = c["mode"]
         self.policy_name = c["policy"] if self.mode == "solo" else c["swarm_policy"]
+        self.squad = self.mode == "swarm" and c["swarm_policy"] == "baker_street"
+        if self.squad:
+            self.policy_name = f"baker_street_{c['holmes']}"
         if self.mode == "solo":
             self.game = S.SoloGame(self.case, c)
             self.policy = S.make(c["policy"], c)
             self.fallback = S.Rule(c)
+        elif c["swarm_policy"] == "baker_street":
+            self.game = Q.SquadGame(self.case, c)
+            self.holmes = Q.make_holmes(c)
+            self.policy = Q.JevBoy(c) if c["boy_policy"] == "jev" else None
+            self.hybrid, self.yard = False, None
+            self.holmes_calls = 0
         else:
             self.game = W.SwarmGame(self.case, c)
             sp = c["swarm_policy"]
@@ -80,6 +90,10 @@ class Engine:
             self._event("start", f"{self.policy_name} starts at 221B Baker Street with {c['visit_budget']} visits "
                                  f"and {c['deadline_hours']:g} h")
             self._event("lead", self.game.notebook[0]["text"], {"address": self.game.at})
+        elif self.squad:
+            self._event("start", f"Holmes ({c['holmes']}) sends {len(self.game.boys)} Irregulars out from 221B"
+                                 f"{' with Wiggins' if c['wiggins'] else ''}; {c['swarm_ticks']} ticks of "
+                                 f"{c['tick_min']:g} min")
         else:
             g = self.game
             self._event("start", f"{len(g.irr)} Irregulars ({self.policy_name}), quorum {g.quorum_need()}, "
@@ -161,6 +175,8 @@ class Engine:
             return
         if self.mode == "solo":
             self._solo_step()
+        elif self.squad:
+            self._squad_step()
         else:
             self._swarm_step()
         if self.game.ended:
@@ -320,6 +336,87 @@ class Engine:
                 self._event("timeout", f"The case went cold after {g.tick} ticks: no quorum (best {o['votes']} of "
                                        f"{o['need']} votes)")
 
+    # ------------------------------------------------------------------ Baker Street
+    def _holmes(self, final=False):
+        g = self.game
+        t0 = time.time()
+        try:
+            plan, meta = self.holmes.plan(g, final=final)
+        except Exception as e:  # noqa: BLE001
+            self._fail(e)
+            plan, meta = Q.RuleHolmes(self.cfg).plan(g, final=final)
+            self.stats["fallbacks"] += 1
+        self.holmes_calls += 1
+        with self._lock:
+            s = self.stats
+            if meta:
+                s["calls"] += 1
+                s["latencies"].append(time.time() - t0)
+                for k in ("in", "out", "cached"):
+                    s[k] += meta.get(k, 0)
+                s["cost"] += meta.get("cost", 0.0)
+                s["hub_cost"] = s.get("hub_cost", 0.0) + meta.get("cost", 0.0)
+                if meta.get("model"):
+                    s["models"].add(meta["model"])
+        self._write("decisions", {"tick": g.tick, "who": "holmes", "plan": plan, "meta": meta})
+        return plan
+
+    def _squad_step(self):
+        g, c = self.game, self.cfg
+        due = g.begin_tick()
+        jobs = [(b, g.options(b)) for b in due if b.state == "out"]
+        results = {}
+        if self.policy and not self.capped:
+            futs = {b.i: (time.time(), self.pool.submit(self.policy.decide, g, b, opts))
+                    for b, opts in jobs if not b.liar}
+            done, _ = wait([fu for _, fu in futs.values()], timeout=c["request_timeout_s"] + 1.0)
+            for i, (t0, fu) in futs.items():
+                if fu in done and fu.exception() is None:
+                    results[i] = fu.result() + (time.time() - t0,)
+                elif fu in done:
+                    self._fail(fu.exception())
+                else:
+                    fu.cancel()
+                    self.stats["timeouts"] += 1
+                    fu.add_done_callback(self._late)
+        for b, opts in jobs:
+            if b.i in results and results[b.i][0] in opts:
+                act, meta, lat = results[b.i]
+                self._account(meta, lat, "policy")
+            else:
+                act = g.boy_rule(b, opts)
+                src = "liar" if b.liar else ("rule" if not self.policy else ("capped" if self.capped else "fallback"))
+                if src in ("fallback", "capped"):
+                    self.stats["fallbacks"] += 1
+                self._account({}, 0, src)
+            g.apply(b, act)
+            self.swarm_last[b.i] = {"tick": g.tick, "action": act, "result": b.last_result}
+            self._write("decisions", {"tick": g.tick, "boy": b.i, "action": act})
+        if c["budget_cap_usd"] > 0 and not self.capped and self.stats["cost"] >= c["budget_cap_usd"]:
+            self.capped = True
+            self._event("budget", f"spent ${self.stats['cost']:.4f}: cap reached, the boys use the rule from now on")
+        for x, y in g.deliveries:
+            pass
+        if g.plan_due(self.holmes_calls):
+            plan = self._holmes()
+            g.apply_plan(plan)
+            n = sum(len(a["addresses"]) for a in g.assignments)
+            self._event("hub", f"Holmes ({len(g.notebook)} reports): {plan.get('culprit')}/{plan.get('motive')}/"
+                               f"{plan.get('hideout')}{' - sure' if plan.get('accuse') else ''}. "
+                               f"{len(g.assignments)} assignments, {n} addresses. {plan.get('note') or ''}")
+            if plan.get("accuse"):
+                g.finish(plan, forced=False)
+        g.end_tick()
+        if not g.ended and g.tick >= c["swarm_ticks"]:
+            plan = self._holmes(final=True)
+            g.answer = {k: plan.get(k) for k in ("culprit", "motive", "hideout", "accuse", "note")}
+            g.finish(plan, forced=True)
+        if g.ended:
+            o = g.outcome
+            self._event("accuse", f"{'Holmes names' if not o['forced'] else 'Out of time, Holmes names'} "
+                                  f"{o['culprit']}/{o['motive']}/{o['hideout']}: " +
+                        ", ".join(f"{k} {'right' if v else 'wrong'}" for k, v in o["ok"].items()))
+
     # ------------------------------------------------------------------ commands
     def command(self, cmd):
         self.cmds.put(cmd)
@@ -378,6 +475,8 @@ class Engine:
         else:
             self.summary.update({"ticks": g.tick, "coverage": g.coverage(), "series": g.series,
                                  "n_irregulars": len(g.irr)})
+            if self.squad:
+                self.summary.update({"holmes_calls": self.holmes_calls, "reports": len(g.notebook)})
         if self.run_dir:
             with open(os.path.join(self.run_dir, "summary.json"), "w") as f:
                 json.dump(self.summary, f, indent=1, default=str)
@@ -396,7 +495,7 @@ class Engine:
                 "latency_p50": q(0.5), "latency_p95": q(0.95), "tokens_in": s["in"], "tokens_out": s["out"],
                 "tokens_cached": s["cached"], "cost": round(s["cost"], 5), "models": sorted(s["models"]),
                 "policy": self.policy_name, "capped": self.capped, "hub_cost": round(s.get("hub_cost", 0.0), 5),
-                "hub_calls": self.yard.calls if getattr(self, "yard", None) else 0}
+                "hub_calls": (self.yard.calls if getattr(self, "yard", None) else getattr(self, "holmes_calls", 0))}
 
     # ------------------------------------------------------------------ viewer
     def frame(self, full=False):
@@ -414,6 +513,25 @@ class Engine:
             f.update({"at": g.at, "path": g.path, "visits": g.visits, "budget": self.cfg["visit_budget"],
                       "deadline": self.cfg["deadline_hours"] * 60, "notebook": g.notebook, "last": self.last,
                       "accusation": g.accusation})
+        elif self.squad:
+            boys = []
+            for b in g.boys:
+                x, y = b.pos(g.tick)
+                tgt = b.leg[1] if b.leg else None
+                boys.append([b.i, round(x, 1), round(y, 1), (b.assignment or {}).get("district"), b.name,
+                             b.state, int(b.liar) | (4 * int(b.mistaken)), tgt, bool(b.tailing), len(b.carrying)])
+            w = g.wiggins
+            wpos = w.pos(g.tick) if w else None
+            f.update({"tick": g.tick, "ticks": self.cfg["swarm_ticks"], "irregulars": boys, "shares": [],
+                      "comm_range": 0, "tally": [], "parts": {"culprit": [], "motive": [], "hideout": []}, "need": 0,
+                      "series": g.series, "coverage": g.coverage(), "outcome": g.outcome, "hub": None,
+                      "hq": {"holmes": self.cfg["holmes"], "baker": g.baker, "calls": self.holmes_calls,
+                             "max_calls": self.cfg["hq_max_calls"], "answer": g.answer,
+                             "open_questions": g.open_questions, "assignments": g.assignments,
+                             "notebook": g.notebook[-60:], "reports": len(g.notebook),
+                             "deliveries": g.deliveries,
+                             "wiggins": ({"x": round(wpos[0], 1), "y": round(wpos[1], 1), "state": w.state,
+                                          "post": w.post, "bag": len(w.bag) + len(w.carrying)} if w else None)}})
         else:
             irr = []
             for a in g.irr:
@@ -432,6 +550,15 @@ class Engine:
 
     def irregular_detail(self, i):
         g = self.game
+        if self.squad:
+            if not (0 <= i < len(g.boys)):
+                return None
+            b = g.boys[i]
+            traits = [t for t, on in (("bribed", b.liar), ("mistaken", b.mistaken)) if on]
+            return {"irregular": i, "name": b.name, "traits": traits, "state": b.state, "last": self.swarm_last.get(i),
+                    "assignment": b.assignment, "targets": b.targets, "checked": b.checked,
+                    "carrying": [r["text"] for r in b.carrying], "delivered": b.delivered,
+                    "observation": g.observation(b) if b.at else None}
         if self.mode != "swarm" or not (0 <= i < len(g.irr)):
             return None
         a = g.irr[i]

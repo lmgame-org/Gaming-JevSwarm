@@ -57,6 +57,7 @@ runs out it goes cold (the plurality answer is still logged).
 | `random` | Random actions and votes |
 | `hybrid` | Jev chooses each Irregular's action; its votes come from exact counting of the leads it holds (with the liar defence) |
 | `hybrid_genius` | Jev Irregulars gather; every lead shouted within range of Scotland Yard reaches a hub, and gpt-6-astra reads them and closes the case when sure (at most `hub_max_calls` calls) |
+| `baker_street` | Scatter and gather as in the stories: Holmes at 221B (gpt-6-astra, or exact counting with `holmes = rule`) briefs Wiggins; Wiggins splits about a dozen boys across the assignments and collects their reports at a forward post; boys go on foot, make small local choices with Jev (which nearby address, whether to tail, when to run back), never accuse, and run back to report in person; Holmes re-tasks and names the answer when sure |
 
 **Liar defence** (`corroboration = address`, on by default; `none` turns it off):
 

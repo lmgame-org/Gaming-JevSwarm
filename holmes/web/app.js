@@ -143,7 +143,10 @@ async function launch() {
 }
 
 /* ------------------------------------------------------------------ dashboard */
+let VOTES_HEAD = null;
 function startDash() {
+  const head = document.querySelector("#tally").previousElementSibling.querySelector("h3");
+  if (VOTES_HEAD === null) VOTES_HEAD = head.innerHTML; else head.innerHTML = VOTES_HEAD;
   $("#launch").hidden = true; $("#dash").hidden = false; $("#endBanner").hidden = true;
   frame = null; CASE = null; SECRET = null; selected = -1; seenNotes = 0; pulses = [];
   $("#tTruth").checked = false;
@@ -161,7 +164,9 @@ function onFrame(f) {
   document.querySelectorAll(".solo-only").forEach((e) => e.hidden = !solo);
   document.querySelectorAll(".swarm-only").forEach((e) => e.hidden = solo);
   if (first) { renderBrief(); buildGuessForm(); legend(); if (!solo) buildKnobs(); }
-  $("#modeTag").textContent = solo ? `Solo · ${f.policy}` : `Swarm · ${f.irregulars.length} Irregulars · ${f.policy}`;
+  $("#modeTag").textContent = solo ? `Solo · ${f.policy}` : f.hq
+    ? `Baker Street · Holmes: ${f.hq.holmes === "chat" ? "gpt-6-astra" : "exact counting"} · ${f.irregulars.length} boys${f.hq.wiggins ? " + Wiggins" : ""}`
+    : `Swarm · ${f.irregulars.length} Irregulars · ${f.policy}`;
   $("#clock").textContent = hhmm(f.minute);
   const prog = solo ? Math.max(f.visits / f.budget, f.minute / f.deadline) : f.tick / f.ticks;
   $("#progFill").style.width = `${Math.min(100, 100 * prog)}%`;
@@ -172,7 +177,10 @@ function onFrame(f) {
   if (document.activeElement !== sp) sp.value = Math.log10(f.speed);
   $("#speedVal").textContent = `${f.speed.toFixed(f.speed < 10 ? 1 : 0)}/s`;
   if (!solo) for (const s of f.shares) pulses.push({x: s[1], y: s[2], t0: performance.now()});
-  if (solo) { renderNotebook(f); renderBelief(f); } else { renderTally(f); drawSeries(f); if (selected >= 0) loadIrregular(selected); syncKnobs(f); }
+  if (f.hq) for (const [x, y] of f.hq.deliveries) pulses.push({x, y, t0: performance.now(), r: 30});
+  if (solo) { renderNotebook(f); renderBelief(f); }
+  else if (f.hq) { renderHQ(f); drawReports(f); if (selected >= 0) loadIrregular(selected); }
+  else { renderTally(f); drawSeries(f); if (selected >= 0) loadIrregular(selected); syncKnobs(f); }
   renderInference(f); renderEvents(f); renderGuesses(f);
   if (f.ended) showEnd(f);
 }
@@ -275,9 +283,56 @@ function drawSeries(f) {
   g.fillText("leading answer", 28, 10);
 }
 
+const DISTRICT_HUES = {"Kensington": "#e6194b", "Marylebone": "#f58231", "Bloomsbury": "#ffe119", "Soho": "#bcf60c",
+  "Covent Garden": "#3cb44b", "Westminster": "#46f0f0", "The City": "#4363d8", "Whitechapel": "#911eb4",
+  "Southwark": "#f032e6", "Limehouse": "#fabebe"};
+
+function renderHQ(f) {
+  const q = f.hq, A = q.answer, truth = SECRET && (truthOn() || f.ended) ? SECRET.truth : null;
+  const mark = (k) => truth && A ? (A[k] === truth[k] ? " <span style='color:var(--good)'>✓</span>" : " <span style='color:var(--bad)'>✗</span>") : "";
+  const cov = f.coverage;
+  document.querySelector("#tally").previousElementSibling.querySelector("h3").innerHTML = `Holmes at 221B <span class="muted">${q.holmes === "chat" ? "gpt-6-astra" : "exact counting"} · plans ${q.calls}/${q.max_calls}</span>`;
+  $("#cov").textContent = `${q.reports} reports · ${cov.key_leads_found}/${cov.key_leads} key leads reported`;
+  let h = `<div class="small"><b>Current answer</b>: ${A ? `${esc(name("culprit", A.culprit))}${mark("culprit")} / ${esc(name("motive", A.motive))}${mark("motive")} / ${esc(name("hideout", A.hideout))}${mark("hideout")} ${A.accuse ? "<b>(named)</b>" : "(not sure yet)"}` : "none yet"}</div>`;
+  if (A && A.note) h += `<div class="small muted">${esc(A.note)}</div>`;
+  h += `<div class="small mt"><b>Open questions</b></div><div class="small">` + (q.open_questions || []).map((x) => `• ${esc(x)}`).join("<br>") + `</div>`;
+  const W = q.wiggins;
+  if (W) h += `<div class="small mt"><b>Wiggins</b>: ${({post: "at his post", to_baker: "running reports to Baker Street", to_post: "taking orders to the boys", baker: "at Baker Street"})[W.state] || W.state}, carrying ${W.bag} reports</div>`;
+  h += `<div class="small mt"><b>Assignments</b></div><div class="small">` + (q.assignments.length ? q.assignments.map((a) =>
+    `<span style="color:${DISTRICT_HUES[a.district] || "#ccc"}">●</span> ${esc(a.district)}: ${a.addresses.join(", ")}${a.watch ? `, watch ${a.watch}` : ""} · ${a.boys.length} boy${a.boys.length === 1 ? "" : "s"}${a.look_for ? ` <span class="muted">(${esc(a.look_for)})</span>` : ""}`).join("<br>") : "none") + `</div>`;
+  const kinds = truthOn() ? SECRET.lead_kinds : null;
+  h += `<div class="small mt"><b>Latest reports</b></div><div class="small" style="max-height:150px;overflow:auto">` + q.notebook.slice(-8).reverse().map((r) =>
+    `<div>• <span class="muted">${esc(r.boy_name)}, ${r.address.startsWith("tail:") ? "tailing" : r.address}${kinds && r.fake ? " · <b style='color:var(--bad)'>false</b>" : ""}:</span> ${esc(r.text)}</div>`).join("") + `</div>`;
+  $("#tally").innerHTML = h;
+}
+
+function drawReports(f) {
+  const c = $("#series"), dpr = devicePixelRatio || 1, W = c.clientWidth, H = 120;
+  c.width = W * dpr; c.height = H * dpr;
+  const g = c.getContext("2d"); g.scale(dpr, dpr); g.clearRect(0, 0, W, H);
+  const S = f.series, n = f.ticks, ymax = Math.max(10, ...S.map((r) => r.reports));
+  const X = (t) => 24 + (W - 30) * t / n, Y = (v) => H - 14 - (H - 22) * v / ymax;
+  g.fillStyle = "#a59a82"; g.font = "10px sans-serif"; g.fillText("reports at 221B", 28, 10); g.fillText(ymax, 2, 14); g.fillText("0", 4, H - 12);
+  if (S.length) {
+    g.strokeStyle = "#d9a441"; g.lineWidth = 2; g.beginPath(); S.forEach((r, i) => i ? g.lineTo(X(r.tick), Y(r.reports)) : g.moveTo(X(r.tick), Y(r.reports))); g.stroke();
+    g.strokeStyle = "#6b6250"; g.lineWidth = 1; g.beginPath(); S.forEach((r, i) => i ? g.lineTo(X(r.tick), Y(r.out)) : g.moveTo(X(r.tick), Y(r.out))); g.stroke();
+    g.fillText("boys out", X(S[S.length - 1].tick) - 40, Y(S[S.length - 1].out) - 4);
+  }
+}
+
 async function loadIrregular(i) {
   const d = await api(`/api/irregular?id=${i}`);
   if (d.error) return;
+  if (frame && frame.hq) {
+    $("#selId").textContent = `${i} (${d.name})`;
+    $("#selTraits").textContent = truthOn() && d.traits.length ? `(${d.traits.join(", ")})` : "";
+    const L = d.last || {}, a = d.assignment || {};
+    $("#irrDetail").innerHTML = `<div>${esc(d.state)}${a.district ? ` · assignment in ${esc(a.district)}` : ""}${a.watch ? `, watching ${a.watch}` : ""}</div>
+      <div>Last: <b>${esc(L.action || "-")}</b> → ${esc(L.result || "")}</div>
+      <div>Checked ${d.checked.length} of ${d.targets.length} assigned addresses · delivered ${d.delivered} reports so far</div>
+      <div class="mt"><b>Carrying</b></div>` + (d.carrying.map((t) => `<div>• ${esc(t)}</div>`).join("") || "<div class='muted'>nothing yet</div>");
+    return;
+  }
   $("#selId").textContent = i;
   $("#selTraits").textContent = truthOn() && d.traits.length ? `(${d.traits.join(", ")})` : "";
   const L = d.last || {};
@@ -452,7 +507,33 @@ function drawMap(c, cs, f, opt = {}) {
     pulses = pulses.filter((p) => now - p.t0 < 900);
     for (const p of pulses) {
       const k = (now - p.t0) / 900; const [x, y] = P(p.x, p.y);
-      g.strokeStyle = `rgba(217,164,65,${0.5 * (1 - k)})`; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, f.comm_range * v.s * k, 0, 7); g.stroke();
+      g.strokeStyle = `rgba(217,164,65,${0.5 * (1 - k)})`; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, (p.r || f.comm_range) * v.s * k, 0, 7); g.stroke();
+    }
+    if (f.hq) {
+      const W = f.hq.wiggins;
+      for (const r of f.irregulars) {
+        const [i, ax, ay, dist, nm, state, flags, tgt, tailing, carrying] = r;
+        const jit = (i * 2.399963) % 6.283, rad = state === "idle" ? 8 + (i * 3.7) % 6 : 0;
+        const [x, y] = P(ax + rad * Math.cos(jit), ay + rad * Math.sin(jit));
+        if (tgt && A[tgt] && state !== "idle") {
+          const [tx, ty] = P(A[tgt].x, A[tgt].y);
+          g.strokeStyle = state === "back" ? "rgba(239,230,210,0.35)" : "rgba(217,164,65,0.35)"; g.setLineDash([3, 3]); g.lineWidth = 1;
+          g.beginPath(); g.moveTo(x, y); g.lineTo(tx, ty); g.stroke(); g.setLineDash([]);
+        }
+        g.fillStyle = dist ? (DISTRICT_HUES[dist] || "#ccc") : "#8a8170";
+        g.beginPath(); g.arc(x, y, i === selected ? 5.5 : 4, 0, 7); g.fill();
+        if (state === "back") { g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 6, 0, 7); g.stroke(); }
+        if (tailing) { g.strokeStyle = "#e0675b"; g.lineWidth = 1; g.setLineDash([2, 2]); g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); g.setLineDash([]); }
+        if (truth && (flags & 1)) { g.strokeStyle = "#e0675b"; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 7, 0, 7); g.stroke(); }
+        if (i === selected) { g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); }
+      }
+      if (W) {
+        if (A[W.post] && W.post !== f.hq.baker) { const [px, py] = P(A[W.post].x, A[W.post].y); g.strokeStyle = "#d9a441"; g.lineWidth = 1.5; g.strokeRect(px - 6, py - 6, 12, 12); }
+        const [wx, wy] = P(W.x, W.y);
+        g.fillStyle = "#d9a441"; g.beginPath(); g.arc(wx, wy, 7, 0, 7); g.fill();
+        g.fillStyle = "#1a1712"; g.font = "bold 9px Georgia"; g.textAlign = "center"; g.fillText("W", wx, wy + 3); g.textAlign = "left";
+      }
+      return;
     }
     if (f.hub && A[f.hub.yard]) {  // the Yard's listening range
       const [yx, yy] = P(A[f.hub.yard].x, A[f.hub.yard].y);
@@ -477,6 +558,7 @@ function legend() {
   let h = `<span><i style="background:#d9a441"></i>221B Baker Street</span><span><i style="background:#e0675b"></i>scene (×)</span>
     <span><i style="background:#b9a77e"></i>possible hideout (▲)</span><span><i style="border:2px solid #aaa;background:none"></i>suspect home</span>`;
   if (frame && frame.mode === "solo") h += `<span><i style="background:#d9a441;opacity:.6"></i>visited</span>`;
+  else if (frame && frame.hq) h += `<span><i style="background:#d9a441"></i>W = Wiggins (□ his post)</span><span><i style="background:#4363d8"></i>boy, coloured by assignment district</span><span><i style="border:2px solid #fff;background:none"></i>running back to report</span>`;
   else h += `<span><i style="background:#8a8170"></i>Irregular, coloured by culprit vote</span>`;
   if (t) h += `<span><i style="background:#7cc47c"></i>true key lead</span><span><i style="background:#e0675b"></i>lie</span><span><i style="background:#6fa8dc"></i>pointer</span>`;
   $("#legend").innerHTML = h;

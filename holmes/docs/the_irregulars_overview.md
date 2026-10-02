@@ -1,6 +1,6 @@
 # The Irregulars: background, design and results
 
-*jev-swarm / holmes, as of 2 October 2026 (hybrid swarm added the same day)*
+*jev-swarm / holmes, as of 2 October 2026 (hybrid swarm and Baker Street mode added the same day)*
 
 ## 1. Background
 
@@ -142,13 +142,44 @@ Adversaries and imperfections, each a knob:
 Jev Irregulars share the same memory: rejected leads never reach them, contested leads are flagged, and they see
 whom they have caught lying.
 
-### 2.5 The live viewer and tooling
+### 2.5 Baker Street mode: scatter and gather, as in the stories
+
+The swarm modes above let the Irregulars organise themselves. In the stories they do not: Holmes summons Wiggins and
+his "dozen" boys, tells them what to find, pays them a shilling a day with a guinea for whoever finds the thing, and
+waits at Baker Street for them to report. `baker_street` follows that chain of command.
+
+- **Holmes (decides, never leaves 221B).** He reads every report that has reached him, lists the open questions
+  ("no alibi yet for S3", "hideout district unconfirmed", "conflicting reports about A045"), issues up to six
+  assignments (1-4 nearby addresses each, a suspect to watch, one sentence on what to look for), and names
+  culprit, motive and hideout once he is sure. He is either gpt-6-astra (`holmes = chat`, default) or exact
+  counting with a rule planner (`holmes = rule`, free). He re-plans at most 12 times a case.
+- **Wiggins (splits the boys, collects the reports).** He takes Holmes's orders to a forward post near the
+  assignments, splits the idle boys across them, collects reports in his bag, and runs the batch back to Baker
+  Street when he has three reports, one has waited two ticks, or no boys are out. With `wiggins = off`, each boy
+  runs all the way back to 221B and gets the next order there.
+- **The boys (observe, never accuse).** About a dozen by default (up to 100). They go on foot at 100 m a minute.
+  Each makes only small local choices with Jev, one call each time it arrives somewhere: check the next address in
+  its assignment or one next door, tail a suspect it spots at home, or run back with what it has. No long-range
+  shouting: every report travels by legs.
+- **Pay.** A shilling a day and a guinea for the key lead make boys eager: they finish their assignment, and the
+  rule boy hurries back with a key lead. Unpaid boys give up after two calls. The game records who would have
+  earned a guinea (the first boy to bring each true key fact).
+- **Bribed or mistaken boys.** A bribed boy (`liar_frac`) reports made-up leads for every address he was sent to,
+  all supporting Moriarty's wrong answer. A mistaken boy (`misinformed_frac`) gets one report wrong. Holmes sees
+  who reported what. The counting Holmes treats conflicting reports about one address as contested and sends
+  another boy; once a third report breaks the tie, the outvoted boy is no longer believed.
+- **Clock.** The preset gives 48 ticks of 15 minutes, the same 12 case hours as the Solo detective.
+
+### 2.6 The live viewer and tooling
 
 - **Launch screen:** presets, every knob, a live preview of the seeded map with a solvability check, model and
   key tests, and a cost estimate.
 - **Live map:** districts, the Thames, the street graph, 221B, Scotland Yard, the scene, candidate hideouts and
   suspects' homes. Solo shows the cab route and lights up visited addresses; Swarm shows each Irregular as a dot
-  coloured by its vote, with shouts rippling out to the shouting range.
+  coloured by its vote, with shouts rippling out to the shouting range. Baker Street shows Wiggins (W) and his post,
+  each boy coloured by the district of his assignment with a dashed line to where he is heading, runners heading
+  back ringed in white, and a pulse where a report is handed over. Its side panel shows Holmes's current answer,
+  his open questions, the assignments and the latest reports.
 - **Panels:** Solo has the notebook and live belief bars. Swarm has the vote tally against the quorum line, a time
   series, and a click-through to any Irregular's exact knowledge and last decision.
 - **Speculate:** lock in your own culprit, motive and hideout; it is scored at the end. A spoiler toggle
@@ -248,7 +279,46 @@ Same seeds 1-5, defaults otherwise (quorum 30, 32 ticks, liar defence on, no lia
 - Caveats: hybrid_genius ran on 3 seeds only (spend guard). On seed 5 at 2 km, hybrid reached a $0.12 per-run
   cap in its last ticks, and the reflex rule chose actions from then on.
 
-### 3.5 Genius vs swarm at similar spend
+### 3.5 Baker Street: Holmes, Wiggins and a dozen Irregulars
+
+Seeds 1-5, 12 boys with Wiggins and pay, 48 ticks (12 case hours, as in Solo), Jev for the boys' local choices.
+"Named" means Holmes named the answer before the deadline; at the deadline he gives his best answer anyway, which
+is scored like the Solo detective's forced accusation.
+
+| Holmes | Solved | Named before the deadline | Case time used | Reports reaching Holmes | Holmes's plans | Cost per case |
+|---|---|---|---|---|---|---|
+| **gpt-6-astra** | **5/5** | 2 of 5 | 11.4 h | 67-98 | 7-12 | $0.56 (Holmes $0.55, boys $0.003) |
+| **Exact counting** | **5/5** | 5 of 5 | 7.0 h | 34-54 | 4-6 | **$0.002** (boys' Jev calls only) |
+| Solo gpt-6-astra (no Irregulars) | 5/5 | 3 of 5 | 9.3 h | 15-20 visits | - | $0.34 |
+| Hybrid swarm (100 Jev Irregulars) | 4/5 | - | 4.0-4.7 h | - | - | $0.16-0.18 |
+
+Chain-of-command knobs, exact-counting Holmes with rule boys, 20 seeds (free):
+
+| Setting | Solved | Named before the deadline | Case time used |
+|---|---|---|---|
+| 12 boys, Wiggins, paid (canon) | **19/20** | 14 | 8.9 h |
+| no Wiggins (boys run all the way back) | 13/20 | 5 | 10.1 h |
+| unpaid (boys give up after two calls) | 17/20 | 11 | 9.0 h |
+| 2 of 12 boys bribed | 6/20 | 9 | 9.6 h |
+| 100 boys | 19/20 | 18 | 7.1 h |
+| 12 boys, 8-hour clock instead of 12 | 14/20 | 6 | 7.4 h |
+
+- **Command and control solves the case.** Both Holmeses solved all five cases. With exact counting, the canon
+  setup solved 19 of 20 for a fifth of a cent per case, naming the answer in about 7-9 case hours.
+- **gpt-6-astra as Holmes is right but slow to commit.** It solved 5/5 but named the answer early in only 2
+  cases. In the other 3 it was still asking for corroboration when time ran out (its final answers were right),
+  and it cost $0.56 a case, more than gpt-6-astra working alone ($0.34).
+- **Wiggins matters.** Without his forward post the boys spend their time running to Baker Street: 13/20 instead
+  of 19/20.
+- **Bribed boys are the weak point.** Two bribed boys out of twelve cut the counting Holmes to 6/20. Each bribed
+  report claims an address he really was sent to, so only a re-check by another boy exposes it.
+- **More boys mainly saves time** (7.1 h with 100 boys against 8.9 h with 12); the canon dozen is enough.
+- Caveats: the counting Holmes reads the structured fact behind each report, so it never misreads a lead (gpt-6-astra
+  reads the text). gpt-6-astra Holmes was run on 5 seeds only.
+
+![Baker Street viewer](viewer_baker_street.jpg)
+
+### 3.6 Genius vs swarm at similar spend
 
 | | Cost per case | Solved |
 |---|---|---|
@@ -259,14 +329,17 @@ Same seeds 1-5, defaults otherwise (quorum 30, 32 ticks, liar defence on, no lia
 | Reflex-rule swarm, 2 km | free | 4/5 (18/20) |
 | **Hybrid swarm (Jev actions + exact counting), 1 km or 2 km** | **$0.16-0.18** | **4/5** |
 | Hybrid + gpt-6-astra at the Yard, 2 km | $0.41 | 2/3 |
+| **Baker Street: gpt-6-astra Holmes, Wiggins, 12 Jev boys** | $0.56 | **5/5** |
+| **Baker Street: exact-counting Holmes, Wiggins, 12 Jev boys** | **$0.002** | **5/5** (19/20 with rule boys) |
 
 With Jev doing everything, **one strong reasoner clearly beats a hundred cheap ones.** The swarm's advantage,
 coverage, is real (it sees every address at once), but each Irregular must still combine clues, and that is where
 Jev falls short. **The hybrid closes most of the gap:** Jev gathers and spreads evidence, exact counting combines
-it, and the swarm solves 4/5 with no wrong answers for about half the genius's cost per case. The genius still
-leads on these five cases (5/5 against 4/5).
+it, and the swarm solves 4/5 with no wrong answers for about half the genius's cost per case. **Organising the
+Irregulars the way Holmes does closes the rest of the gap:** a central decider who assigns errands and reads every
+report solved 5/5, and with exact counting as that decider it costs almost nothing.
 
-### 3.6 Spend
+### 3.7 Spend
 
 | Round | Spend |
 |---|---|
@@ -274,7 +347,8 @@ leads on these five cases (5/5 against 4/5).
 | First pilot (Solo: Jev, gpt-6-astra; Swarm: Jev honest and with liars) | $4.04 |
 | Follow-up (Jev Solo; Jev swarm: honest, liars, 2 km) | $2.50 |
 | Hybrid round (hybrid 1 km and 2 km, 5 seeds each; hybrid_genius 2 km, 3 seeds; smoke tests) | $3.04 |
-| **Total** | **about $10.00** |
+| Baker Street round (gpt-6-astra Holmes $2.80 and counting Holmes $0.01 on 5 seeds; smoke test $0.12) | $2.93 |
+| **Total** | **about $13.00** |
 
 gpt-6-astra is costed from token counts at OpenRouter's list price ($10 per million input tokens, $1 cached, $50
 output), because OpenAI's API does not return a cost. Jev costs are as reported by OpenRouter.
@@ -284,6 +358,7 @@ output), because OpenAI's API does not return a cost. Jev costs are as reported 
 1. **A single strong model wins the head-to-head, narrowly once the swarm is designed well:** gpt-6-astra solved
    5/5 for $0.34 a case. One Jev detective, or a hundred Jev Irregulars doing everything, managed 1-2/5. The
    hybrid swarm (Jev gathers, exact counting votes) reached 4/5 with no wrong answers for $0.16-0.18 a case.
+   Organised the way Holmes runs them (section 3.5), the Irregulars matched the genius at 5/5.
 2. **Jev is good at single-step judgements** (motive, hideout, which lead to follow) and weak at multi-clue
    elimination (the culprit). It also lacks a usable sense of when it is done.
 3. **Swarm success is mostly about the plumbing:** communication range, and whether the group can tell
@@ -292,6 +367,10 @@ output), because OpenAI's API does not return a cost. Jev costs are as reported 
    checks (where could this speaker have been?) recover much of the loss.
 5. **Give each part of the job to what does it best.** Cheap models choose where to look and what to share; exact
    counting combines the evidence. That beat both "Jev does everything" and "rules do everything" at 1 km.
+6. **Holmes's own method wins.** Scatter and gather with one decider at Baker Street, Wiggins as the relay and a
+   dozen boys on errands solved every one of the five cases. With exact counting as Holmes it solved 19 of 20 for
+   almost nothing. The self-organising swarm's real handicap was not the boys but the lack of someone to
+   assign errands and weigh every report.
 
 ## 5. Limitations
 
@@ -309,6 +388,8 @@ output), because OpenAI's API does not return a cost. Jev costs are as reported 
 - **Hybrid on more seeds and under liars:** 20 seeds at 1 km, and 5-15% liars (about $0.20 per case).
 - **A better Yard:** let the hub hear the whole city (or have Irregulars run leads to it), so the genius decides on
   full evidence instead of partial evidence.
+- **Baker Street:** gpt-6-astra Holmes on 20 seeds and with bribed boys (about $0.60 per case); tell gpt-6-astra
+  Holmes to commit earlier (it was right but waited); a cheaper Holmes (Jev planning, exact counting deciding).
 - **Give Jev a decomposed culprit question:** for example, one yes/no per suspect ("is this suspect consistent
   with the notebook?") instead of a single ten-way choice.
 - **Smarter liars:** nearby, plausible fakes and false accusations, to test the defence properly.
@@ -325,8 +406,10 @@ python3 -m irregulars.batch --mode swarm --policies jev rule random --seeds 5
 python3 -m irregulars.batch --mode swarm --policies rule --vary liar_frac=0,0.05,0.15 --seeds 20
 python3 -m irregulars.batch --mode swarm --policies hybrid --seeds 5 --set comm_range=200
 python3 -m irregulars.batch --mode swarm --policies hybrid_genius --seeds 3 --set comm_range=200 --max-usd 1.0
+python3 -m irregulars.batch --mode swarm --policies baker_street --seeds 5 --set n_irregulars=12 swarm_ticks=48 holmes=chat
+python3 -m irregulars.batch --mode swarm --policies baker_street --seeds 20 --set n_irregulars=12 swarm_ticks=48 holmes=rule boy_policy=rule
 python3 tests/test_checks.py
 ```
 
 Detailed pilot tables: [pilot_2026-10-01.md](pilot_2026-10-01.md). Screenshots:
-[viewer_solo.jpg](viewer_solo.jpg), [viewer_swarm.jpg](viewer_swarm.jpg).
+[viewer_solo.jpg](viewer_solo.jpg), [viewer_swarm.jpg](viewer_swarm.jpg), [viewer_baker_street.jpg](viewer_baker_street.jpg).
