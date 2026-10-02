@@ -181,7 +181,7 @@ within noise; the 95% intervals overlap widely.
 | Policy | Solved | Quorum reached | Ticks | Final majority, parts right | Cost per case |
 |---|---|---|---|---|---|
 | Jev (first pilot) | 2/5 | 4/5 (2 wrong culprit) | 22.0 | 2.2 | $0.27 |
-| Jev (with defence and call skipping) | 1/5 | 2/5 (1 wrong) | 26.0 | 2.0 | $0.19 |
+| Jev (with defence and call skipping) | 1/5 | 2/5 (1 wrong) | 27.2 | 2.0 | $0.19 |
 | Reflex rule | 3/5 (13/20 over 20 seeds) | 3/5 (never wrong) | 20.0 | 2.6 | free |
 | Random | 0/5 | 0/5 | 32 | 0.2 | free |
 
