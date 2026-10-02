@@ -126,6 +126,28 @@ def test_swarm_rule_solves_some_honest_cases():
     assert solved >= 4, solved
 
 
+def test_defence_rejects_far_first_hand_claims_and_contradictions():
+    e = Engine({"seed": 1, "mode": "swarm", "swarm_policy": "rule"}, realtime=False, log=False)
+    g = e.game
+    a, b = g.irr[0], g.irr[1]
+    far = max(g.case.by_id, key=lambda x: g.case.hops(a.at)[x])
+    a.at = b.at  # make sure b can hear a
+    g._shout(a, {"address": far, "text": "made up", "fact": ["motive", "debt"], "via": a.i, "fake": True})
+    rec = b.inbox[-1]
+    assert rec.get("implausible") and not b.remember(rec, 16, True) and a.i in b.distrust
+    c = g.irr[2]
+    own = next(iter(c.own))
+    assert not c.remember({"address": own, "text": "something else", "fact": ["motive", "debt"], "via": 7}, 16, True)
+    assert 7 in c.distrust and c.refute
+
+
+def test_defence_off_keeps_old_behaviour():
+    e = Engine({"seed": 1, "mode": "swarm", "swarm_policy": "rule", "corroboration": "none"}, realtime=False, log=False)
+    c = e.game.irr[2]
+    own = next(iter(c.own))
+    assert c.remember({"address": own, "text": "something else", "fact": ["motive", "debt"], "via": 7}, 16, False)
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):

@@ -25,7 +25,7 @@ DEFAULTS = {
     "deadline_hours": 12.0,
     "interview_min": 20.0,
     "cab_m_per_min": 200.0,
-    "jev_accuse_at": 0.6,        # Jev accuses when its "ready" answer (yes/no probability) reaches this
+    "jev_accuse_at": 0.4,        # Jev accuses when its "ready" answer (yes/no probability) reaches this
     # swarm
     "swarm_policy": "jev",       # jev | rule | random
     "n_irregulars": 100,
@@ -40,6 +40,8 @@ DEFAULTS = {
     "swarm_ticks": 32,           # clock: ticks before the case goes cold
     "tick_min": 15.0,
     "tail_success": 0.6,         # chance tailing the culprit reveals the hideout's district
+    "corroboration": "address",  # liar defence: each witness address counts once; contradicting first-hand -> distrust
+    "skip_unchanged": True,      # an Irregular whose view is unchanged since it chose WAIT waits again, no call
     "budget_cap_usd": 0.0,       # 0 = none; above it every Irregular falls back to the reflex rule
     # inference
     "sampling": "argmax",        # argmax | sample
@@ -120,6 +122,10 @@ SCHEMA = [
         ("swarm_ticks", "Clock (ticks)", "int", {"min": 1, "max": 200}),
         ("tick_min", "Case minutes per tick", "float", {"min": 1}),
         ("tail_success", "Tailing the culprit pays off", "float", {"min": 0, "max": 1}),
+        ("corroboration", "Liar defence", "choice", {
+            "address": "each witness address counts once; caught liars are distrusted and refuted",
+            "none": "count every lead heard (no defence)"}),
+        ("skip_unchanged", "Skip the call when nothing changed since a WAIT", "bool", {}),
         ("budget_cap_usd", "Swarm $ cap (0 = none)", "float", {"min": 0}),
     ]),
     ("Models", [

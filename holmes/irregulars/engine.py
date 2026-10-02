@@ -220,9 +220,18 @@ class Engine:
             f = g.forced(a, cands)
             jobs.append((a, cands, f))
         results = {}
+        repeat = set()
         if self.policy and not self.capped:
             futs = {}
             for a, cands, f in jobs:
+                if f is None and c["skip_unchanged"]:
+                    obs = g.observation(a)
+                    obs["you"] = {k: v for k, v in obs["you"].items() if k not in ("tick", "ticks_left")}
+                    sig = json.dumps([obs, sorted(cands)], sort_keys=True, default=str)
+                    if a.last_action == "WAIT" and getattr(a, "sig", None) == sig:
+                        repeat.add(a.i)  # nothing has changed since it last chose to wait: wait again, no call
+                        continue
+                    a.sig = sig
                 if f is None:
                     futs[a.i] = (time.time(), self.pool.submit(self.policy.decide, g, a, cands))
             done, _ = wait([fu for _, fu in futs.values()], timeout=c["request_timeout_s"] + 1.0)
@@ -239,6 +248,8 @@ class Engine:
             meta, src, counted = {}, "policy", False
             if f is not None:
                 act, vote, src = f, None, "liar"
+            elif a.i in repeat:
+                act, vote, src = "WAIT", dict(a.vote), "repeat"
             elif a.i in results:
                 act, vote, meta, lat = results[a.i]
                 if act not in cands:

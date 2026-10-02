@@ -227,6 +227,23 @@ class Case:
         self._paths[src] = d
         return d
 
+    def hops(self, src):
+        """Number of street links from src to every address (BFS, cached)."""
+        if not hasattr(self, "_hops"):
+            self._hops = {}
+        if src not in self._hops:
+            d, frontier = {src: 0}, [src]
+            while frontier:
+                nxt = []
+                for u in frontier:
+                    for v, _ in self.nbrs[u]:
+                        if v not in d:
+                            d[v] = d[u] + 1
+                            nxt.append(v)
+                frontier = nxt
+            self._hops[src] = d
+        return self._hops[src]
+
     def travel_min(self, a, b):
         return self.path_len(a)[b] * 10.0 / self.cfg["cab_m_per_min"]
 

@@ -33,7 +33,7 @@ It sees only the brief, the address directory with cab times, and its notebook o
 
 | Detective | How it decides | Cost |
 |---|---|---|
-| `jev` | One Jev System One call per step: a choice over reachable addresses, a yes/no "ready to accuse?" and three choice questions (culprit, motive, hideout) that double as its live belief | ~$0.00025 per step |
+| `jev` | One Jev System One call per step: a choice over reachable addresses, a yes/no "ready to accuse?" (it accuses once this reaches `jev_accuse_at`, default 0.4) and three choice questions (culprit, motive, hideout) that double as its live belief | ~$0.00025 per step |
 | `chat` | The "genius": `gpt-6-astra` reads the case file, directory and notebook and returns a move plus its current answer. The static case file goes first so it is cached between steps | ~$0.018 per step at list price |
 | `rule` | Follows pointers, works outward from where each open question's evidence should be, counts corroborating facts and accuses when all three answers lead by one uncontradicted lead (reads structured facts of leads it collected) | free |
 | `random` | Random visits, random accusation | free |
@@ -55,6 +55,24 @@ runs out it goes cold (the plurality answer is still logged).
 | `jev` | One Jev call per Irregular per tick (action choice + three votes). A call that fails or misses the per-call deadline falls back to the reflex rule for that tick |
 | `rule` | Reflex rule: share the most useful unshared lead when someone can hear, tail a suspect still in the running, follow pointers, walk to unvisited neighbours; vote what its own leads establish, or a clear local majority its leads allow |
 | `random` | Random actions and votes |
+
+**Liar defence** (`corroboration = address`, on by default; `none` turns it off):
+
+- each witness address counts once; if second-hand claims about one address disagree, that address counts for
+  nothing;
+- a claim that contradicts what an Irregular saw itself at that address marks the speaker as a liar: everything
+  from that speaker is forgotten, and the Irregular can `REFUTE` it out loud (trusted hearers then distrust the
+  liar too);
+- a first-hand claim about an address farther (in streets) from the speaker than it could have walked since the
+  start is rejected, and the speaker is distrusted;
+- votes heard from known liars are ignored, and a vote from an Irregular caught by two or more others is struck
+  from the quorum count.
+
+Jev Irregulars get the same memory: rejected leads never reach them, contested leads are flagged, and they see the
+list of Irregulars they have caught lying.
+
+Cost control: with `skip_unchanged` (on by default) an Irregular whose view has not changed since it chose `WAIT`
+waits again without a call. `batch --max-usd` stops starting new runs once a spend is reached.
 
 Experimental knobs: swarm size, shouting range, messages taken in per tick (bandwidth), memory size, noisy memory
 (forget rate), **lying Irregulars** (all push one wrong answer with made-up leads), misinformed Irregulars (start

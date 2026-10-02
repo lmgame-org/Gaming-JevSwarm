@@ -53,6 +53,7 @@ def main():
     ap.add_argument("--first-seed", type=int, default=1)
     ap.add_argument("--set", nargs="*", default=[], help="fixed overrides, key=value")
     ap.add_argument("--vary", nargs="*", default=[], help="swept settings, key=v1,v2,...")
+    ap.add_argument("--max-usd", type=float, default=0.0, help="stop starting new runs once this much is spent")
     ap.add_argument("--fair-to", default="", help="solo batch folder: cap each swarm run at the genius's spend")
     a = ap.parse_args()
     fixed = {k: parse_val(v) for k, v in (s.split("=", 1) for s in a.set)}
@@ -69,6 +70,10 @@ def main():
         for pol in a.policies:
             res = []
             for seed in range(a.first_seed, a.first_seed + a.seeds):
+                spent = sum(ep["summary"]["inference"]["cost"] for ep in episodes)
+                if a.max_usd and spent >= a.max_usd:
+                    print(f"  stopping: ${spent:.3f} spent >= --max-usd {a.max_usd}", flush=True)
+                    break
                 cfg = {"mode": a.mode, pkey: pol, "seed": seed, **fixed, **over}
                 if caps.get(seed):
                     cfg["budget_cap_usd"] = caps[seed]
@@ -82,6 +87,8 @@ def main():
                       f"{'visits ' + str(s.get('visits')) if a.mode == 'solo' else 'tick ' + str(s.get('ticks'))} "
                       f"${s['inference']['cost']:.4f} {s['wall_s']}s", flush=True)
             n = len(res)
+            if not n:
+                continue
             k = sum(r["solved"] for r in res)
             lo, hi = wilson(k, n)
             part = {p: sum(bool((r["outcome"] or {}).get("ok", {}).get(p)) and r["parts"] > 0 for r in res)
