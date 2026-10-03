@@ -1263,22 +1263,31 @@ function legend() {
   const group = (title, items) => `<div class="lg-group"><b>${title}</b>${items.join("")}</div>`;
   const places = [
     it(icon("star"), "221B Baker Street, Holmes's lodgings"),
-    it(icon("sq-solid"), "solid square: Scotland Yard (see note)"),
+    it(icon("sq-solid"), `Scotland Yard <button type="button" class="note-link" aria-expanded="false" aria-controls="yardNote">see note</button>`),
     it(icon("cross"), "the crime scene"),
-    it(icon("tri-hollow"), "hollow triangle: a possible hideout"),
-    it(icon("ring", SUS_COLORS[0]), "ring: a suspect's home, in that suspect's colour"),
+    it(icon("tri-hollow"), "a possible hideout"),
+    it(icon("ring", SUS_COLORS[0]), "a suspect's home, in that suspect's colour"),
   ];
   const people = [];
   if (frame && frame.mode === "solo") people.push(it(icon("letter", "H"), "the detective"), it(icon("line", "var(--accent)"), "cab route; gold dots are visited addresses"));
-  else if (frame && frame.hq) people.push(it(icon("letter", "W"), "Wiggins"), it(icon("sq-hollow"), "hollow square: Wiggins's post, where boys hand in reports"),
-    it(icon("dot", DISTRICT_HUES.Soho), "street boy, coloured by the district he was sent to"), it(icon("dot-ringed", DISTRICT_HUES.Soho), "dark ring: boy running back to report"));
+  else if (frame && frame.hq) people.push(it(icon("letter", "W"), "Wiggins"), it(icon("sq-hollow"), "Wiggins's post, where boys hand in reports"),
+    it(icon("dot", DISTRICT_HUES.Soho), "street boy, coloured by the district he was sent to"), it(icon("dot-ringed", DISTRICT_HUES.Soho), "a boy running back to report"));
   else if (frame) people.push(it(icon("dot", SUS_COLORS[0]), "street boy, coloured by the suspect he votes for"), it(icon("dot", "var(--faint)"), "grey: undecided"));
   let h = group("Places", places) + (people.length ? group("People", people) : "");
-  if (t) h += group("The truth (revealed)", [it(icon("tri-solid"), "solid green triangle: the real hideout"), it(icon("ring-bold"), "green ring: the culprit's home"),
+  if (t) h += group("The truth (revealed)", [it(icon("tri-solid"), "the real hideout"), it(icon("ring-bold"), "the culprit's home"),
     it(icon("dot", "var(--good)"), "real clue"), it(icon("dot", "var(--bad)"), "lie"), it(icon("dot", "var(--info)"), "\"ask at...\" tip")]);
-  h += `<p class="lg-note"><b>Note: Scotland Yard</b> is the headquarters of London's Metropolitan Police, where Inspector Lestrade works.
-    In the game it is one address on the map. Its lead is Lestrade's tip about where to start asking. The police don't investigate; Holmes and the boys do.</p>`;
+  h += `<div id="yardNote" class="lg-pop" role="note" hidden><b>Scotland Yard</b> is the headquarters of London's Metropolitan
+    Police, where Inspector Lestrade works. In the game it is one address on the map. Its lead is Lestrade's tip about where
+    to start asking. The police don't investigate; Holmes and the boys do.</div>`;
   $("#legend").innerHTML = h;
+  const link = document.querySelector("#legend .note-link"), pop = $("#yardNote");
+  if (link && pop) link.onclick = (e) => {
+    e.stopPropagation();
+    pop.hidden = !pop.hidden; link.setAttribute("aria-expanded", String(!pop.hidden));
+    if (!pop.hidden) { const r = link.getBoundingClientRect(), box = $("#legend").getBoundingClientRect();
+      pop.style.left = `${Math.max(0, Math.min(r.left - box.left, box.width - 340))}px`;
+      pop.style.top = `${r.top - box.top - pop.offsetHeight - 6}px`; }
+  };
 }
 
 function loop() {
@@ -1353,6 +1362,7 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("keydown", (e) => { if (e.code === "Space" && !$("#dash").hidden && !["INPUT", "SELECT", "BUTTON"].includes(e.target.tagName)) { e.preventDefault(); $("#playBtn").click(); } });
 let rzTimer = null;
+addEventListener("click", (e) => { const pop = $("#yardNote"); if (pop && !pop.hidden && !pop.contains(e.target)) { pop.hidden = true; const l = document.querySelector("#legend .note-link"); if (l) l.setAttribute("aria-expanded", "false"); } });
 addEventListener("resize", () => { clearTimeout(rzTimer); rzTimer = setTimeout(() => { BASES.clear(); if (!$("#launch").hidden && PREVIEW) drawMap($("#preview"), PREVIEW, null, {preview: true}); if (frame) onFrame(frame, true); }, 120); });
 applyThemeLabels();
 if (document.fonts) document.fonts.ready.then(() => { BASES.clear(); if (PREVIEW && !$("#launch").hidden) drawMap($("#preview"), PREVIEW, null, {preview: true}); });

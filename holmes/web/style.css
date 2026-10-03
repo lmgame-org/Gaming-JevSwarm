@@ -153,9 +153,13 @@ details.card[open] > summary { margin-bottom: 10px; }
 .lg-group > b { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .lg { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 12.5px; }
 .ico-svg { flex: none; }
-.lg-note { grid-column: 1 / -1; margin: 2px 0 0; padding: 8px 10px; border-left: 3px solid var(--info); background: var(--surface2);
-  border-radius: 0 6px 6px 0; font-size: 12.5px; color: var(--muted); }
-.lg-note b { color: var(--ink); }
+#legend { position: relative; }
+.note-link { background: none; border: none; padding: 0; color: var(--info); text-decoration: underline; text-underline-offset: 2px;
+  font-size: inherit; cursor: pointer; display: inline; }
+.note-link:hover { border: none; color: var(--ink); }
+.lg-pop { position: absolute; z-index: 6; width: min(340px, 100%); padding: 10px 12px; background: var(--surface); border: 1px solid var(--line2);
+  border-left: 3px solid var(--info); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .14); font-size: 12.5px; color: var(--muted); }
+.lg-pop b { color: var(--ink); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .side { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
