@@ -26,7 +26,7 @@
         <h1>Who solves a murder better: one genius detective, or the Baker Street Irregulars?</h1>
         <p>Each case is a murder in Victorian London with a hidden <b>culprit</b>, <b>motive</b> and <b>hideout</b>.
           Every address on the map holds one short lead: a witness, a receipt, a footprint, a lie, or nothing useful.
-          Pick who investigates (A), set up the case (B), then press <b>Start the investigation</b> and watch it live.</p>
+          Choose who investigates (step 1), set up the mystery (step 2), then press <b>Start the investigation</b> and watch it live.</p>
         <div class="bench-load">
           <label for="benchSel">Or start from a tested setup</label>
           <select id="benchSel"></select>
@@ -34,7 +34,7 @@
       </div>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">A</span><h2>Who investigates</h2><span class="meta">pick one of three approaches</span></div>
+        <div class="part-head"><span class="part-tag">Step 1</span><h2>Choose who investigates</h2><span class="meta">one of three approaches</span></div>
         <div id="tracks" class="tracks" role="tablist" aria-label="Who investigates">
           <button type="button" role="tab" data-track="solo"><b>Solo detective</b><span>One detective visits addresses and reads each lead in person</span></button>
           <button type="button" role="tab" data-track="baker"><b>Baker Street</b><span>Holmes stays home and directs street boys who report back</span></button>
@@ -44,7 +44,7 @@
       </section>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">B</span><h2>The case</h2><span class="meta">the same for every approach, so results are comparable</span></div>
+        <div class="part-head"><span class="part-tag">Step 2</span><h2>Set up the mystery</h2><span class="meta">the map, suspects, time limit and who lies. Whoever you chose in step 1 gets exactly this case.</span></div>
         <div id="casePanel" class="card case-panel"></div>
       </section>
 
