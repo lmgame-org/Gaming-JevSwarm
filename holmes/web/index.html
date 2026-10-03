@@ -15,7 +15,7 @@
 <section id="launch">
   <header class="topbar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span> The Irregulars
-      <span class="brand-sub">a seeded Holmes case, one detective or a swarm</span></div>
+      <span class="brand-sub">a Sherlock Holmes case: one detective against the Baker Street Irregulars</span></div>
     <span class="grow"></span>
     <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
   </header>
@@ -23,33 +23,33 @@
   <div class="launch-grid">
     <main class="launch-main">
       <div class="intro">
-        <h1>Who solves it better: one genius, or the Baker Street Irregulars?</h1>
-        <p>A body has been found in London. Every address on the map holds one short lead: a witness, a receipt,
-          a footprint, a lie, or nothing at all. Choose who investigates, set up the case, and watch it unfold.
-          The same seed always gives the same case.</p>
+        <h1>Who solves a murder better: one genius detective, or the Baker Street Irregulars?</h1>
+        <p>Each case is a murder in Victorian London with a hidden <b>culprit</b>, <b>motive</b> and <b>hideout</b>.
+          Every address on the map holds one short lead: a witness, a receipt, a footprint, a lie, or nothing useful.
+          Pick who investigates (A), set up the case (B), then press <b>Start the investigation</b> and watch it live.</p>
         <div class="bench-load">
-          <label for="benchSel">Load a benchmark setup</label>
+          <label for="benchSel">Or start from a tested setup</label>
           <select id="benchSel"></select>
         </div>
       </div>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">A</span><h2>Who investigates</h2></div>
+        <div class="part-head"><span class="part-tag">A</span><h2>Who investigates</h2><span class="meta">pick one of three approaches</span></div>
         <div id="tracks" class="tracks" role="tablist" aria-label="Who investigates">
-          <button type="button" role="tab" data-track="solo"><b>Solo detective</b><span>One detective, first-hand, with the model you pick</span></button>
-          <button type="button" role="tab" data-track="baker"><b>Baker Street</b><span>Holmes directs a swarm of street boys</span></button>
-          <button type="button" role="tab" data-track="other"><b>Other baselines</b><span>Self-organising swarms and hybrids</span></button>
+          <button type="button" role="tab" data-track="solo"><b>Solo detective</b><span>One detective visits addresses and reads each lead in person</span></button>
+          <button type="button" role="tab" data-track="baker"><b>Baker Street</b><span>Holmes stays home and directs street boys who report back</span></button>
+          <button type="button" role="tab" data-track="other"><b>Other baselines</b><span>Swarms that organise themselves, for comparison</span></button>
         </div>
         <div id="trackPanel" class="card track-panel" role="tabpanel"></div>
       </section>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">B</span><h2>Case settings</h2><span class="meta">shared by every track</span></div>
+        <div class="part-head"><span class="part-tag">B</span><h2>The case</h2><span class="meta">the same for every approach, so results are comparable</span></div>
         <div id="casePanel" class="card case-panel"></div>
       </section>
 
       <details class="all-settings">
-        <summary>All settings <span class="meta">every knob, including models, keys and prices</span></summary>
+        <summary>All settings <span class="meta">every option, including models, key files and prices</span></summary>
         <form id="cfgForm" class="cfg"></form>
       </details>
     </main>
@@ -61,23 +61,23 @@
         <p id="pvKinds" class="small muted"></p>
       </div>
       <div class="card">
-        <div class="card-head"><h3>Before you launch</h3><span id="familyChip" class="chip"></span></div>
+        <div class="card-head"><h3>Your setup</h3><span id="familyChip" class="chip"></span></div>
         <div id="estimate" class="small"></div>
-        <button id="launchBtn" class="primary big">Launch the case</button>
+        <button id="launchBtn" class="primary big">Start the investigation</button>
         <button id="rejoinBtn" class="big" hidden>Return to the running case</button>
         <div id="launchErr" class="err small"></div>
       </div>
       <details class="card">
-        <summary><h3>Models and keys</h3></summary>
+        <summary><h3>Model connections</h3></summary>
         <div id="keyStatus" class="small"></div>
         <div class="row gap">
-          <button type="button" id="testJev">Test Jev</button>
-          <button type="button" id="testChat">Test gpt-6-astra</button>
+          <button type="button" id="testJev">Check Jev</button>
+          <button type="button" id="testChat">Check gpt-6-astra</button>
         </div>
         <pre id="testOut" class="small out" hidden></pre>
       </details>
       <details class="card">
-        <summary><h3>Recent runs</h3></summary>
+        <summary><h3>Recent investigations</h3></summary>
         <div id="runsList" class="small runs"></div>
       </details>
     </aside>
@@ -89,20 +89,20 @@
   <header class="topbar dashbar">
     <div class="brand small-brand"><span class="brand-mark" aria-hidden="true">✦</span> The Irregulars</div>
     <span id="modeTag" class="chip"></span>
-    <div class="clock" title="Case time">
-      <span id="clock" class="mono">08:00</span>
+    <div class="clock" title="Case time: the clock inside the story, starting at 08:00">
+      <span class="meta">Case time</span><span id="clock" class="mono">08:00</span>
       <div class="prog" aria-hidden="true"><div id="progFill"></div></div>
       <span id="progText" class="meta mono"></span>
     </div>
     <div class="controls">
       <button id="playBtn" title="Pause or resume (space)"><span class="ico" aria-hidden="true">❚❚</span> <span class="lbl">Pause</span></button>
       <button id="stepBtn" title="Advance one step"><span class="ico" aria-hidden="true">▸|</span> <span class="lbl">Step</span></button>
-      <label class="speed" title="Steps per second">Speed <input id="speed" type="range" min="-1" max="1.4" step="0.05"><span id="speedVal" class="mono meta"></span></label>
-      <label class="switch" title="Show the hidden truth (spoilers)"><input type="checkbox" id="tTruth"><span class="track" aria-hidden="true"></span> Reveal truth</label>
+      <label class="speed" title="Playback speed in steps per second">Speed <input id="speed" type="range" min="-1" max="1.4" step="0.05"><span id="speedVal" class="mono meta"></span></label>
+      <label class="switch" title="Show the hidden answer, the lies and the liars (spoilers)"><input type="checkbox" id="tTruth"><span class="track" aria-hidden="true"></span> Reveal the truth</label>
     </div>
     <span class="grow"></span>
     <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
-    <button id="newRun" class="ghost">New case</button>
+    <button id="newRun" class="ghost">Change setup</button>
   </header>
 
   <div id="caseTitle" class="case-title"></div>
@@ -117,11 +117,11 @@
     <div class="side">
       <!-- solo -->
       <div class="card solo-only">
-        <div class="card-head"><h3>Notebook</h3><span id="nbMeta" class="meta"></span></div>
+        <div class="card-head"><h3>Detective's notebook</h3><span id="nbMeta" class="meta"></span></div>
         <div id="notebook" class="notebook"></div>
       </div>
       <div class="card solo-only">
-        <div class="card-head"><h3>What the detective believes</h3><span id="decMeta" class="meta mono"></span></div>
+        <div class="card-head"><h3>What the detective thinks now</h3><span id="decMeta" class="meta mono"></span></div>
         <div id="belief"></div>
         <div id="decNote" class="small muted decision"></div>
       </div>
@@ -133,8 +133,8 @@
         <div id="seriesLegend" class="legend chart-legend"></div>
       </div>
       <div class="card swarm-only">
-        <div class="card-head"><h3>Irregular <span id="selId" class="mono">-</span> <span id="selTraits" class="meta"></span></h3>
-          <span class="meta">click a dot on the map</span></div>
+        <div class="card-head"><h3>Street boy <span id="selId" class="mono">-</span> <span id="selTraits" class="meta"></span></h3>
+          <span class="meta">click a dot on the map to follow one</span></div>
         <div id="irrDetail" class="small"></div>
       </div>
     </div>
@@ -142,11 +142,11 @@
 
   <div class="lower">
     <div class="card span2">
-      <div class="card-head"><h3>Case file</h3><span class="meta">what every detective is told</span></div>
+      <div class="card-head"><h3>Case file</h3><span class="meta">what every investigator is told at the start</span></div>
       <div id="brief" class="brief"></div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>Your deduction</h3><span class="meta">scored at the end</span></div>
+      <div class="card-head"><h3>Your guess</h3><span class="meta">lock in your own answer; it is scored when the case closes</span></div>
       <div class="guess-form">
         <label class="sr" for="gC">Culprit</label><select id="gC"></select>
         <label class="sr" for="gM">Motive</label><select id="gM"></select>
@@ -155,17 +155,17 @@
       </div>
       <div id="guesses" class="small"></div>
       <div class="swarm-knobs swarm-only">
-        <h4>Live settings <span class="meta">(logged)</span></h4>
+        <h4>Change the swarm while it runs <span class="meta">(each change is logged)</span></h4>
         <div id="knobs" class="knobs"></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>Inference</h3></div>
+      <div class="card-head"><h3>Model usage</h3><span class="meta">calls, speed and cost so far</span></div>
       <div id="infCards" class="metric-cards"></div>
       <div id="errors" class="small err"></div>
     </div>
     <div class="card span2">
-      <div class="card-head"><h3>Event log</h3></div>
+      <div class="card-head"><h3>What happened</h3><span class="meta">newest at the bottom</span></div>
       <div id="events" class="events"></div>
     </div>
   </div>

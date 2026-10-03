@@ -34,27 +34,27 @@ const BENCH = [
   {label: "Hybrid · 2 km", stat: "17/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
 ];
 const SOLO_OPTS = [
-  {v: "chat", label: "gpt-6-astra", sub: "Reads the whole notebook each step", stat: "11/20 · $0.35/case · 81 s"},
-  {v: "jev", label: "Jev", sub: "One typed call per step", stat: "5/20 · $0.005/case · 5 s"},
-  {v: "rule", label: "Rule algorithm", sub: "Follows pointers, counts corroboration", stat: "9/20 · free"},
-  {v: "random", label: "Random", sub: "Random visits and guess", stat: "0/20 · free"},
+  {v: "chat", label: "gpt-6-astra", sub: "A large model that re-reads the whole notebook before each move", stat: "Solved 11 of 20 · $0.35 per case"},
+  {v: "jev", label: "Jev", sub: "A fast, cheap model: one short decision per move", stat: "Solved 5 of 20 · $0.005 per case"},
+  {v: "rule", label: "Rule algorithm", sub: "No model: follows tips and counts which facts agree", stat: "Solved 9 of 20 · free"},
+  {v: "random", label: "Random", sub: "Visits at random and guesses: the floor to beat", stat: "Solved 0 of 20 · free"},
 ];
 const HOLMES_OPTS = [
-  {v: "chat", label: "gpt-6-astra", sub: "Reads every report, plans in its own words", stat: "19/20 · $0.62/case"},
-  {v: "rule", label: "Exact counting algorithm", sub: "Tallies the facts, rule-based planning", stat: "19/20 · $0.002/case"},
-  {v: "jev", label: "Jev", sub: "Not supported yet: Jev can't plan assignments in this version", disabled: true},
+  {v: "chat", label: "gpt-6-astra", sub: "Reads every report and writes the next assignments itself", stat: "Solved 19 of 20 · $0.62 per case"},
+  {v: "rule", label: "Exact counting algorithm", sub: "No model: tallies which facts agree and plans by fixed rules", stat: "Solved 19 of 20 · $0.002 per case"},
+  {v: "jev", label: "Jev", sub: "Not available yet: Jev can't write assignments in this version", disabled: true},
 ];
 const BOY_OPTS = [
-  {v: "jev", label: "Jev", sub: "Picks which door to try, whether to tail, when to run back"},
-  {v: "rule", label: "Rule algorithm", sub: "Works through the assignment, hurries back with key leads"},
-  {v: "random", label: "Random", sub: "Random local choices"},
+  {v: "jev", label: "Jev", sub: "Decides which nearby door to try, whether to follow a suspect, and when to run back"},
+  {v: "rule", label: "Rule algorithm", sub: "Works through the assignment in order and hurries back with a strong lead"},
+  {v: "random", label: "Random", sub: "Makes every small choice at random"},
 ];
 const OTHER_OPTS = [
-  {v: "jev", label: "Jev swarm", sub: "Every Irregular decides and votes with Jev", stat: "1 km 5/20 · 2 km 10/20 · $0.13-0.17"},
-  {v: "rule", label: "Rule swarm", sub: "A shared reflex rule for every Irregular", stat: "1 km 13/20 · 2 km 18/20 · free"},
-  {v: "hybrid", label: "Hybrid", sub: "Jev moves and shares; exact counting votes", stat: "1 km 10/20 · 2 km 17/20 · $0.13-0.21"},
-  {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads reaching Scotland Yard go to gpt-6-astra", stat: "pilot 2/3 · $0.41"},
-  {v: "random", label: "Random swarm", sub: "Random moves, shares and votes", stat: "0/20 · free"},
+  {v: "jev", label: "Jev swarm", sub: "Every boy chooses his moves and his vote with Jev", stat: "Solved 5 of 20 (1 km), 10 of 20 (2 km) · $0.13-0.17"},
+  {v: "rule", label: "Rule swarm", sub: "Every boy follows the same simple rule; no model", stat: "Solved 13 of 20 (1 km), 18 of 20 (2 km) · free"},
+  {v: "hybrid", label: "Hybrid", sub: "Jev chooses moves and what to share; votes come from counting facts", stat: "Solved 10 of 20 (1 km), 17 of 20 (2 km) · $0.13-0.21"},
+  {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads shouted near Scotland Yard go to gpt-6-astra, who decides", stat: "Solved 2 of 3 in a small test · $0.41 per case"},
+  {v: "random", label: "Random swarm", sub: "Random moves, shouts and votes: the floor to beat", stat: "Solved 0 of 20 · free"},
 ];
 const TRACK_DEFAULTS = {
   solo: {mode: "solo"},
@@ -105,8 +105,8 @@ async function initLaunch() {
   SCHEMA = await api("/api/schema");
   if (!cfg.mode) cfg = {...SCHEMA.defaults};
   const sel = $("#benchSel");
-  sel.innerHTML = `<option value="">Choose one of the 14 benchmark setups…</option>` +
-    BENCH.map((b, i) => `<option value="${i}">${esc(b.label)} (${esc(b.stat)})</option>`).join("");
+  sel.innerHTML = `<option value="">Choose one of the 14 setups from the 20-case benchmark…</option>` +
+    BENCH.map((b, i) => { const [sv, cost] = b.stat.split(" · "); return `<option value="${i}">${esc(b.label)}: solved ${sv.replace("/", " of ")}, ${cost === "free" ? "free" : cost + " per case"}</option>`; }).join("");
   const kf = SCHEMA.key_files.filter((k) => k.exists).map((k) => k.path);
   $("#keyStatus").innerHTML = `<p>Key files found: ${kf.length ? kf.map((p) => `<code>${esc(p)}</code>`).join(", ") : "none"}.</p>
     <p class="muted">Keys are read when a call is made and are never logged or sent to the browser.</p>`;
@@ -201,7 +201,8 @@ function benchLine(match) {
   const b = BENCH.find((x) => Object.entries(x.cfg).every(([k, v]) => ["n_irregulars", "swarm_ticks"].includes(k) || cfg[k] === v) &&
     (!match || match(x)));
   const d = document.createElement("div"); d.className = "bench-line";
-  d.innerHTML = b ? `Benchmark for this setup (20 cases, defaults): <b>${esc(b.stat)}</b>` : "No 20-case benchmark for exactly this setup yet.";
+  if (b) { const [sv, cost] = b.stat.split(" · "); d.innerHTML = `Tested on 20 cases with default case settings: solved <b>${sv.replace("/", " of ")}</b>, <b>${cost === "free" ? "free" : cost + " per case"}</b>.`; }
+  else d.textContent = "This exact setup is not in the 20-case benchmark yet.";
   return d;
 }
 
@@ -212,44 +213,52 @@ function renderTracks() {
     b.onclick = () => setTrack(b.dataset.track);
   });
   const p = $("#trackPanel"); p.innerHTML = "";
+  const intro = document.createElement("p"); intro.className = "how";
+  intro.innerHTML = {
+    solo: "<b>How it works.</b> The detective starts at 221B Baker Street, takes a cab to one address at a time and reads the lead there. When it is sure, or runs out of visits or time, it names the culprit, motive and hideout.",
+    baker: "<b>How it works.</b> Holmes stays at 221B and never visits an address himself. He hands out assignments; Wiggins splits the street boys across them; the boys check addresses on foot and run back to report. Holmes reads the reports, sends the boys out again, and names the answer when he is sure (or gives his best answer when time runs out).",
+    other: "<b>How it works.</b> About 100 Irregulars start spread over the city with no one in charge. Each knows only what it finds and what nearby boys shout to it. The case closes when enough of them vote for the same answer; if they never agree in time, the case goes cold.",
+  }[t];
+  p.appendChild(intro);
   if (t === "solo") {
-    p.appendChild(optGroup("Detective model", "", SOLO_OPTS, cfg.policy, (v) => setCfg({policy: v}),
+    p.appendChild(optGroup("The detective", "Who makes every decision: where to go next and what to accuse.", SOLO_OPTS, cfg.policy, (v) => setCfg({policy: v}),
       (v) => seriesVar({mode: "solo", policy: v})));
     p.appendChild(ctlGrid(
-      numCtl("Visit budget", cfg.visit_budget, {min: 1, max: 200, unit: "visits"}, (v) => setCfg({visit_budget: v | 0})),
-      numCtl("Minutes per interview", cfg.interview_min, {min: 0, max: 240, unit: "min"}, (v) => setCfg({interview_min: v})),
-      cfg.policy === "jev" ? sliderCtl("Jev accuses when 'ready' reaches", cfg.jev_accuse_at, {min: 0.1, max: 0.9, step: 0.05, fmt: (x) => x.toFixed(2),
-        hint: "Jev's own yes/no answer to 'ready to accuse?'"}, (v) => setCfg({jev_accuse_at: v})) : null));
+      numCtl("Most visits allowed", cfg.visit_budget, {min: 1, max: 200, unit: "visits", hint: "Each visit is a cab ride plus an interview"}, (v) => setCfg({visit_budget: v | 0})),
+      numCtl("Interview length", cfg.interview_min, {min: 0, max: 240, unit: "case minutes", hint: "Time spent at each address"}, (v) => setCfg({interview_min: v})),
+      cfg.policy === "jev" ? sliderCtl("Jev accuses when its readiness reaches", cfg.jev_accuse_at, {min: 0.1, max: 0.9, step: 0.05, fmt: (x) => x.toFixed(2),
+        hint: "After each visit Jev rates how ready it is to accuse, from 0 to 1"}, (v) => setCfg({jev_accuse_at: v})) : null));
     p.appendChild(benchLine());
   } else if (t === "baker") {
-    p.appendChild(optGroup("Central agent: Holmes at 221B", "Decides: reads the reports, gives out assignments, names the answer.",
+    p.appendChild(optGroup("Holmes, the decision-maker", "Reads every report, decides where to send the boys, and alone names the answer.",
       HOLMES_OPTS, cfg.holmes, (v) => setCfg({holmes: v}), (v) => v === "chat" ? "--genius" : "--baker"));
-    p.appendChild(optGroup("Swarm agents: the street boys", "Observe only: they never accuse anyone.",
+    p.appendChild(optGroup("The street boys, his eyes on the street", "Carry out the assignments and report back. They never accuse anyone.",
       BOY_OPTS, cfg.boy_policy, (v) => setCfg({boy_policy: v}), (v) => v === "jev" ? "--jev" : "--rule"));
     p.appendChild(ctlGrid(
-      numCtl("Squad size", cfg.n_irregulars, {min: 1, max: 100, unit: "boys", hint: "About a dozen in the stories"}, (v) => {
+      numCtl("Number of street boys", cfg.n_irregulars, {min: 1, max: 100, unit: "boys", hint: "About a dozen in the stories"}, (v) => {
         const n = v | 0, bribed = Math.round(cfg.liar_frac * squad()), wrong = Math.round(cfg.misinformed_frac * squad());
         setCfg({n_irregulars: n, liar_frac: Math.min(1, bribed / n), misinformed_frac: Math.min(1, wrong / n)});
       }),
-      toggleCtl("Wiggins relays reports", cfg.wiggins, "He collects reports at a forward post and runs them to 221B", (v) => setCfg({wiggins: v})),
-      toggleCtl("Pay: a shilling a day, a guinea for the key lead", cfg.pay === "shilling_guinea", "Unpaid boys give up after two calls",
+      toggleCtl("Wiggins collects reports", cfg.wiggins, "On: boys report to Wiggins at a post near their work, and he carries batches to Holmes. Off: every boy runs all the way back to 221B.", (v) => setCfg({wiggins: v})),
+      toggleCtl("Pay the boys", cfg.pay === "shilling_guinea", "On: a shilling a day and a guinea for the key lead, so boys finish their assignment. Off: they give up after two addresses.",
         (v) => setCfg({pay: v ? "shilling_guinea" : "none"})),
-      numCtl("Holmes re-plans at most", cfg.hq_max_calls, {min: 1, max: 64, unit: "times"}, (v) => setCfg({hq_max_calls: v | 0}))));
+      numCtl("Most planning rounds for Holmes", cfg.hq_max_calls, {min: 1, max: 64, unit: "rounds", hint: "Each round he reads all reports and sends boys out again"}, (v) => setCfg({hq_max_calls: v | 0}))));
     p.appendChild(benchLine());
   } else {
-    p.appendChild(optGroup("Baseline", "", OTHER_OPTS, cfg.swarm_policy, (v) => {
+    p.appendChild(optGroup("Type of swarm", "How each boy decides where to go, what to shout and how to vote.", OTHER_OPTS, cfg.swarm_policy, (v) => {
       lastOther = v;
       setCfg(v === "hybrid_genius" ? {swarm_policy: v, comm_range: Math.max(cfg.comm_range, 200)} : {swarm_policy: v});
     }, (v) => seriesVar({mode: "swarm", swarm_policy: v})));
     p.appendChild(ctlGrid(
-      numCtl("Swarm size", cfg.n_irregulars, {min: 3, max: 400, unit: "Irregulars"}, (v) => {
+      numCtl("Number of Irregulars", cfg.n_irregulars, {min: 3, max: 400, unit: "boys", hint: "They start spread over the whole map"}, (v) => {
         const n = v | 0, bribed = Math.round(cfg.liar_frac * squad()), wrong = Math.round(cfg.misinformed_frac * squad());
         setCfg({n_irregulars: n, liar_frac: Math.min(1, bribed / n), misinformed_frac: Math.min(1, wrong / n)});
       }),
-      sliderCtl("Shouting range", cfg.comm_range / 100, {min: 0.25, max: 4, step: 0.25, fmt: (x) => `${x.toFixed(2)} km`}, (v) => setCfg({comm_range: v * 100})),
-      sliderCtl("Quorum", cfg.quorum_frac, {min: 0.05, max: 1, step: 0.01, fmt: (x) => `${Math.round(x * 100)}% of the swarm (${Math.max(2, Math.round(x * cfg.n_irregulars))})`},
-        (v) => setCfg({quorum_frac: v})),
-      toggleCtl("Liar defence", cfg.corroboration === "address", "Each witness address counts once; caught liars are distrusted",
+      sliderCtl("How far a shout carries", cfg.comm_range / 100, {min: 0.25, max: 4, step: 0.25, fmt: (x) => `${x.toFixed(2)} km`,
+        hint: "Boys hear leads and votes from others within this distance"}, (v) => setCfg({comm_range: v * 100})),
+      sliderCtl("Votes needed to close the case", cfg.quorum_frac, {min: 0.05, max: 1, step: 0.01, fmt: (x) => `${Math.round(x * 100)}% (${Math.max(2, Math.round(x * cfg.n_irregulars))} boys)`,
+        hint: "This many boys must hold exactly the same answer"}, (v) => setCfg({quorum_frac: v})),
+      toggleCtl("Defend against liars", cfg.corroboration === "address", "On: each address counts once, and a boy caught contradicting what another saw first-hand is no longer believed.",
         (v) => setCfg({corroboration: v ? "address" : "none"}))));
     p.appendChild(benchLine((b) => b.cfg.comm_range === undefined || b.cfg.comm_range === cfg.comm_range));
   }
@@ -265,42 +274,43 @@ function renderCase() {
   p.appendChild(name);
   const hrs = clockHours();
   p.appendChild(ctlGrid(
-    numCtl("Case seed", cfg.seed, {min: 0, max: 99999, hint: "The same seed always gives the same case"}, (v) => setCfg({seed: v | 0}, {preview: true})),
-    numCtl("Addresses on the map", cfg.n_addresses, {min: 20, max: 300}, (v) => setCfg({n_addresses: v | 0}, {preview: true})),
-    numCtl("Suspects", cfg.n_suspects, {min: 3, max: 16}, (v) => setCfg({n_suspects: v | 0}, {preview: true})),
-    numCtl("Clock", +hrs.toFixed(2), {min: 1, max: 96, step: 0.25, unit: "case hours",
-      hint: t === "solo" ? "The detective must accuse by then" : t === "baker" ? "Holmes gives his best answer at the deadline" : "No quorum by then: the case goes cold"},
+    numCtl("Case number", cfg.seed, {min: 0, max: 99999, hint: "The same number always gives the same map, people and leads"}, (v) => setCfg({seed: v | 0}, {preview: true})),
+    numCtl("Addresses on the map", cfg.n_addresses, {min: 20, max: 300, hint: "Each holds one lead"}, (v) => setCfg({n_addresses: v | 0}, {preview: true})),
+    numCtl("Suspects", cfg.n_suspects, {min: 3, max: 16, hint: "One of them is the culprit"}, (v) => setCfg({n_suspects: v | 0}, {preview: true})),
+    numCtl("Time limit", +hrs.toFixed(2), {min: 1, max: 96, step: 0.25, unit: "case hours",
+      hint: t === "solo" ? "The detective must accuse by then" : t === "baker" ? "At the limit Holmes gives his best answer" : "If the boys haven't agreed by then, the case goes cold"},
     (v) => t === "solo" ? setCfg({deadline_hours: v}) : setCfg({swarm_ticks: Math.max(1, Math.round(v * 60 / cfg.tick_min))})),
-    sliderCtl("Red herrings", cfg.red_herring_rate, {min: 0, max: 1, step: 0.05, fmt: (x) => `${Math.round(x * 100)}% of filler addresses`},
+    sliderCtl("Red herrings", cfg.red_herring_rate, {min: 0, max: 1, step: 0.05, fmt: (x) => `${Math.round(x * 100)}%`,
+      hint: "Share of addresses without real evidence whose lead looks suspicious but proves nothing"},
       (v) => setCfg({red_herring_rate: v}, {preview: true}))));
   const dec = document.createElement("div"); dec.className = "group";
-  dec.innerHTML = `<h4>Deception</h4>`;
+  dec.innerHTML = `<h4>Who can't be trusted</h4>`;
   const lies = info ? info.lies : null;
   const noBoys = t === "solo";
   dec.appendChild(ctlGrid(
     sliderCtl("Witnesses who lie", cfg.lie_rate, {min: 0, max: 0.5, step: 0.05,
-      fmt: (x) => `${Math.round(x * 100)}% of key leads`,
-      hint: lies != null ? `${lies} lying witness${lies === 1 ? "" : "es"} in this case, each contradicting a true fact. Affects every track.` : "Affects every track."},
+      fmt: (x) => `${Math.round(x * 100)}%`,
+      hint: lies != null ? `This case has ${lies} lying witness${lies === 1 ? "" : "es"}. Each lie contradicts one true fact (true facts turn up at two addresses). Applies to every approach.` : "Applies to every approach."},
     (v) => setCfg({lie_rate: v}, {preview: true})),
-    sliderCtl("Street boys who lie (bribed)", noBoys ? 0 : Math.round(cfg.liar_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
+    sliderCtl("Street boys who lie (bribed by Moriarty)", noBoys ? 0 : Math.round(cfg.liar_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
       fmt: (x) => noBoys ? "n/a" : `${x} of ${n}`,
-      hint: noBoys ? "No boys in Solo mode." : t === "baker" ? "They report made-up leads for the addresses they are sent to." : "They push one wrong answer with made-up leads and votes."},
+      hint: noBoys ? "Not used: a solo detective has no boys." : t === "baker" ? "They report made-up leads for every address they are sent to." : "They all push the same wrong answer with made-up leads and votes."},
     (v) => setCfg({liar_frac: v / n})),
-    sliderCtl("Street boys who are mistaken", noBoys ? 0 : Math.round(cfg.misinformed_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
+    sliderCtl("Street boys who get a fact wrong", noBoys ? 0 : Math.round(cfg.misinformed_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
       fmt: (x) => noBoys ? "n/a" : `${x} of ${n}`,
-      hint: noBoys ? "No boys in Solo mode." : t === "baker" ? "Each gets one report wrong." : "Each starts out holding one false lead."},
+      hint: noBoys ? "Not used: a solo detective has no boys." : t === "baker" ? "Each brings back one wrong report." : "Each starts out believing one false lead."},
     (v) => setCfg({misinformed_frac: v / n}))));
   const adv = document.createElement("details");
   const swarmOnly = t !== "other";
-  adv.innerHTML = `<summary>Advanced: stubborn agents and noisy memory</summary>`;
+  adv.innerHTML = `<summary>More: stubborn and forgetful boys (self-organising swarms only)</summary>`;
   adv.appendChild(ctlGrid(
-    sliderCtl("Stubborn Irregulars", swarmOnly ? 0 : Math.round(cfg.stubborn_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: swarmOnly,
+    sliderCtl("Boys who never change their vote", swarmOnly ? 0 : Math.round(cfg.stubborn_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: swarmOnly,
       fmt: (x) => swarmOnly ? "n/a" : `${x} of ${n}`,
-      hint: swarmOnly ? "Self-organising swarms only: Baker Street boys don't vote, and Solo has no boys." : "Never change their first firm vote."},
+      hint: swarmOnly ? "Not used here: Baker Street boys don't vote, and a solo detective has no boys." : "Once they hold a full answer they keep it, whatever they hear."},
     (v) => setCfg({stubborn_frac: v / n})),
-    sliderCtl("Noisy memory", swarmOnly ? 0 : cfg.forget_rate, {min: 0, max: 1, step: 0.05, off: swarmOnly,
+    sliderCtl("Forgetfulness", swarmOnly ? 0 : cfg.forget_rate, {min: 0, max: 1, step: 0.05, off: swarmOnly,
       fmt: (x) => swarmOnly ? "n/a" : `${Math.round(x * 100)}% chance per tick`,
-      hint: swarmOnly ? "Self-organising swarms only: Baker Street boys hand over everything they carry." : "Each tick an Irregular may forget one lead."},
+      hint: swarmOnly ? "Not used here: Baker Street boys hand over everything they carry." : "Each tick, each boy may forget one lead he was holding."},
     (v) => setCfg({forget_rate: v}))));
   dec.appendChild(adv);
   p.appendChild(dec);
@@ -382,8 +392,8 @@ function preview() {
     PREVIEW_INFO = {...t, lies: k.lie || 0};
     $("#pvTitle").textContent = t.title;
     $("#pvInfo").textContent = `${r.map.addresses.length} addresses · ${Object.keys(r.brief.suspects).length} suspects`;
-    $("#pvKinds").innerHTML = `${esc(t.sub)}.<br>${key} key leads, ${k.lie || 0} lies, ${k.pointer || 0} pointers,
-      ${k.herring || 0} red herrings, ${k.bland || 0} empty. Solvable by counting every lead:
+    $("#pvKinds").innerHTML = `${esc(t.sub)}.<br>On the map: ${key} real clues, ${k.lie || 0} lie${(k.lie || 0) === 1 ? "" : "s"}, ${k.pointer || 0} "ask at..." tips,
+      ${k.herring || 0} red herrings and ${k.bland || 0} empty addresses. All the clues together point to the right answer:
       ${Object.values(r.solvable).every(Boolean) ? "yes" : "<span class='err'>no</span>"}.`;
     renderCase();
   }, 150);
@@ -404,23 +414,23 @@ function estimate() {
   const t = trackOf(cfg);
   if (t === "solo") {
     const steps = Math.min(cfg.visit_budget, Math.round(cfg.deadline_hours * 60 / 38)) + 1;
-    s = `<p>One detective, up to ${cfg.visit_budget} visits within ${cfg.deadline_hours} case hours (about ${steps} decisions).</p>`;
-    if (cfg.policy === "jev") s += `<p>Jev: about <b>$${(steps * 0.00024).toFixed(3)}</b> per case, 0.2-0.3 s per decision.</p>`;
-    else if (cfg.policy === "chat") s += `<p>gpt-6-astra: about <b>$${(steps * 0.018).toFixed(2)}</b> per case at list price, 4-5 s per decision.</p>`;
-    else s += "<p>No model calls: free and instant.</p>";
+    s = `<p>One detective, at most ${cfg.visit_budget} visits in ${cfg.deadline_hours} case hours (about ${steps} decisions).</p>`;
+    if (cfg.policy === "jev") s += `<p>Estimated cost: about <b>$${(steps * 0.00024).toFixed(3)}</b> per case. Each decision takes 0.2-0.3 s.</p>`;
+    else if (cfg.policy === "chat") s += `<p>Estimated cost: about <b>$${(steps * 0.018).toFixed(2)}</b> per case at list price. Each decision takes 4-5 s.</p>`;
+    else s += "<p>No model is used: free and instant.</p>";
   } else if (t === "baker") {
-    s = `<p>Holmes at 221B, ${cfg.wiggins ? "Wiggins and " : ""}${cfg.n_irregulars} boys, ${clockHours()} case hours.</p>`;
+    s = `<p>Holmes at 221B with ${cfg.wiggins ? "Wiggins and " : ""}${cfg.n_irregulars} street boys, ${clockHours()} case hours.</p>`;
     const boys = cfg.boy_policy === "jev" ? cfg.n_irregulars * 0.00016 : 0;
-    s += cfg.holmes === "chat" ? `<p>gpt-6-astra Holmes: about <b>$${(0.62 + boys).toFixed(2)}</b> per case (up to ${cfg.hq_max_calls} plans, ~13 s each).</p>`
-      : `<p>Exact-counting Holmes: ${boys ? `about <b>$${boys.toFixed(3)}</b> per case (the boys' Jev calls)` : "<b>free</b> and instant"}.</p>`;
+    s += cfg.holmes === "chat" ? `<p>Estimated cost: about <b>$${(0.62 + boys).toFixed(2)}</b> per case (up to ${cfg.hq_max_calls} planning rounds by gpt-6-astra, about 13 s each).</p>`
+      : `<p>Estimated cost: ${boys ? `about <b>$${boys.toFixed(3)}</b> per case, for the boys' Jev calls` : "<b>free</b> and instant"}.</p>`;
   } else {
     const calls = cfg.n_irregulars * cfg.swarm_ticks;
-    s = `<p>${cfg.n_irregulars} Irregulars × up to ${cfg.swarm_ticks} ticks: at most ${calls.toLocaleString()} decisions.</p>`;
-    if (cfg.swarm_policy === "hybrid_genius") s += `<p>Jev actions about <b>$${(calls * 0.00006).toFixed(2)}</b> at most, plus up to ${cfg.hub_max_calls} gpt-6-astra calls at the Yard.</p>`;
-    else if (cfg.swarm_policy === "hybrid") s += `<p>Jev actions about <b>$${(calls * 0.00006).toFixed(2)}</b> at most; votes are counted exactly.</p>`;
-    else if (cfg.swarm_policy === "jev") s += `<p>Jev about <b>$${(calls * 0.000105).toFixed(2)}</b> per case at most; each tick waits 1-2 s for its calls.</p>`;
-    else s += "<p>No model calls: free and instant.</p>";
-    if (cfg.budget_cap_usd > 0) s += `<p>Capped at $${cfg.budget_cap_usd}; above it the reflex rule decides.</p>`;
+    s = `<p>${cfg.n_irregulars} Irregulars for up to ${cfg.swarm_ticks} ticks of ${cfg.tick_min} case minutes: at most ${calls.toLocaleString()} decisions.</p>`;
+    if (cfg.swarm_policy === "hybrid_genius") s += `<p>Estimated cost: at most about <b>$${(calls * 0.00006).toFixed(2)}</b> for Jev, plus up to ${cfg.hub_max_calls} gpt-6-astra calls at the Yard.</p>`;
+    else if (cfg.swarm_policy === "hybrid") s += `<p>Estimated cost: at most about <b>$${(calls * 0.00006).toFixed(2)}</b> per case; the votes themselves are free.</p>`;
+    else if (cfg.swarm_policy === "jev") s += `<p>Estimated cost: at most about <b>$${(calls * 0.000105).toFixed(2)}</b> per case. Each tick waits 1-2 s for its calls.</p>`;
+    else s += "<p>No model is used: free and instant.</p>";
+    if (cfg.budget_cap_usd > 0) s += `<p>Spending is capped at $${cfg.budget_cap_usd}; above it the simple rule decides.</p>`;
   }
   $("#estimate").innerHTML = s;
 }
@@ -468,7 +478,7 @@ function onFrame(f, redraw = false) {
   const sc = {mode: f.mode, policy: f.policy, swarm_policy: f.hq ? "baker_street" : f.policy};
   tag.style.setProperty("--chip", `var(${seriesVar(sc)})`);
   tag.textContent = solo ? `Solo · ${f.policy === "chat" ? "gpt-6-astra" : f.policy}` : f.hq
-    ? `Baker Street · ${f.hq.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes · ${f.irregulars.length} boys`
+    ? `Baker Street · ${f.hq.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes`
     : `Swarm · ${f.policy} · ${f.irregulars.length} Irregulars`;
   if (CASE) {
     const seed = (/_s(\d+)$/.exec(f.run || "") || [0, "?"])[1];
@@ -478,7 +488,7 @@ function onFrame(f, redraw = false) {
   $("#clock").textContent = hhmm(f.minute);
   const prog = solo ? Math.max(f.visits / f.budget, f.minute / f.deadline) : f.tick / f.ticks;
   $("#progFill").style.width = `${Math.min(100, 100 * prog)}%`;
-  $("#progText").textContent = solo ? `visit ${f.visits}/${f.budget}` : `tick ${f.tick}/${f.ticks}`;
+  $("#progText").textContent = solo ? `visit ${f.visits} of ${f.budget}` : `tick ${f.tick} of ${f.ticks}`;
   $("#playBtn").innerHTML = f.paused ? `<span class="ico" aria-hidden="true">▶</span> <span class="lbl">Resume</span>`
     : `<span class="ico" aria-hidden="true">❚❚</span> <span class="lbl">Pause</span>`;
   const sp = $("#speed");
@@ -529,7 +539,7 @@ function renderNotebook(f) {
       <div class="txt">${esc(n.text)}</div></div>`;
   }).join("");
   seenNotes = f.notebook.length;
-  $("#nbMeta").textContent = `${f.notebook.length} lead${f.notebook.length === 1 ? "" : "s"}`;
+  $("#nbMeta").textContent = `${f.notebook.length} lead${f.notebook.length === 1 ? "" : "s"}, newest first`;
 }
 
 function renderBelief(f) {
@@ -537,6 +547,7 @@ function renderBelief(f) {
   const el = $("#belief");
   el.style.setProperty("--series", `var(${seriesVar({mode: "solo", policy: f.policy})})`);
   if (!L) { el.innerHTML = "<p class='muted small'>Waiting for the first decision…</p>"; return; }
+  el.dataset.hint = "";
   const truth = SECRET && (truthOn() || f.ended) ? SECRET.truth : null;
   let h = "";
   for (const k of ["culprit", "motive", "hideout"]) {
@@ -551,13 +562,14 @@ function renderBelief(f) {
   $("#decMeta").textContent = m.model ? `${m.model.replace("typesafe/", "")} · ${m.in || 0}+${m.out || 0} tok · $${(m.cost || 0).toFixed(4)}` : (L.source || "");
   let note = L.note ? esc(L.note) : "";
   if (L.action_probs) note += `<br>Move: ${Object.entries(L.action_probs).map(([k, v]) => `${k.replace("VISIT_", "")} ${(100 * v).toFixed(0)}%`).join(", ")}`;
-  $("#decNote").innerHTML = `<b>${esc(L.action || "Accuse")}</b>${note ? ". " + note : ""}`;
+  const act = L.action ? (L.action.startsWith("VISIT_") ? `Next: visit ${L.action.slice(6)} ${esc(addrLabel(L.action.slice(6)))}` : L.action === "ACCUSE" ? "Next: accuse" : esc(L.action)) : "Accused";
+  $("#decNote").innerHTML = `<b>${act}</b>${note ? ". " + note : ""}`;
 }
 
 function renderTally(f) {
-  $("#sideTitle").innerHTML = `Votes <span class="meta">quorum ${f.need}</span>`;
+  $("#sideTitle").innerHTML = `How the swarm is voting <span class="meta">${f.need} matching votes close the case</span>`;
   const cv = f.coverage;
-  $("#cov").textContent = `${cv.key_leads_found}/${cv.key_leads} key leads seen · ${cv.addresses} addresses walked`;
+  $("#cov").textContent = `${cv.key_leads_found} of ${cv.key_leads} real clues found · ${cv.addresses} addresses visited`;
   const truth = SECRET && (truthOn() || f.ended) ? SECRET.truth : null;
   const maxV = Math.max(f.need * 1.2, ...f.tally.map((t) => t[1]));
   let h = "";
@@ -566,14 +578,14 @@ function renderTally(f) {
     h += `<div class="small" style="margin-bottom:10px"><b>Holmes at Scotland Yard</b> has ${f.hub.leads} leads.
       ${A ? `Latest: ${esc(name("culprit", A.culprit))} / ${A.motive} / ${A.hideout} ${A.confident ? "<b>(sure)</b>" : "(not sure yet)"}<br><span class="muted">${esc(A.note || "")}</span>` : "No announcement yet."}</div>`;
   }
-  h += `<h4 class="meta" style="margin:0 0 4px">Full answers (culprit / motive / hideout)</h4>`;
+  h += `<h4 class="meta" style="margin:0 0 4px">Most popular full answers (culprit / motive / hideout)</h4>`;
   h += f.tally.length ? f.tally.slice(0, 5).map(([[c, m, hd], n]) => {
     const ok = truth && c === truth.culprit && m === truth.motive && hd === truth.hideout;
     const ci = CASE ? Object.keys(CASE.brief.suspects).indexOf(c) : 0;
     return `<div class="trow"><div><span${ok ? ' style="color:var(--good);font-weight:600"' : ""}>${esc(name("culprit", c))} / ${m} / ${hd}${ok ? " ✓" : ""}</span>
       <div class="qbar"><div style="width:${100 * n / maxV}%;background:${SUS_COLORS[ci % 16]}"></div><i style="left:${100 * f.need / maxV}%"></i></div></div><b>${n}</b></div>`;
-  }).join("") : `<p class="muted small">No Irregular holds a full answer yet.</p>`;
-  h += `<h4 class="meta" style="margin:10px 0 4px">Culprit votes</h4><div class="small">` + (f.parts.culprit.slice(0, 6).map(([c, n]) => {
+  }).join("") : `<p class="muted small">No boy holds a full answer yet.</p>`;
+  h += `<h4 class="meta" style="margin:10px 0 4px">Votes for the culprit alone</h4><div class="small">` + (f.parts.culprit.slice(0, 6).map(([c, n]) => {
     const ci = CASE ? Object.keys(CASE.brief.suspects).indexOf(c) : 0;
     return `<span style="color:${SUS_COLORS[ci % 16]}">●</span> <span class="mono">${c} ${n}</span>`;
   }).join(" &nbsp; ") || "none") + "</div>";
@@ -632,19 +644,19 @@ function renderHQ(f) {
   const q = f.hq, A = q.answer, truth = SECRET && (truthOn() || f.ended) ? SECRET.truth : null;
   const mark = (k) => truth && A ? (A[k] === truth[k] ? " <span style='color:var(--good)'>✓</span>" : " <span style='color:var(--bad)'>✗</span>") : "";
   const cov = f.coverage;
-  $("#sideTitle").innerHTML = `Holmes at 221B <span class="meta">${q.holmes === "chat" ? "gpt-6-astra" : "exact counting"} · plans ${q.calls}/${q.max_calls}</span>`;
-  $("#cov").textContent = `${q.reports} reports · ${cov.key_leads_found}/${cov.key_leads} key leads`;
-  let h = `<div class="hq-answer"><b>Current answer:</b> ${A ? `${esc(name("culprit", A.culprit))}${mark("culprit")} / ${esc(name("motive", A.motive))}${mark("motive")} / ${esc(name("hideout", A.hideout))}${mark("hideout")} <span class="meta">${A.accuse ? "named" : "not sure yet"}</span>` : "<span class='muted'>none yet</span>"}</div>`;
+  $("#sideTitle").innerHTML = `Holmes at 221B <span class="meta">${q.holmes === "chat" ? "gpt-6-astra" : "exact counting"} · planning round ${q.calls} of ${q.max_calls}</span>`;
+  $("#cov").textContent = `${q.reports} reports received · ${cov.key_leads_found} of ${cov.key_leads} real clues reported`;
+  let h = `<div class="hq-answer"><b>Current answer:</b> ${A ? `${esc(name("culprit", A.culprit))}${mark("culprit")} / ${esc(name("motive", A.motive))}${mark("motive")} / ${esc(name("hideout", A.hideout))}${mark("hideout")} <span class="meta">${A.accuse ? "named as the answer" : "his best guess, not sure yet"}</span>` : "<span class='muted'>none yet</span>"}</div>`;
   if (A && A.note) h += `<p class="small muted" style="margin:4px 0 0">${esc(A.note)}</p>`;
-  h += `<h4>Open questions</h4><ul class="hq-q">` + (q.open_questions || []).map((x) => `<li>${esc(x)}</li>`).join("") + `</ul>`;
+  h += `<h4>What he still needs to know</h4><ul class="hq-q">` + (q.open_questions || []).map((x) => `<li>${esc(x)}</li>`).join("") + `</ul>`;
   const W = q.wiggins;
   if (W) h += `<h4>Wiggins</h4><div class="small">${({post: "At his post", to_baker: "Running reports to Baker Street", to_post: "Taking orders to the boys", baker: "At Baker Street"})[W.state] || W.state}, carrying ${W.bag} report${W.bag === 1 ? "" : "s"}.</div>`;
-  h += `<h4>Assignments</h4>` + (q.assignments.length ? q.assignments.map((a) =>
+  h += `<h4>Boys' current assignments</h4>` + (q.assignments.length ? q.assignments.map((a) =>
     `<div class="asg"><span class="dot" style="background:${DISTRICT_HUES[a.district] || css("--faint")}"></span><div><b>${esc(a.district)}</b>
-      <span class="mono">${a.addresses.join(" ")}</span>${a.watch ? `, watch ${a.watch}` : ""} · ${a.boys.length} boy${a.boys.length === 1 ? "" : "s"}
-      ${a.look_for ? `<div class="muted">${esc(a.look_for)}</div>` : ""}</div></div>`).join("") : "<p class='muted small'>None out.</p>");
+      <span class="mono">${a.addresses.join(" ")}</span>${a.watch ? `, watch ${a.watch}` : ""} · ${a.boys.length ? `${a.boys.length} boy${a.boys.length === 1 ? "" : "s"} on it` : "Wiggins is taking these orders out"}
+      ${a.look_for ? `<div class="muted">${esc(a.look_for)}</div>` : ""}</div></div>`).join("") : "<p class='muted small'>No boys out right now.</p>");
   const kinds = truthOn() ? SECRET.lead_kinds : null;
-  h += `<h4>Latest reports</h4><div class="reports">` + q.notebook.slice(-8).reverse().map((r) =>
+  h += `<h4>Latest reports to reach him</h4><div class="reports">` + q.notebook.slice(-8).reverse().map((r) =>
     `<div><span class="muted">${esc(r.boy_name)} · ${r.address.startsWith("tail:") ? "tailing" : r.address}${kinds && r.fake ? " · <b style='color:var(--bad)'>false</b>" : ""}</span><br>${esc(r.text)}</div>`).join("") + `</div>`;
   $("#tally").innerHTML = h;
 }
@@ -659,7 +671,7 @@ async function loadIrregular(i) {
     $("#irrDetail").innerHTML = `<p style="margin:0">${esc(d.state)}${a.district ? ` · assignment in ${esc(a.district)}` : ""}${a.watch ? `, watching ${a.watch}` : ""}</p>
       <p style="margin:4px 0">Last: <b>${esc(L.action || "-")}</b>. ${esc(L.result || "")}</p>
       <p class="muted" style="margin:0">Checked ${d.checked.length} of ${d.targets.length} assigned addresses · ${d.delivered} reports delivered</p>
-      <h4>Carrying</h4>` + (d.carrying.map((t) => `<div>• ${esc(t)}</div>`).join("") || "<div class='muted'>Nothing yet.</div>");
+      <h4>Reports he is carrying</h4>` + (d.carrying.map((t) => `<div>• ${esc(t)}</div>`).join("") || "<div class='muted'>Nothing yet.</div>");
     return;
   }
   $("#selId").textContent = i;
@@ -669,7 +681,7 @@ async function loadIrregular(i) {
   $("#irrDetail").innerHTML = `<p style="margin:0">At <b>${esc(d.observation.you.at)}</b> · hears ${d.observation.you.irregulars_within_earshot} Irregulars</p>
     <p style="margin:4px 0">Last: <b>${esc(L.action || "-")}</b> <span class="muted">(${esc(L.source || "")})</span>. ${esc(L.result || "")}</p>
     <p style="margin:0">Vote: ${esc(v.culprit ? name("culprit", v.culprit) : "unsure")} / ${v.motive || "unsure"} / ${v.hideout || "unsure"}</p>
-    <h4>Leads it holds</h4>` + d.observation.my_leads.map((l) => `<div>• ${esc(l.lead)} <span class="muted">(${esc(l.source)})</span></div>`).join("");
+    <h4>Leads he holds</h4>` + d.observation.my_leads.map((l) => `<div>• ${esc(l.lead)} <span class="muted">(${esc(l.source)})</span></div>`).join("");
 }
 
 function card(label, value, title) { return `<div class="mc" title="${esc(title || "")}"><b>${value}</b><span>${label}</span></div>`; }
@@ -677,10 +689,10 @@ function card(label, value, title) { return `<div class="mc" title="${esc(title 
 function renderInference(f) {
   const i = f.inference;
   $("#infCards").innerHTML = [
-    card("decisions", i.decisions), card("model calls", i.calls), card("median latency", i.latency_p50 != null ? i.latency_p50 + " s" : "-"),
-    card("tokens in", (i.tokens_in / 1000).toFixed(1) + "k", `${i.tokens_cached} cached`), card("tokens out", (i.tokens_out / 1000).toFixed(1) + "k"),
-    card("cost", "$" + i.cost.toFixed(4)), card("fallbacks", i.fallbacks), card("timeouts", i.timeouts),
-    card("model", (i.models[0] || i.policy).replace("typesafe/", "")),
+    card("decisions made", i.decisions), card("model calls", i.calls), card("typical call time", i.latency_p50 != null ? i.latency_p50 + " s" : "-"),
+    card("tokens sent", (i.tokens_in / 1000).toFixed(1) + "k", `${i.tokens_cached} of them cached`), card("tokens received", (i.tokens_out / 1000).toFixed(1) + "k"),
+    card("cost so far", "$" + i.cost.toFixed(4)), card("rule stood in", i.fallbacks, "decisions made by the simple rule because a call failed or was too slow"),
+    card("calls too slow", i.timeouts), card("model", (i.models[0] || i.policy).replace("typesafe/", "")),
   ].join("");
   $("#errors").innerHTML = f.errors.map(esc).join("<br>");
 }
@@ -699,7 +711,7 @@ function buildGuessForm() {
 
 function renderGuesses(f) {
   $("#guesses").innerHTML = f.guesses.map((g) => `<div><span class="mono">${hhmm(g.minute)}</span> (${f.mode === "solo" ? "visit" : "tick"} ${g.progress}): ${g.culprit} / ${g.motive} / ${g.hideout}
-    <b>${g.status === "open" ? "" : g.status}</b></div>`).join("") || "<span class='muted'>Lock in a guess at any time; it is scored against the truth when the case closes.</span>";
+    <b>${g.status === "open" ? "" : g.status}</b></div>`).join("") || "<span class='muted'>Pick a culprit, motive and hideout, then lock it in. You can lock in more than one guess.</span>";
 }
 
 const KNOBS = [["comm_range", "Shouting range (×10 m)", 0, 400, 5], ["bandwidth", "Messages per tick", 0, 12, 1],
@@ -1026,10 +1038,10 @@ function legend() {
     item("var(--bad)", "scene") + item("transparent", "possible hideout (▲)", "border:1.5px solid var(--map-ink);border-radius:2px") +
     item("transparent", "suspect's home", "border:2px solid var(--muted)");
   if (frame && frame.mode === "solo") h += item("var(--accent)", "visited, with the cab route");
-  else if (frame && frame.hq) h += item("var(--ink)", "W = Wiggins (□ his post)") + item(DISTRICT_HUES.Soho, "boy, coloured by assignment district") +
-    item("var(--surface)", "running back to report", "border:2px solid var(--ink)");
-  else if (frame) h += item("var(--faint)", "Irregular, coloured by culprit vote (grey = unsure)");
-  if (t) h += item("var(--good)", "true key lead") + item("var(--bad)", "lie") + item("var(--info)", "pointer");
+  else if (frame && frame.hq) h += item("var(--ink)", "W = Wiggins (□ his post)") + item(DISTRICT_HUES.Soho, "street boy, coloured by the district he was sent to") +
+    item("var(--surface)", "boy running back to report", "border:2px solid var(--ink)");
+  else if (frame) h += item("var(--faint)", "street boy, coloured by the suspect he votes for (grey: undecided)");
+  if (t) h += item("var(--good)", "real clue") + item("var(--bad)", "lie") + item("var(--info)", "\"ask at...\" tip");
   $("#legend").innerHTML = h;
 }
 
