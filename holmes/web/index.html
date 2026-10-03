@@ -89,6 +89,7 @@
   <header class="topbar dashbar">
     <div class="brand small-brand"><span class="brand-mark" aria-hidden="true">✦</span> The Irregulars</div>
     <span id="modeTag" class="chip"></span>
+    <span id="liveDot" class="live on">Live</span>
     <div class="clock" title="Case time: the clock inside the story, starting at 08:00">
       <span class="meta">Case time</span><span id="clock" class="mono">08:00</span>
       <div class="prog" aria-hidden="true"><div id="progFill"></div></div>
@@ -101,6 +102,7 @@
       <label class="switch" title="Show the hidden answer, the lies and the liars (spoilers)"><input type="checkbox" id="tTruth"><span class="track" aria-hidden="true"></span> Reveal the truth</label>
     </div>
     <span class="grow"></span>
+    <button type="button" id="presentBtn" class="ghost" title="Presentation mode: a big map with captions (key P). F for full screen, R to reveal the truth, double-click the map to reset the view">Present</button>
     <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
     <button id="newRun" class="ghost">Change setup</button>
   </header>
@@ -110,6 +112,9 @@
   <div class="views">
     <div class="card map-card">
       <canvas id="map" aria-label="Live map of the case"></canvas>
+      <div id="titleCard" class="titlecard" hidden></div>
+      <div id="stamp" class="stamp" hidden></div>
+      <div id="captions" class="captions" aria-live="polite"></div>
       <div id="tip" class="tip" hidden></div>
       <div id="legend" class="legend"></div>
     </div>

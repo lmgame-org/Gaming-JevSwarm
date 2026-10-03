@@ -85,7 +85,9 @@ genius's Solo spend).
 
 ## The viewer
 
-- **Launch screen**: presets, every knob, a live preview of the seeded map, model/key tests, cost estimate.
+- **Launch screen**: A "Who investigates" (Solo detective, Baker Street, other baselines) and B "The case" (case
+  number, map size, time limit, lying witnesses, bribed and mistaken boys), a dropdown with the 14 benchmark setups,
+  a live preview of the seeded map, model checks and a cost estimate.
 - **Live map**: districts, the Thames, streets, 221B, Scotland Yard, the scene, candidate hideouts and suspects'
   homes. Solo: the detective's cab route and visited addresses light up; hover an address for its lead. Swarm:
   each Irregular is a dot coloured by its culprit vote; shouts ripple out to the shouting range; click a dot to
@@ -97,6 +99,24 @@ genius's Solo spend).
   true hideout, and rings the lying Irregulars.
 - Pause, single step, speed, and live swarm knobs (range, bandwidth, forgetting, quorum), logged as
   interventions. The end banner shows the accusation against the truth.
+
+### Recording a demo
+
+Press **Present** (or **P**) in the viewer for a big map with captions. Each run opens with a title card naming the
+case. Captions narrate each visit, Holmes's planning rounds, reports reaching 221B and the swarm's votes. The
+detective's cab and the street boys walk along the streets and leave fading trails. When the case closes, a verdict
+stamp appears, the camera zooms to the culprit's home, the true hideout and the scene, and those places pulse.
+
+| Key | Action |
+|---|---|
+| P | presentation mode on / off |
+| F | browser full screen |
+| R | reveal the truth |
+| Space | pause / resume |
+| 0, or double-click the map | reset the camera |
+
+Use the Light/Dark button to pick the theme before recording. Animations are turned off for viewers who ask for
+reduced motion.
 
 ## Batch comparisons
 

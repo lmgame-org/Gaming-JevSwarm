@@ -454,6 +454,8 @@ async function launch() {
 function startDash() {
   $("#launch").hidden = true; $("#dash").hidden = false; $("#endBanner").hidden = true;
   frame = null; CASE = null; SECRET = null; selected = -1; seenNotes = 0; pulses = []; AG.cur.clear(); AG.prev.clear(); AG.det = null; AG.last = 0;
+  TRAILS.clear(); CAPS_SEEN = new Set(); LAST_REPORTS = 0; LAST_PLAN = 0; Object.assign(CAM, {z: 1, cx: 500, cy: 350, to: null});
+  $("#captions").innerHTML = ""; $("#stamp").hidden = true; $("#titleCard").hidden = true;
   $("#tTruth").checked = false;
   $("#selId").textContent = "-"; $("#irrDetail").innerHTML = ""; $("#selTraits").textContent = "";
   if (es) es.close();
@@ -471,7 +473,11 @@ function onFrame(f, redraw = false) {
   const solo = f.mode === "solo";
   document.querySelectorAll(".solo-only").forEach((e) => e.hidden = !solo);
   document.querySelectorAll(".swarm-only").forEach((e) => e.hidden = solo);
-  if (first && CASE) { renderBrief(); buildGuessForm(); if (!solo && !f.hq) buildKnobs(); }
+  if (first && CASE) { renderBrief(); buildGuessForm(); if (!solo && !f.hq) buildKnobs(); setTimeout(() => titleCard(f), 50); }
+  if (!redraw && CASE) captionsFor(f);
+  const live = $("#liveDot");
+  live.className = `live ${f.ended ? "closed" : f.paused ? "paused" : "on"}`;
+  live.textContent = f.ended ? "Closed" : f.paused ? "Paused" : "Live";
   if (first || redraw) legend();
   document.querySelectorAll(".swarm-knobs").forEach((e) => e.hidden = solo || !!f.hq);
   const tag = $("#modeTag");
@@ -762,6 +768,8 @@ function showEnd(f) {
     </div>
     <div class="actions" style="grid-column:1/-1"><button id="hideEnd" class="ghost">Close</button><button id="againBtn" class="primary">New case</button></div>`;
   b.hidden = false;
+  verdictStamp(cold ? "cold" : cls, verdict);
+  setTimeout(focusTruth, 400);
   $("#hideEnd").onclick = () => b.hidden = true;
   $("#againBtn").onclick = () => goLaunch();
   if (!$("#tTruth").checked) { $("#tTruth").checked = true; legend(); }
@@ -771,6 +779,7 @@ function goLaunch() {
   if (es) es.close();
   $("#dash").hidden = true; $("#launch").hidden = false; $("#endBanner").hidden = true;
   delete $("#endBanner").dataset.shown;
+  document.body.classList.remove("present");
   initLaunch();
 }
 
@@ -812,10 +821,15 @@ function label(g, text, x, y, opt = {}) {
   g.textAlign = "left";
 }
 
-function baseLayer(c, cs) {
-  const dpr = devicePixelRatio || 1, v = mapView(c);
-  const key = `${c.id}|${v.W}x${v.H}|${effectiveTheme()}|${cs.map.addresses.length}|${cs.map.scene}|${cs.map.baker}`;
-  if (BASES.has(key)) return {img: BASES.get(key), v};
+function baseLayer(c, cs, cam = null) {
+  const dpr = devicePixelRatio || 1, fit = mapView(c);
+  const zoomed = cam && Math.abs(cam.z - 1) > 0.01;
+  const key = `${c.id}|${fit.W}x${fit.H}|${effectiveTheme()}|${cs.map.addresses.length}|${cs.map.scene}|${cs.map.baker}` +
+    (zoomed ? `|${cam.z.toFixed(3)}|${cam.cx.toFixed(1)}|${cam.cy.toFixed(1)}` : "");
+  if (BASES.has(key)) return {img: BASES.get(key), v: fit, zoomed};
+  // a settled zoom is drawn crisply at the camera's own scale
+  const v = zoomed ? {...fit, s: fit.s * cam.z, ox: fit.W / 2 - cam.cx * fit.s * cam.z, oy: fit.H / 2 - cam.cy * fit.s * cam.z} : fit;
+  if (BASES.size > 16) BASES.delete(BASES.keys().next().value);
   const off = document.createElement("canvas");
   off.width = v.W * dpr; off.height = v.H * dpr;
   const g = off.getContext("2d"); g.scale(dpr, dpr);
@@ -870,11 +884,76 @@ function baseLayer(c, cs) {
     label(g, "N", nx, ny + 16, {align: "center", font: `600 10px ${css("--f-ui") || "sans-serif"}`});
   }
   BASES.set(key, off);
-  return {img: off, v};
+  return {img: off, v: fit, zoomed};
 }
 
-/* ------------------------------------------------------------------ map: agents, tweening, overlays */
-const AG = {prev: new Map(), cur: new Map(), t0: 0, dur: 0, last: 0, det: null};
+/* ------------------------------------------------------------------ map: streets, camera, agents, overlays */
+// Street graph for walking along the streets (client-side shortest paths, cached per case).
+const GRAPH = {key: null, adj: null, A: null, paths: new Map()};
+function graph(cs) {
+  const key = `${cs.map.addresses.length}|${cs.map.scene}|${cs.map.baker}`;
+  if (GRAPH.key === key) return GRAPH;
+  const A = {}; for (const a of cs.map.addresses) A[a.id] = a;
+  const adj = {}; for (const a of cs.map.addresses) adj[a.id] = [];
+  for (const [i, j] of cs.map.edges) {
+    const w = Math.hypot(A[i].x - A[j].x, A[i].y - A[j].y);
+    adj[i].push([j, w]); adj[j].push([i, w]);
+  }
+  Object.assign(GRAPH, {key, adj, A, paths: new Map()});
+  return GRAPH;
+}
+function streetPath(cs, a, b) {
+  const G = graph(cs);
+  if (!G.A[a] || !G.A[b]) return null;
+  const k = a + ">" + b;
+  if (G.paths.has(k)) return G.paths.get(k);
+  const dist = {[a]: 0}, prev = {}, done = new Set();
+  const todo = [[0, a]];
+  while (todo.length) {
+    todo.sort((x, y) => x[0] - y[0]);
+    const [d, u] = todo.shift();
+    if (done.has(u)) continue; done.add(u);
+    if (u === b) break;
+    for (const [v, w] of G.adj[u]) if (d + w < (dist[v] ?? 1e18)) { dist[v] = d + w; prev[v] = u; todo.push([d + w, v]); }
+  }
+  const ids = [b]; while (ids[0] !== a && prev[ids[0]]) ids.unshift(prev[ids[0]]);
+  const pts = ids.map((id) => [G.A[id].x, G.A[id].y]);
+  const segs = []; let total = 0;
+  for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); total += l; }
+  const path = {pts, segs, total};
+  G.paths.set(k, path);
+  return path;
+}
+function along(path, f) {
+  if (!path) return null;
+  if (path.pts.length === 1 || f <= 0) return path.pts[0];
+  if (f >= 1) return path.pts[path.pts.length - 1];
+  let d = f * path.total;
+  for (let i = 0; i < path.segs.length; i++) {
+    if (d <= path.segs[i]) { const t = path.segs[i] ? d / path.segs[i] : 0, p = path.pts[i], q = path.pts[i + 1]; return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; }
+    d -= path.segs[i];
+  }
+  return path.pts[path.pts.length - 1];
+}
+
+// Camera: zoom z around a map point (cx, cy); z = 1 and the centre of the map is the plain fitted view.
+const CAM = {z: 1, cx: 500, cy: 350, from: null, to: null, t0: 0, dur: 0};
+function camNow() {
+  if (!CAM.to) return CAM;
+  const k = CAM.dur ? Math.min(1, (performance.now() - CAM.t0) / CAM.dur) : 1, e = ease(k);
+  CAM.z = CAM.from.z + (CAM.to.z - CAM.from.z) * e; CAM.cx = CAM.from.cx + (CAM.to.cx - CAM.from.cx) * e; CAM.cy = CAM.from.cy + (CAM.to.cy - CAM.from.cy) * e;
+  if (k >= 1) CAM.to = null;
+  return CAM;
+}
+function camTo(z, cx, cy, dur = 1400) {
+  CAM.from = {z: CAM.z, cx: CAM.cx, cy: CAM.cy}; CAM.to = {z, cx, cy}; CAM.t0 = performance.now(); CAM.dur = REDUCED.matches ? 0 : dur;
+}
+function camReset(dur = 900) { camTo(1, 500, 350, dur); }
+function project(v, x, y) { const c = CAM; return [v.W / 2 + (x - c.cx) * v.s * c.z, v.H / 2 + (y - c.cy) * v.s * c.z]; }
+function unproject(v, X, Y) { const c = CAM; return [c.cx + (X - v.W / 2) / (v.s * c.z), c.cy + (Y - v.H / 2) / (v.s * c.z)]; }
+
+const AG = {prev: new Map(), cur: new Map(), t0: 0, dur: 0, last: 0, det: null, tick: 0};
+const TRAILS = new Map();
 
 function tween(f) {
   const now = performance.now();
@@ -886,11 +965,10 @@ function tween(f) {
   AG.cur = new Map();
   if (f.mode !== "solo") for (const r of f.irregulars) AG.cur.set(r[0], [r[1], r[2]]);
   if (f.mode === "solo" && (CASE || f.case)) {
-    const cs = f.case || CASE;
-    const A = cs.map.addresses.find((x) => x.id === f.at);
-    const to = A ? [A.x, A.y] : null;
-    AG.det = {from: AG.det ? detPos() : to, to};
+    const at = f.at, before = AG.det ? AG.det.toId : at;
+    AG.det = {fromId: before, toId: at};
   }
+  AG.tick = f.tick || 0;
   AG.t0 = now; AG.dur = REDUCED.matches ? 0 : gap * 0.9;
 }
 function tweenK() { return AG.dur ? Math.min(1, (performance.now() - AG.t0) / AG.dur) : 1; }
@@ -902,9 +980,38 @@ function agentPos(i) {
   return [p[0] + (c[0] - p[0]) * k, p[1] + (c[1] - p[1]) * k];
 }
 function detPos() {
-  const d = AG.det; if (!d || !d.to) return null;
-  const k = ease(tweenK()), a = d.from || d.to;
-  return [a[0] + (d.to[0] - a[0]) * k, a[1] + (d.to[1] - a[1]) * k];
+  const d = AG.det; if (!d || !CASE) return null;
+  const path = streetPath(CASE, d.fromId, d.toId);
+  return along(path, ease(tweenK()));
+}
+// Baker Street walkers follow the streets of their current leg, at the case clock between frames.
+function legPos(leg, fallback) {
+  if (!leg || !CASE) return fallback;
+  const [from, to, t0, t1] = leg;
+  const tickNow = AG.tick - 1 + tweenK();
+  const f = Math.min(1, Math.max(0, (tickNow - t0) / Math.max(1, t1 - t0)));
+  return along(streetPath(CASE, from, to), f) || fallback;
+}
+function trail(id, p) {
+  const now = performance.now();
+  let t = TRAILS.get(id);
+  if (!t) { t = []; TRAILS.set(id, t); }
+  const last = t[t.length - 1];
+  if (!last || Math.hypot(last[0] - p[0], last[1] - p[1]) > 1.5) t.push([p[0], p[1], now]);
+  while (t.length && now - t[0][2] > 1800) t.shift();
+  return t;
+}
+function drawTrail(g, v, pts, color, width = 2) {
+  if (pts.length < 2 || REDUCED.matches) return;
+  const now = performance.now();
+  g.strokeStyle = color; g.lineCap = "round"; g.lineWidth = width;
+  for (let i = 1; i < pts.length; i++) {
+    const age = (now - pts[i][2]) / 1800;
+    g.globalAlpha = Math.max(0, 0.45 * (1 - age));
+    const [x1, y1] = project(v, pts[i - 1][0], pts[i - 1][1]), [x2, y2] = project(v, pts[i][0], pts[i][1]);
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+  }
+  g.globalAlpha = 1;
 }
 
 function dot(g, x, y, r, fill, ring) {
@@ -921,19 +1028,30 @@ function star(g, x, y, r, fill) {
 function drawMap(c, cs, f, opt = {}) {
   if (!cs || !c.clientWidth) return;
   const dpr = devicePixelRatio || 1;
-  const {img, v} = baseLayer(c, cs);
+  const cam = opt.preview ? {z: 1, cx: 500, cy: 350} : camNow();
+  const {img, v, zoomed} = baseLayer(c, cs, !opt.preview && !CAM.to ? cam : null);
   if (c.width !== Math.round(v.W * dpr) || c.height !== Math.round(v.H * dpr)) { c.width = v.W * dpr; c.height = v.H * dpr; }
   const g = c.getContext("2d");
-  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0);
+  const saved = {z: CAM.z, cx: CAM.cx, cy: CAM.cy};
+  if (opt.preview) Object.assign(CAM, {z: 1, cx: 500, cy: 350});
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height);
+  g.fillStyle = css("--map-paper"); g.fillRect(0, 0, c.width, c.height);
+  // base layer under the camera: screen = W/2 + (fit - fitCentre) * z
+  if (zoomed) { g.drawImage(img, 0, 0); }
+  else {
+    const fcx = v.ox + cam.cx * v.s, fcy = v.oy + cam.cy * v.s;
+    g.setTransform(dpr * cam.z, 0, 0, dpr * cam.z, dpr * (v.W / 2 - fcx * cam.z), dpr * (v.H / 2 - fcy * cam.z));
+    g.drawImage(img, 0, 0, img.width / dpr, img.height / dpr);
+  }
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (!opt.preview) view = v;
-  const P = (x, y) => [v.ox + x * v.s, v.oy + y * v.s];
+  const P = (x, y) => project(v, x, y);
   const M = cs.map;
   const A = {}; for (const a of M.addresses) A[a.id] = a;
   const truth = !opt.preview && truthOn() ? SECRET : null;
   const small = v.W < 520;
   const solo = f && f.mode === "solo";
-  // truth overlay: what each lead really is
+  const now = performance.now();
   if (truth) {
     for (const a of M.addresses) {
       const k = truth.lead_kinds[a.id];
@@ -942,14 +1060,19 @@ function drawMap(c, cs, f, opt = {}) {
       const [x, y] = P(a.x, a.y); g.fillStyle = col; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill();
     }
   }
-  // solo: route and visited addresses
+  // solo: the cab route along the streets, and visited addresses
   if (solo) {
-    const pts = f.path.map((id) => P(A[id].x, A[id].y));
-    const dp = detPos();
-    g.strokeStyle = css("--accent"); g.lineWidth = 2; g.setLineDash([6, 5]); g.lineJoin = "round"; g.beginPath();
-    pts.slice(0, -1).forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
-    if (dp && pts.length > 1) { const [x, y] = P(dp[0], dp[1]); g.lineTo(x, y); }
-    g.stroke(); g.setLineDash([]);
+    g.strokeStyle = css("--accent"); g.lineWidth = 2; g.setLineDash([6, 5]); g.lineJoin = "round"; g.globalAlpha = 0.8; g.beginPath();
+    for (let i = 1; i < f.path.length - 1; i++) {
+      const sp = streetPath(cs, f.path[i - 1], f.path[i]); if (!sp) continue;
+      sp.pts.forEach(([x0, y0], j) => { const [x, y] = P(x0, y0); j ? g.lineTo(x, y) : g.moveTo(x, y); });
+    }
+    if (f.path.length > 1 && AG.det) {
+      const sp = streetPath(cs, AG.det.fromId, AG.det.toId), k = ease(tweenK());
+      if (sp) { let d = 0; const lim = k * sp.total; const [x0, y0] = P(sp.pts[0][0], sp.pts[0][1]); g.moveTo(x0, y0);
+        for (let j = 1; j < sp.pts.length && d < lim; j++) { const seg = sp.segs[j - 1]; const q = d + seg <= lim ? sp.pts[j] : along(sp, k); const [x, y] = P(q[0], q[1]); g.lineTo(x, y); d += seg; } }
+    }
+    g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
     for (const id of new Set(f.path)) { const [x, y] = P(A[id].x, A[id].y); dot(g, x, y, 2.6, css("--accent")); }
   }
   // landmarks
@@ -970,18 +1093,27 @@ function drawMap(c, cs, f, opt = {}) {
     g.strokeStyle = css("--bad"); g.lineWidth = 2.5; g.stroke();
   });
   lm(M.baker, "221B", (x, y) => star(g, x, y, 8, css("--accent")));
-  if (!f) return;
-  const now = performance.now();
-  // shouts and deliveries as quiet expanding rings
+  if (!f) { if (opt.preview) Object.assign(CAM, saved); return; }
+  // when the case is closed and the truth is shown: pulse the culprit's home and the true hideout
+  if (f.ended && truth && !REDUCED.matches) {
+    const pts = [M.suspect_homes[truth.truth.culprit], M.hideouts[truth.truth.hideout]].filter(Boolean);
+    for (const id of pts) {
+      const [x, y] = P(A[id].x, A[id].y), k = (now % 1600) / 1600;
+      g.strokeStyle = css("--good"); g.lineWidth = 2; g.globalAlpha = 0.7 * (1 - k);
+      g.beginPath(); g.arc(x, y, 8 + 22 * k, 0, 7); g.stroke(); g.globalAlpha = 1;
+    }
+  }
+  // shouts and report hand-overs as quiet expanding rings
   pulses = pulses.filter((p) => now - p.t0 < 1000);
   for (const p of pulses) {
     const k = (now - p.t0) / 1000, [x, y] = P(p.x, p.y);
     g.strokeStyle = css("--map-ink"); g.globalAlpha = 0.28 * (1 - k); g.lineWidth = 1;
-    g.beginPath(); g.arc(x, y, (p.r || f.comm_range) * v.s * (0.15 + 0.85 * k), 0, 7); g.stroke(); g.globalAlpha = 1;
+    g.beginPath(); g.arc(x, y, (p.r || f.comm_range) * v.s * CAM.z * (0.15 + 0.85 * k), 0, 7); g.stroke(); g.globalAlpha = 1;
   }
   if (solo) {
     const dp = detPos();
     if (dp) {
+      drawTrail(g, v, trail("det", dp), css("--accent"), 3);
       const [x, y] = P(dp[0], dp[1]);
       if (!REDUCED.matches && !f.ended) { g.strokeStyle = css("--accent"); g.globalAlpha = 0.5; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 11 + 3 * Math.sin(now / 350), 0, 7); g.stroke(); g.globalAlpha = 1; }
       dot(g, x, y, 7, css("--ink"));
@@ -991,28 +1123,33 @@ function drawMap(c, cs, f, opt = {}) {
   }
   if (f.hub && A[f.hub.yard]) {
     const [yx, yy] = P(A[f.hub.yard].x, A[f.hub.yard].y);
-    g.strokeStyle = css("--info"); g.globalAlpha = 0.6; g.setLineDash([4, 4]); g.beginPath(); g.arc(yx, yy, f.comm_range * v.s, 0, 7); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+    g.strokeStyle = css("--info"); g.globalAlpha = 0.6; g.setLineDash([4, 4]); g.beginPath(); g.arc(yx, yy, f.comm_range * v.s * CAM.z, 0, 7); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
   }
   if (f.hq) {
     const W = f.hq.wiggins;
     for (const r of f.irregulars) {
-      const [i, , , dist, , state, flags, tgt, tailing] = r;
-      const p = agentPos(i) || [r[1], r[2]];
+      const [i, sx, sy, dist, , state, flags, tgt, tailing, , leg] = r;
+      const p = legPos(leg, [sx, sy]);
       const jit = (i * 2.399963) % 6.283, rad = state === "idle" ? 8 + (i * 3.7) % 6 : 0;
-      const [x, y] = P(p[0] + rad * Math.cos(jit), p[1] + rad * Math.sin(jit));
+      const q = [p[0] + rad * Math.cos(jit), p[1] + rad * Math.sin(jit)];
+      const col = dist ? (DISTRICT_HUES[dist] || css("--faint")) : css("--faint");
+      if (state !== "idle") drawTrail(g, v, trail("b" + i, q), col, 2);
+      const [x, y] = P(q[0], q[1]);
       if (tgt && A[tgt] && state !== "idle") {
         const [tx, ty] = P(A[tgt].x, A[tgt].y);
-        g.strokeStyle = css("--map-ink"); g.globalAlpha = 0.25; g.setLineDash([2, 3]); g.lineWidth = 1;
+        g.strokeStyle = css("--map-ink"); g.globalAlpha = 0.18; g.setLineDash([2, 3]); g.lineWidth = 1;
         g.beginPath(); g.moveTo(x, y); g.lineTo(tx, ty); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
       }
-      dot(g, x, y, i === selected ? 5 : 3.6, dist ? (DISTRICT_HUES[dist] || css("--faint")) : css("--faint"), state === "back" ? css("--ink") : null);
+      dot(g, x, y, i === selected ? 5 : 3.8, col, state === "back" ? css("--ink") : null);
       if (tailing) { g.strokeStyle = css("--bad"); g.lineWidth = 1; g.setLineDash([2, 2]); g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); g.setLineDash([]); }
       if (truth && (flags & 1)) { g.strokeStyle = css("--bad"); g.lineWidth = 2; g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); }
       if (i === selected) { g.strokeStyle = css("--ink"); g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 9, 0, 7); g.stroke(); }
     }
     if (W) {
       if (A[W.post] && W.post !== f.hq.baker) { const [px, py] = P(A[W.post].x, A[W.post].y); g.strokeStyle = css("--ink"); g.lineWidth = 1.5; g.strokeRect(px - 7, py - 7, 14, 14); }
-      const [wx, wy] = P(W.x, W.y);
+      const wp = legPos(W.leg, [W.x, W.y]);
+      drawTrail(g, v, trail("W", wp), css("--ink"), 2.5);
+      const [wx, wy] = P(wp[0], wp[1]);
       dot(g, wx, wy, 8, css("--ink"));
       g.fillStyle = css("--map-paper"); g.font = `700 10px ${css("--f-head") || "serif"}`; g.textAlign = "center"; g.fillText("W", wx, wy + 3.5); g.textAlign = "left";
     }
@@ -1023,12 +1160,79 @@ function drawMap(c, cs, f, opt = {}) {
     const [i, , , cu, , , flags] = r;
     const p = agentPos(i) || [r[1], r[2]];
     const jit = (i * 2.399963) % 6.283, rad = 5 + (i * 3.7) % 7;
-    const [x, y] = P(p[0] + rad * Math.cos(jit), p[1] + rad * Math.sin(jit));
+    const q = [p[0] + rad * Math.cos(jit), p[1] + rad * Math.sin(jit)];
+    const [x, y] = P(q[0], q[1]);
     const ci = order.indexOf(cu);
     dot(g, x, y, i === selected ? 4.6 : 3.2, cu ? SUS_COLORS[ci % 16] : css("--faint"));
     if (truth && (flags & 1)) { g.strokeStyle = css("--bad"); g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 7, 0, 7); g.stroke(); }
     if (i === selected) { g.strokeStyle = css("--ink"); g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); }
   }
+}
+
+/* ------------------------------------------------------------------ demo overlays: title card, captions, verdict stamp */
+let CAPS_SEEN = new Set(), LAST_REPORTS = 0, LAST_PLAN = 0;
+function caption(html, kind = "") {
+  const box = $("#captions");
+  const el = document.createElement("div");
+  el.className = `cap ${kind}`; el.innerHTML = html;
+  box.appendChild(el);
+  while (box.children.length > 2) box.removeChild(box.firstChild);
+  const life = kind === "big" ? 7000 : Math.max(2600, Math.min(5200, 7000 / Math.max(0.5, frame ? frame.speed : 1)));
+  setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 600); }, life);
+}
+function captionsFor(f) {
+  const quote = (t, n = 150) => `<q>${esc(t.length > n ? t.slice(0, n - 1) + "…" : t)}</q>`;
+  for (const e of f.events) {
+    const key = `${e.t}|${e.kind}|${e.detail}`;
+    if (CAPS_SEEN.has(key)) continue;
+    CAPS_SEEN.add(key);
+    if (CAPS_SEEN.size < 4 && (e.kind === "case" || e.kind === "start")) continue;
+    if (e.kind === "lead" && e.visit) caption(`<b>Visit ${e.visit} · ${esc(addrLabel(e.address))}</b>${quote(e.detail)}`);
+    else if (e.kind === "hub" && !f.hq) caption(`<b>Holmes at the Yard</b>${quote(e.detail.replace(/^Holmes[^:]*:\s*/, ""), 170)}`);
+    else if (e.kind === "tally") caption(`<b>The swarm is voting</b>${esc(e.detail.replace(/^tick \d+: /, ""))}`);
+    else if (e.kind === "accuse" || e.kind === "timeout") caption(`<b>${e.kind === "accuse" ? "Case closed" : "Out of time"}</b>${esc(e.detail)}`, "big");
+    else if (e.kind === "intervention" || e.kind === "guess" || e.kind === "budget") caption(esc(e.detail), "note");
+  }
+  if (f.hq && f.hq.calls > LAST_PLAN) {
+    LAST_PLAN = f.hq.calls;
+    const q = f.hq, A = q.answer || {};
+    const dists = [...new Set(q.assignments.map((a) => a.district))];
+    const where = dists.length ? `Sends boys to ${dists.length > 1 ? dists.slice(0, -1).join(", ") + " and " + dists[dists.length - 1] : dists[0]}.` : "Waits for more reports.";
+    const guess = A.culprit ? ` ${A.accuse ? "Names" : "Best guess so far"}: ${esc(name("culprit", A.culprit).replace(/^S\d+ /, ""))}, ${esc(name("motive", A.motive).replace(/^M\d+ /, ""))}, ${esc(name("hideout", A.hideout).replace(/^H\d+ /, ""))}.` : "";
+    caption(`<b>Holmes, planning round ${q.calls}</b>${where}${guess}${A.note ? quote(A.note, 140) : ""}`);
+  }
+  if (f.hq) {
+    const n = f.hq.reports;
+    if (n > LAST_REPORTS) caption(`<b>${n - LAST_REPORTS} new report${n - LAST_REPORTS === 1 ? "" : "s"} reach 221B</b>${f.hq.wiggins ? "Wiggins hands them to Holmes." : "A boy runs in with his findings."}`, "note");
+    LAST_REPORTS = n;
+  }
+}
+function titleCard(f) {
+  if (!CASE) return;
+  const seed = (/_s(\d+)$/.exec(f.run || "") || [0, "?"])[1];
+  const t = caseTitle(CASE.brief, seed);
+  const el = $("#titleCard");
+  el.innerHTML = `<div class="tc-kicker">${esc($("#modeTag").textContent)}</div><div class="tc-title">${esc(t.title)}</div><div class="tc-sub">${esc(t.sub)}</div>`;
+  el.hidden = false; el.classList.remove("out");
+  setTimeout(() => el.classList.add("out"), REDUCED.matches ? 1500 : 2600);
+  setTimeout(() => { el.hidden = true; }, REDUCED.matches ? 1600 : 3400);
+}
+function verdictStamp(cls, verdict) {
+  const el = $("#stamp");
+  el.className = `stamp ${cls}`;
+  el.textContent = {solved: "Solved", partly: "Partly right", wrong: "Wrong", cold: "Case went cold"}[cls] || verdict;
+  el.hidden = false;
+}
+function focusTruth() {
+  if (!CASE || !SECRET) return;
+  const M = CASE.map, A = {}; for (const a of M.addresses) A[a.id] = a;
+  const ids = [M.suspect_homes[SECRET.truth.culprit], M.hideouts[SECRET.truth.hideout], M.scene].filter((x) => A[x]);
+  if (!ids.length) return;
+  const xs = ids.map((i) => A[i].x), ys = ids.map((i) => A[i].y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const v = view || {W: 1000, H: 700, s: 1};
+  const zx = v.W / ((Math.max(...xs) - Math.min(...xs) + 220) * v.s), zy = v.H / ((Math.max(...ys) - Math.min(...ys) + 220) * v.s);
+  camTo(Math.min(2.2, Math.max(1, Math.min(zx, zy))), cx, cy, 1600);
 }
 
 function legend() {
@@ -1053,11 +1257,11 @@ function loop() {
 function onMapMove(ev) {
   if (!view || !CASE) return;
   const rect = $("#map").getBoundingClientRect();
-  const mx = (ev.clientX - rect.left - view.ox) / view.s, my = (ev.clientY - rect.top - view.oy) / view.s;
+  const [mx, my] = unproject(view, ev.clientX - rect.left, ev.clientY - rect.top);
   let best = null, bd = 1e9;
   for (const a of CASE.map.addresses) { const d = (a.x - mx) ** 2 + (a.y - my) ** 2; if (d < bd) { bd = d; best = a; } }
   const tip = $("#tip");
-  if (!best || bd > 225) { hover = null; tip.hidden = true; return; }
+  if (!best || bd > 225 / (CAM.z * CAM.z)) { hover = null; tip.hidden = true; return; }
   hover = best;
   let lead = "";
   if (frame && frame.mode === "solo") { const n = frame.notebook.find((x) => x.address === best.id); if (n) lead = `<div style="margin-top:4px">${esc(n.text)}</div>`; }
@@ -1073,10 +1277,10 @@ function onMapClick(ev) {
   const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
   let best = -1, bd = 1e9;
   for (const r of frame.irregulars) {
-    const i = r[0], p = agentPos(i) || [r[1], r[2]];
+    const i = r[0], p = frame.hq ? legPos(r[10], [r[1], r[2]]) : (agentPos(i) || [r[1], r[2]]);
     const idle = frame.hq ? r[5] === "idle" : true;
     const jit = (i * 2.399963) % 6.283, rad = frame.hq ? (idle ? 8 + (i * 3.7) % 6 : 0) : 5 + (i * 3.7) % 7;
-    const x = view.ox + (p[0] + rad * Math.cos(jit)) * view.s, y = view.oy + (p[1] + rad * Math.sin(jit)) * view.s;
+    const [x, y] = project(view, p[0] + rad * Math.cos(jit), p[1] + rad * Math.sin(jit));
     const d = (x - mx) ** 2 + (y - my) ** 2; if (d < bd) { bd = d; best = i; }
   }
   if (best >= 0 && bd < 250) { selected = best; loadIrregular(best); }
@@ -1101,6 +1305,20 @@ $("#gGo").onclick = () => api("/api/guess", {culprit: $("#gC").value, motive: $(
 $("#map").addEventListener("mousemove", onMapMove);
 $("#map").addEventListener("mouseleave", () => { hover = null; $("#tip").hidden = true; });
 $("#map").addEventListener("click", onMapClick);
+$("#map").addEventListener("dblclick", () => camReset());
+function togglePresent() {
+  document.body.classList.toggle("present");
+  $("#presentBtn").textContent = document.body.classList.contains("present") ? "Exit presentation" : "Present";
+  BASES.clear(); setTimeout(() => { BASES.clear(); if (frame) onFrame(frame, true); }, 60);
+}
+$("#presentBtn").onclick = togglePresent;
+addEventListener("keydown", (e) => {
+  if ($("#dash").hidden || ["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+  if (e.key === "p" || e.key === "P") togglePresent();
+  else if (e.key === "r" || e.key === "R") { $("#tTruth").click(); }
+  else if (e.key === "f" || e.key === "F") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.().catch(() => {}); }
+  else if (e.key === "0") camReset();
+});
 addEventListener("keydown", (e) => { if (e.code === "Space" && !$("#dash").hidden && !["INPUT", "SELECT", "BUTTON"].includes(e.target.tagName)) { e.preventDefault(); $("#playBtn").click(); } });
 let rzTimer = null;
 addEventListener("resize", () => { clearTimeout(rzTimer); rzTimer = setTimeout(() => { BASES.clear(); if (!$("#launch").hidden && PREVIEW) drawMap($("#preview"), PREVIEW, null, {preview: true}); if (frame) onFrame(frame, true); }, 120); });

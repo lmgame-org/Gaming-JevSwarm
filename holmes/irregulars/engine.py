@@ -406,7 +406,7 @@ class Engine:
             n = sum(len(a["addresses"]) for a in g.assignments)
             self._event("hub", f"Holmes ({len(g.notebook)} reports): {plan.get('culprit')}/{plan.get('motive')}/"
                                f"{plan.get('hideout')}{' - sure' if plan.get('accuse') else ''}. "
-                               f"{len(g.assignments)} assignments, {n} addresses. {plan.get('note') or ''}")
+                               f"{len(g.assignments)} assignment{'s' if len(g.assignments) != 1 else ''}, {n} address{'es' if n != 1 else ''}. {plan.get('note') or ''}")
             if plan.get("accuse"):
                 g.finish(plan, forced=False)
         g.end_tick()
@@ -522,7 +522,8 @@ class Engine:
                 x, y = b.pos(g.tick)
                 tgt = b.leg[1] if b.leg else None
                 boys.append([b.i, round(x, 1), round(y, 1), (b.assignment or {}).get("district"), b.name,
-                             b.state, int(b.liar) | (4 * int(b.mistaken)), tgt, bool(b.tailing), len(b.carrying)])
+                             b.state, int(b.liar) | (4 * int(b.mistaken)), tgt, bool(b.tailing), len(b.carrying),
+                             list(b.leg[:4]) if b.leg else None])
             w = g.wiggins
             wpos = w.pos(g.tick) if w else None
             f.update({"tick": g.tick, "ticks": self.cfg["swarm_ticks"], "irregulars": boys, "shares": [],
@@ -534,7 +535,8 @@ class Engine:
                              "notebook": g.notebook[-60:], "reports": len(g.notebook),
                              "deliveries": g.deliveries,
                              "wiggins": ({"x": round(wpos[0], 1), "y": round(wpos[1], 1), "state": w.state,
-                                          "post": w.post, "bag": len(w.bag) + len(w.carrying)} if w else None)}})
+                                          "post": w.post, "bag": len(w.bag) + len(w.carrying), "at": w.at,
+                                          "leg": list(w.leg[:4]) if w.leg else None} if w else None)}})
         else:
             irr = []
             for a in g.irr:
