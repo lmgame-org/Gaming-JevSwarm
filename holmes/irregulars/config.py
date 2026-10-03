@@ -37,7 +37,7 @@ DEFAULTS = {
     "misinformed_frac": 0.0,     # Irregulars who start out holding one false lead
     "stubborn_frac": 0.0,        # Irregulars who never change their first firm vote
     "quorum_frac": 0.3,          # share of the swarm voting the identical answer that closes the case
-    "swarm_ticks": 32,           # clock: ticks before the case goes cold
+    "swarm_ticks": 48,           # clock in ticks; follows deadline_hours unless set explicitly
     "tick_min": 15.0,
     "tail_success": 0.6,         # chance tailing the culprit reveals the hideout's district
     "corroboration": "address",  # liar defence: each witness address counts once; contradicting first-hand -> distrust
@@ -125,7 +125,7 @@ SCHEMA = [
     ("Solo detective", [
         ("policy", "Detective", "choice", POLICIES),
         ("visit_budget", "Most visits allowed", "int", {"min": 1, "max": 200}),
-        ("deadline_hours", "Time limit (case hours)", "float", {"min": 1, "max": 96}),
+        ("deadline_hours", "Time limit for every approach (case hours)", "float", {"min": 1, "max": 96}),
         ("interview_min", "Interview length (case minutes)", "float", {"min": 0}),
         ("cab_m_per_min", "Cab speed (metres per minute)", "float", {"min": 50}),
         ("jev_accuse_at", "Jev accuses when its readiness reaches (0-1)", "float", {"min": 0, "max": 1}),
@@ -133,7 +133,7 @@ SCHEMA = [
     ("Swarm baselines (also squad size and time for Baker Street)", [
         ("swarm_policy", "Swarm type", "choice", SWARM_POLICIES),
         ("n_irregulars", "Number of street boys / Irregulars", "int", {"min": 1, "max": 400}),
-        ("swarm_ticks", "Time limit (ticks)", "int", {"min": 1, "max": 200}),
+        ("swarm_ticks", "Time limit in ticks (follows the case hours)", "int", {"min": 1, "max": 400}),
         ("tick_min", "Case minutes per tick", "float", {"min": 1}),
         ("liar_frac", "Boys who lie, bribed (share, 0-1)", "float", {"min": 0, "max": 1}),
         ("misinformed_frac", "Boys who get a fact wrong (share, 0-1)", "float", {"min": 0, "max": 1}),
@@ -203,6 +203,10 @@ def coerce(cfg):
             pass
     out["n_addresses"] = max(20, min(300, out["n_addresses"]))
     out["n_suspects"] = max(3, min(16, out["n_suspects"]))
+    # One time limit for every approach: the swarm clock follows the case hours unless ticks are set explicitly.
+    explicit = "swarm_ticks" in (cfg or {}) or "swarm_ticks" in PRESETS.get(pre, {}).get("overrides", {})
+    if not explicit:
+        out["swarm_ticks"] = max(1, round(out["deadline_hours"] * 60 / out["tick_min"]))
     out["n_motives"] = max(2, min(6, out["n_motives"]))
     out["n_hideouts"] = max(2, min(8, out["n_hideouts"]))
     # room for Baker Street, the Yard, the scene, the victim's home, hideouts, suspects' homes and some leads

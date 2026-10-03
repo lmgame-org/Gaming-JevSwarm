@@ -79,3 +79,18 @@ python3 -m irregulars.batch --mode swarm --policies baker_street --seeds 20 --se
 python3 -m irregulars.batch --mode swarm --policies baker_street --seeds 20 --set n_irregulars=12 swarm_ticks=48 holmes=rule
 python3 -m irregulars.report runs/batch_... --csv out.csv --md out.md
 ```
+
+## Addendum (3 Oct): one time limit for every approach
+
+The swarm baselines above ran with an 8-hour clock, while Solo and Baker Street had 12 hours. The app now uses a
+single time limit for every approach (default 12 case hours; the swarm clock follows it). The free swarm settings
+were re-run at 12 hours on seeds 1-20:
+
+| Setting | 8 h (above) | 12 h |
+|---|---|---|
+| Swarm · heuristic · 1 km | 13/20 | 13/20 (sim time p50 6.5 h) |
+| Swarm · heuristic · 2 km | 18/20 | 18/20 (one more quorum, on a wrong answer) |
+| Swarm · random · 1 km | 0/20 | 0/20 |
+
+The extra four hours change nothing for the heuristic swarm. The Jev and hybrid swarms have not been re-run at 12
+hours yet.

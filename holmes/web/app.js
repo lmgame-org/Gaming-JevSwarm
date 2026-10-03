@@ -57,8 +57,8 @@ const OTHER_OPTS = [
 ];
 const TRACK_DEFAULTS = {
   solo: {mode: "solo"},
-  baker: {mode: "swarm", swarm_policy: "baker_street", n_irregulars: 12, swarm_ticks: 48},
-  other: {mode: "swarm", n_irregulars: 100, swarm_ticks: 32},
+  baker: {mode: "swarm", swarm_policy: "baker_street", n_irregulars: 12},
+  other: {mode: "swarm", n_irregulars: 100},
 };
 
 let SCHEMA = null, cfg = {}, PREVIEW_INFO = null, lastOther = "jev", frame = null, CASE = null, SECRET = null, es = null, selected = -1,
@@ -101,7 +101,7 @@ function seriesVar(c) {
 /* ------------------------------------------------------------------ launch screen */
 function trackOf(c) { return c.mode === "solo" ? "solo" : c.swarm_policy === "baker_street" ? "baker" : "other"; }
 function squad() { return trackOf(cfg) === "solo" ? 0 : Math.max(1, cfg.n_irregulars | 0); }
-function clockHours() { return trackOf(cfg) === "solo" ? cfg.deadline_hours : cfg.swarm_ticks * cfg.tick_min / 60; }
+function clockHours() { return cfg.deadline_hours; }
 
 async function initLaunch() {
   SCHEMA = await api("/api/schema");
@@ -277,8 +277,8 @@ function renderCase() {
     numCtl("Addresses on the map", cfg.n_addresses, {min: 20, max: 300, hint: "Each holds one lead"}, (v) => setCfg({n_addresses: v | 0}, {preview: true})),
     numCtl("Suspects", cfg.n_suspects, {min: 3, max: 16, hint: "One of them is the culprit"}, (v) => setCfg({n_suspects: v | 0}, {preview: true})),
     numCtl("Time limit", +hrs.toFixed(2), {min: 1, max: 96, step: 0.25, unit: "case hours",
-      hint: t === "solo" ? "The detective must accuse by then" : t === "baker" ? "At the limit Holmes gives his best answer" : "If the boys haven't agreed by then, the case goes cold"},
-    (v) => t === "solo" ? setCfg({deadline_hours: v}) : setCfg({swarm_ticks: Math.max(1, Math.round(v * 60 / cfg.tick_min))})),
+      hint: "The same limit applies to every approach. " + (t === "solo" ? "The detective must accuse by then." : t === "baker" ? "At the limit Holmes gives his best answer." : "If the boys haven't agreed by then, the case goes cold.")},
+    (v) => setCfg({deadline_hours: v, swarm_ticks: Math.max(1, Math.round(v * 60 / cfg.tick_min))})),
     sliderCtl("Red herrings", cfg.red_herring_rate, {min: 0, max: 1, step: 0.05, fmt: (x) => `${Math.round(x * 100)}%`,
       hint: "Share of addresses without real evidence whose lead looks suspicious but proves nothing"},
       (v) => setCfg({red_herring_rate: v}, {preview: true}))));
