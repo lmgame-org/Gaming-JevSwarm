@@ -1,97 +1,123 @@
-# Circuit: debugging a CPU with Holmes, Wiggins and the Irregulars
+# Circuit: debugging a CPU solo, at Baker Street, or as a swarm
 
-One hardware bug hides in a small pipelined CPU. A test fails. Who finds the faulty block, the signal, the bug type
-and the fix with a fixed probe and dollar budget: a swarm of cheap Jev agents that only probe locally, or one
-expert model (gpt-6-astra) that reads the whole netlist?
+One hardware bug (sometimes two) hides in a small pipelined CPU. A test fails. Who names the broken block, the
+signal, the bug type and the fix, within a time limit and a spend cap: one debugger, Holmes directing a dozen street
+boys, or 100 Irregulars with no leader? The three families mirror the Holmes detective game in `holmes/`.
 
 ```
 python3 run.py circuit            # from the repo root, then open http://127.0.0.1:8783
-cd circuit && python3 -m cpudebug # same thing (needs ../common on PYTHONPATH; run.py sets it)
 ```
 
 ## The CPU and the bugs
 
-* **The CPU** (`cpudebug/netlist.py`): 8-bit data, 16-bit instructions, eight registers, 64 bytes of memory, a
+* **The CPU** (`cpudebug/netlist.py`): 8-bit data, 16-bit instructions, eight registers, 64 bytes of memory and a
   5-stage pipeline (IF, ID, EX, MEM, WB) with EX/MEM and MEM/WB forwarding, a WB-to-ID bypass, a load-use stall and
-  branches resolved in EX. It is a pure-Python netlist of **96 blocks**: field decoders, control decoders, the register
-  file (8 registers, 2 read muxes, 2 bypasses), the hazard unit, ~45 pipeline registers, forwarding units and muxes,
-  an ALU split into nibble adders, subtractor, logic, comparator and shifters, a branch unit, data memory and
-  write-back. Each block has a spec (one line of text plus an executable reference) and named ports wired to nets.
-* **The ISA and tests** (`cpudebug/isa.py`): an assembler, a golden one-instruction-at-a-time interpreter, and
-  nine test programs (forwarding chains, logic and shifts, loads and stores, loops, Fibonacci, a max scan, a register
-  sweep, a forwarding mix, a multiply loop). The bug-free netlist passes all nine.
-* **One bug per seed**: one param of one combinational block is changed. Four types: **stuck-at** wire (an output
-  bit stuck at 0/1), **swapped mux** inputs, **wrong forwarding** / bypass / hazard path, **off-by-one** (adder carry-in,
-  pc increment, branch target, comparator `<` vs `<=`, shift amount, instruction field position, sign bit).
-  Bug types rotate with the seed; a seed is rerolled until at least one test fails. 530 faults are in the catalogue;
-  the test suite catches 488 of them (all swapped-mux and off-by-one faults, 11/12 forwarding faults).
-  Registers, the memory and the ROM are "verified IP" and never broken.
+  branches resolved in EX. It is a pure-Python netlist of **96 blocks**. Each block has a spec (one line of text plus
+  an executable reference) and named ports wired to nets.
+* **The ISA and tests** (`cpudebug/isa.py`): an assembler, a golden interpreter and nine test programs. The bug-free
+  netlist passes all nine.
+* **Bugs**: one param of one combinational block is changed. There are four types:
+  * **stuck-at** wire;
+  * **swapped mux** inputs;
+  * **wrong forwarding** / bypass / hazard path;
+  * **off-by-one** (adder carry-in, pc increment, branch target, `<` vs `<=`, shift amount, field position, sign bit).
 
-## How the investigators work
+  Registers, memory and the ROM are verified and never broken.
 
-The failing test's waveform is available to everyone (reading it is free). What costs a **probe** is comparing a
-block with its spec:
+## Hardening (all on by default; the launch screen has an "original easy setting" button)
 
-* `check(block, cycle)`: for every cycle in a window (default 4 cycles), the block's inputs, its actual outputs and
-  the spec's outputs for those same inputs.
-* `drive(block, kind)`: the block alone on the bench with corner, sweep, boundary or random vectors.
+| Knob | Default | What it does |
+|---|---|---|
+| `failure_info` | final | Investigators learn only which registers or memory bytes are wrong at the end (or that the test never halted), not the first wrong instruction or its cycle |
+| `test_pick` | longest | They get the longest failing test's waveform (up to ~200 cycles). For a double bug, the first failing test whose back-trace reaches both bugs |
+| `window` | 2 | Cycles seen by one check |
+| `noise` | 0.05 | Each measured row may have one glitched bit, so an innocent block can look guilty once. A real bug reads the same wrong value again; a glitch does not |
+| `rare_frac` | 0.4 | Share of bugs that misbehave only when a hash of the block's inputs is 0 mod 3 |
+| `double_frac` | 0.2 | Share of cases with a second bug in another block. Each bug alone breaks a test, and both must be fixed |
+| `liar_frac` | 0.1 | Bribed boys or lying Irregulars, who clear the real bug and frame one innocent block (coordinated, same cycle, same wrong bit) |
+| `liar_defence` | on | Each source counts once; a mismatch needs two sources reading the same wrong value; outvoted or contradicted sources lose trust; plausibility and quorum hygiene in the swarm (below) |
+| `deadline_hours` | 6 | The same clock for every family, at 15 case minutes per tick |
+| `budget_usd` | 0.75 | Spend cap per case. Above it, agents fall back to their rule |
 
-A block that matches its spec but carries wrong values is innocent: the bad value came from upstream. The
-**dynamic back-slice** follows the values that actually carried the wrong result (through a mux only the selected
-input, through a register the value it loaded or held), starting at the first wrong retired instruction.
+**Probes.** Every probe costs one tick of bench time, and walking far costs another:
+* `check(block, cycle)` shows inputs, measured outputs and spec outputs over a window;
+* `drive(block, kind)` tests the block alone with corner, sweep, boundary or random vectors;
+* `read(net)` (solo genius only) returns the raw waveform.
 
-* **Scatter**: Holmes, through Wiggins' back-trace, hands each Irregular one block (with the cycles where the slice
-  passes through it) or one window of the waveform with a few blocks in it. Irregulars only probe locally and report.
-* **Gather**: Wiggins keeps the suspicion map. He walks back from the failing output through every block-cycle that
-  was checked and found innocent; the first unchecked block-cycles are the next frontier. A suspect whose bad cycles
-  are downstream of another suspect is a **red herring**.
-* **Deduce**: Holmes names block + signal + bug type and the fix (the param to put back to spec). The fix is graded by
-  re-running all nine tests.
+The genius's waveform reads are no longer free.
 
-| Mode | Probe choice | Verdicts and tally | Deduction | Cost |
-|---|---|---|---|---|
-| `jev` Jev swarm | Jev per Irregular | Jev's own reading (noul "is it broken?") | Jev Holmes picks culprit and fix | ~$0.001-0.003 / case |
-| `hybrid` hybrid swarm | Jev (and which input to follow) | exact | exact fault fitting | ~$0.001-0.003 / case |
-| `cone` exact cone tracing | nearest unchecked block-cycle, one at a time | exact | exact fault fitting | free |
-| `rule_swarm` | the swarm machinery with rules | exact | exact | free |
-| `genius` solo | gpt-6-astra: whole netlist + failing test + free waveform reads, its own probes | itself | itself | same $ budget |
+## The three families
 
-Metrics: faulty block found, exact location (block + signal), bug type, fix passes all tests, probes used, $ spent.
+**Solo debugger** (`cpudebug/solo.py`): one investigator, 10 probes, the 6-hour clock. Policies:
+* `chat`: gpt-6-astra. Each turn it reads the netlist and its notes and asks for up to 4 probes or reads.
+* `jev`: Jev picks each probe, and the bug and fix when it accuses.
+* `rule`: robust cone tracing. It re-measures any mismatch, then follows the back-trace from the failure.
+* `random`.
 
-## The viewer
+**Baker Street** (`cpudebug/leader.py`):
+* **Holmes** (gpt-6-astra or exact counting) stays at 221B. He reads reports, keeps the notebook, sends errands of 1-3
+  blocks at back-trace cycles, and names the bug and fix when sure.
+* **Wiggins** (on or off) takes orders to a forward post. He collects reports and runs a batch back when he has three,
+  when one has waited two ticks, or when no boy is out. Without him, every boy walks back to 221B.
+* **12 boys** (Jev, rule or random) make only local choices: which item next, re-measure a mismatch, or run back. They
+  never accuse.
+* **Liar defence:** the counting Holmes sends a different boy to confirm every mismatch.
 
-The launch screen sets every hyperparameter (mode, bug number and type, probe window, probe and dollar budgets,
-swarm size, probes per Irregular, rounds, assignment style, Jev thresholds, genius turns, models, key files, prices)
-and previews the failing test. The live view shows the schematic with the suspicion heat map (green cleared, amber
-unsure, red suspect, blue rings = next on the back-trace), the Irregulars walking to their blocks, probe flashes, a
-pipeline diagram of the failing test with the checked windows, Wiggins' notebook, and the event log. Pause, step and
-change the speed live; click a block to see its spec and a free look at its values, and name your own suspect
-to compare with the investigators at the end.
+**Swarm** (`cpudebug/swarm.py`): 100 Irregulars, one per block to start, no leader.
+* **Each tick**, each Irregular checks its block, moves one wire, shares its newest measurements within radio range
+  (2 or 4 wires, graph hops; at most 3 shares taken in per tick; 60 rows remembered), or waits.
+* **Closing:** the case closes when 30% hold an identical vote of block plus fault. Without a quorum by the deadline
+  the swarm gives no answer.
+* **Liar defence:**
+  * Plausibility: a claim about a block more than two wires from where the speaker stands is rejected.
+  * First-hand contradiction costs the speaker a strike.
+  * Trust but verify: an Irregular votes only for a bug it reproduced itself, or that three independent trusted
+    sources measured bad.
+  * Votes from anyone distrusted by two or more others are struck.
+* **Policies:**
+  * `rule`.
+  * `jev`: Jev picks the next plan (check here, go to a block, share, wait) and the vote. It is asked only at decision
+    points: a confirmed suspect appears, its plan ends, or the plan is 12 ticks old.
+  * `hybrid`: Jev plans, and the vote is exact.
+  * `random`.
 
-## Pilot (2026-10-03)
+## Benchmark (20 seeds per setting, hardened defaults)
 
-5 bugs, 40 probes and $0.40 per case for every mode ([write-up](docs/pilot_2026-10-03.md)):
+| Setting | Solved | Cost / case |
+|---|---|---|
+| Solo · gpt-6-astra | 14/20 | $0.171 |
+| Solo · Jev / rule / random | 3/20 · 3/20 · 2/20 | $0.0004 · free · free |
+| Baker Street · gpt-6-astra Holmes, Jev boys | 11/20 | $0.143 |
+| Baker Street · counting Holmes, Jev boys | 11/20 | $0.0027 |
+| Baker Street · counting Holmes, rule boys (no Wiggins) | 13/20 (12/20) | free |
+| Swarm · rule 2 wires / 4 wires | 6/20 / 3/20 | free |
+| Swarm · Jev / hybrid / random, 2 wires | 3/20 (13 wrong quorums) / 5/20 / 0/20 | $0.004 / $0.005 / free |
 
-| Mode | Exact location | Fix passes tests | Probes (mean) | $ per case |
-|---|---|---|---|---|
-| Jev swarm | 5/5 | 4/5 | 16.8 | $0.0013 |
-| Hybrid swarm | 5/5 | 5/5 | 22.8 | $0.0014 |
-| Exact cone tracing | 4/5 | 4/5 | 22.2 | $0 |
-| Rule swarm | 5/5 | 5/5 | 29.2 | $0 |
-| Solo genius (gpt-6-astra) | 5/5 | 5/5 | 1.0 (plus free waveform reads) | $0.0577 |
+Full table and discussion: [docs/benchmark_20seeds_2026-10-03.md](docs/benchmark_20seeds_2026-10-03.md).
+The first, easy version of the game and its 5-seed pilot are in [docs/pilot_2026-10-03.md](docs/pilot_2026-10-03.md).
+
+```
+cd circuit
+PYTHONPATH=.:../common python3 -m cpudebug.batch --list
+PYTHONPATH=.:../common python3 -m cpudebug.batch --settings solo_rule,baker_rule_jev --seeds 1-20 --out docs/x.csv --max-usd 15
+PYTHONPATH=.:../common python3 -m cpudebug.report docs/x.csv
+```
 
 ## Files
 
 ```
 cpudebug/isa.py       ISA, assembler, golden interpreter, the nine tests
-cpudebug/netlist.py   96-block netlist, simulator, fault catalogue, test runner
-cpudebug/case.py      seeded case, probes (check / drive), dynamic back-slice, frontier, fault fitting, grading
-cpudebug/agents.py    Irregulars (Jev / rule), Wiggins, Holmes (Jev / exact), the genius
-cpudebug/engine.py    run loop, pacing, budgets, frames, run logs (runs/, not committed)
+cpudebug/netlist.py   96-block netlist, simulator, fault catalogue (rare triggers, several faults), test runner
+cpudebug/case.py      seeded case and hardening, probes (check / drive / read) with noise, back-slice, fault fitting, grading
+cpudebug/kb.py        the notebook (robust verdicts, liar defence) and helpers shared by every family
+cpudebug/solo.py      Solo debugger
+cpudebug/leader.py    Baker Street: Holmes, Wiggins, the boys
+cpudebug/swarm.py     the leaderless swarm
+cpudebug/engine.py    ticks, pacing, budgets, model calls, frames, run logs (runs/, not committed)
 cpudebug/server.py    launch screen + live viewer (stdlib HTTP, Server-Sent Events)
-cpudebug/batch.py     headless runs: python3 -m cpudebug.batch --modes jev,hybrid,cone,genius --seeds 1-5
+cpudebug/batch.py     named benchmark settings, resumable CSV, spend guard
+cpudebug/report.py    the benchmark table (Wilson 95% intervals)
 tests/test_checks.py  offline checks (no model calls)
-docs/                 pilot write-ups
 ```
 
 Keys are read from `~/.credentials/openrouter_api_key` (Jev) and `~/.credentials/llm_api_key` (gpt-6-astra) at call

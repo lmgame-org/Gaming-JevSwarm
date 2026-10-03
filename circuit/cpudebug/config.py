@@ -1,32 +1,49 @@
-"""Hyperparameters and their launch-screen schema."""
+"""Hyperparameters and their launch-screen schema. Defaults are the hardened benchmark settings."""
 from swarmcore.keys import CHAT_KEY_CANDIDATES, JEV_KEY_CANDIDATES, first_key
 
 DEFAULTS = {
     # run
-    "mode": "jev",               # jev | hybrid | cone | rule_swarm | genius
+    "mode": "leader",            # solo | leader (Baker Street) | swarm
     "seed": 1,
-    "speed": 2.0,                # steps per wall second (live-adjustable)
-    # case
+    "speed": 3.0,                # ticks per wall second (live-adjustable)
+    # the bug (hardening)
     "bug_type": "any",           # any | stuck_at | swapped_mux | wrong_forwarding | off_by_one
-    "window": 4,                 # cycles covered by one `check` probe
-    # budgets (the same for every mode)
-    "probe_budget": 40,
-    "budget_usd": 0.40,          # dollar cap per case; the genius gets exactly this, the swarm stops calling models above it
+    "failure_info": "final",     # final: only the final wrong registers / memory | first: the first wrong instruction
+    "test_pick": "longest",      # longest | shortest failing test
+    "window": 2,                 # cycles covered by one check
+    "noise": 0.05,               # chance that a measured row has one glitched bit
+    "rare_frac": 0.4,            # share of bugs that only misbehave for some inputs
+    "double_frac": 0.2,          # share of cases with two bugs (both must be fixed)
+    # clock and budgets (the same for every family)
+    "deadline_hours": 6.0,
+    "tick_min": 15.0,
+    "budget_usd": 0.75,          # model spend cap per case; above it every agent falls back to its rule
+    "liar_frac": 0.1,            # bribed boys / lying Irregulars
+    "liar_defence": True,
+    # solo
+    "solo_policy": "rule",       # chat | jev | rule | random
+    "probe_budget": 10,
+    "probes_per_turn": 4,
+    "max_turns": 6,
+    # Baker Street
+    "holmes": "rule",            # chat (gpt-6-astra) | rule (exact counting)
+    "boy_policy": "jev",         # jev | rule | random
+    "n_boys": 12,
+    "wiggins": True,
+    "errand_max": 3,
+    "hq_max_calls": 6,
+    "hq_min_new": 3,
     # swarm
-    "n_irregulars": 8,
-    "probes_per_irregular": 2,
-    "max_rounds": 10,
-    "assign": "mixed",           # block | window | mixed: what Holmes hands each Irregular
-    "clear_below": 0.35,         # Jev mode: an Irregular's 'faulty' answer below this clears the cycles it checked
-    "suspect_above": 0.65,       # Jev mode: above this the block becomes a suspect
-    "holmes_ready_at": 0.6,      # Jev mode: Holmes names the culprit once his 'ready' answer reaches this
-    "red_herrings": True,        # Wiggins drops suspects whose bad values are explained by an upstream suspect
-    # genius
-    "probes_per_turn": 6,
-    "max_turns": 8,
+    "swarm_policy": "rule",      # jev | rule | hybrid | random
+    "n_agents": 100,
+    "comm_range": 2,             # wires (graph hops on the schematic) a share carries
+    "bandwidth": 3,
+    "memory_cap": 60,            # measured rows an Irregular remembers
+    "quorum_frac": 0.3,
+    "skip_unchanged": True,
     # inference
-    "concurrency": 16,
-    "request_timeout_s": 10.0,
+    "concurrency": 24,
+    "request_timeout_s": 30.0,
     "jev_provider": "openrouter",
     "jev_model": "typesafe/jev-1.13",
     "jev_key": first_key(JEV_KEY_CANDIDATES),
@@ -38,58 +55,81 @@ DEFAULTS = {
 }
 
 MODES = {
-    "jev": "Jev swarm: Jev Irregulars probe and judge, Wiggins gathers, Jev Holmes names the bug",
-    "hybrid": "Hybrid swarm: Jev picks where to probe, exact logic judges, tallies and deduces",
-    "cone": "Exact cone tracing: one tracer walks back from the failure, no model (free)",
-    "rule_swarm": "Rule swarm: the swarm machinery with exact rules everywhere, no model (free)",
-    "genius": "Solo genius: gpt-6-astra reads the whole netlist and the failing test, same $ budget",
+    "solo": "Solo debugger: one investigator probes block by block with a small probe budget",
+    "leader": "Baker Street: Holmes directs a dozen boys; Wiggins carries orders out and reports back",
+    "swarm": "Swarm: 100 Irregulars with no leader share findings by radio and close the case by quorum",
 }
+SOLO_POLICIES = {"chat": "gpt-6-astra (the genius)", "jev": "Jev", "rule": "rule: robust cone tracing (free)",
+                 "random": "random (free)"}
+HOLMES = {"chat": "gpt-6-astra reads the reports and plans", "rule": "exact counting with the back-trace planner (free)"}
+BOYS = {"jev": "Jev", "rule": "rule (free)", "random": "random (free)"}
+SWARM_POLICIES = {"jev": "Jev decides moves and votes", "rule": "rule (free)",
+                  "hybrid": "hybrid: Jev moves, exact counting votes", "random": "random (free)"}
 BUG_TYPES = {"any": "any of the four", "stuck_at": "stuck-at wire", "swapped_mux": "swapped mux inputs",
              "wrong_forwarding": "wrong forwarding / hazard path", "off_by_one": "off-by-one"}
 
 PRESETS = {
-    "jev": {"label": "Jev swarm (8 Irregulars)", "overrides": {}},
-    "hybrid": {"label": "Hybrid swarm", "overrides": {"mode": "hybrid"}},
-    "cone": {"label": "Exact cone tracing (free)", "overrides": {"mode": "cone"}},
-    "genius": {"label": "Solo genius gpt-6-astra", "overrides": {"mode": "genius"}},
-    "tight": {"label": "Jev swarm, tight probe budget (20)", "overrides": {"probe_budget": 20}},
-    "big": {"label": "Jev swarm, 16 Irregulars, 1 probe each", "overrides": {"n_irregulars": 16, "probes_per_irregular": 1}},
-    "forwarding": {"label": "Forwarding bugs only", "overrides": {"bug_type": "wrong_forwarding"}},
+    "baker_jev": {"label": "Baker Street: counting Holmes, Jev boys", "overrides": {}},
+    "baker_genius": {"label": "Baker Street: gpt-6-astra Holmes, Jev boys", "overrides": {"holmes": "chat"}},
+    "solo_genius": {"label": "Solo gpt-6-astra", "overrides": {"mode": "solo", "solo_policy": "chat"}},
+    "solo_rule": {"label": "Solo rule (cone tracing)", "overrides": {"mode": "solo"}},
+    "swarm_rule": {"label": "Swarm: 100 rule Irregulars", "overrides": {"mode": "swarm"}},
+    "swarm_jev": {"label": "Swarm: 100 Jev Irregulars", "overrides": {"mode": "swarm", "swarm_policy": "jev"}},
+    "easy": {"label": "The original easy setting (first wrong instruction, no noise, no liars)",
+             "overrides": {"failure_info": "first", "test_pick": "shortest", "window": 4, "noise": 0.0,
+                           "rare_frac": 0.0, "double_frac": 0.0, "liar_frac": 0.0, "probe_budget": 40}},
 }
 
 SCHEMA = [
     ("Run", [
         ("mode", "Who debugs", "choice", MODES),
         ("seed", "Bug number (same number, same bug)", "int", {"min": 0}),
-        ("speed", "Playback speed (steps per second)", "float", {"min": 0.1, "max": 30}),
+        ("speed", "Playback speed (ticks per second)", "float", {"min": 0.1, "max": 30}),
     ]),
-    ("The bug", [
+    ("The bug (hardening)", [
         ("bug_type", "Kind of bug", "choice", BUG_TYPES),
-        ("window", "Cycles seen by one check probe", "int", {"min": 1, "max": 12}),
+        ("failure_info", "What the investigators are told", "choice", {
+            "final": "only the final wrong registers / memory", "first": "the first wrong instruction and its cycle"}),
+        ("test_pick", "Which failing test they get", "choice", {"longest": "the longest", "shortest": "the shortest"}),
+        ("window", "Cycles seen by one check", "int", {"min": 1, "max": 12}),
+        ("noise", "Glitched measurements (share of rows, 0-1)", "float", {"min": 0, "max": 0.5}),
+        ("rare_frac", "Rare-trigger bugs (share, 0-1)", "float", {"min": 0, "max": 1}),
+        ("double_frac", "Cases with two bugs (share, 0-1)", "float", {"min": 0, "max": 1}),
     ]),
-    ("Budgets (the same for every mode)", [
-        ("probe_budget", "Probes allowed (checks + bench drives)", "int", {"min": 1, "max": 400}),
-        ("budget_usd", "Model spend allowed per case ($)", "float", {"min": 0}),
+    ("Clock, budgets and liars (the same for every family)", [
+        ("deadline_hours", "Time limit (case hours)", "float", {"min": 0.5, "max": 48}),
+        ("tick_min", "Case minutes per tick", "float", {"min": 1}),
+        ("budget_usd", "Model spend cap per case ($)", "float", {"min": 0}),
+        ("liar_frac", "Bribed boys / lying Irregulars (share, 0-1)", "float", {"min": 0, "max": 1}),
+        ("liar_defence", "Liar defence (two sources per mismatch, outvoted lose trust)", "bool", {}),
+    ]),
+    ("Solo debugger", [
+        ("solo_policy", "Debugger", "choice", SOLO_POLICIES),
+        ("probe_budget", "Probes allowed", "int", {"min": 1, "max": 200}),
+        ("probes_per_turn", "Genius: probes per turn", "int", {"min": 1, "max": 20}),
+        ("max_turns", "Genius: most turns", "int", {"min": 1, "max": 30}),
+    ]),
+    ("Baker Street", [
+        ("holmes", "Holmes, the decision-maker", "choice", HOLMES),
+        ("boy_policy", "Street boys' choices", "choice", BOYS),
+        ("n_boys", "Number of boys", "int", {"min": 1, "max": 100}),
+        ("wiggins", "Wiggins collects reports at a post near the boys", "bool", {}),
+        ("errand_max", "Most blocks in one errand", "int", {"min": 1, "max": 6}),
+        ("hq_max_calls", "Most planning rounds for gpt-6-astra Holmes", "int", {"min": 1, "max": 40}),
+        ("hq_min_new", "Reports needed before Holmes plans again", "int", {"min": 1, "max": 20}),
     ]),
     ("Swarm", [
-        ("n_irregulars", "Irregulars", "int", {"min": 1, "max": 64}),
-        ("probes_per_irregular", "Probes per Irregular per round", "int", {"min": 1, "max": 6}),
-        ("max_rounds", "Most scatter-gather rounds", "int", {"min": 1, "max": 40}),
-        ("assign", "What each Irregular is given", "choice", {
-            "mixed": "mixed: some get one block, some a window of the waveform",
-            "block": "one block each", "window": "one window of the waveform each"}),
-        ("clear_below", "Jev: a 'faulty' answer below this clears the block", "float", {"min": 0, "max": 1}),
-        ("suspect_above", "Jev: above this the block is a suspect", "float", {"min": 0, "max": 1}),
-        ("holmes_ready_at", "Jev Holmes answers once 'ready' reaches", "float", {"min": 0, "max": 1}),
-        ("red_herrings", "Wiggins clears suspects explained by an upstream suspect", "bool", {}),
-    ]),
-    ("Solo genius", [
-        ("probes_per_turn", "Probes per turn", "int", {"min": 1, "max": 20}),
-        ("max_turns", "Most turns", "int", {"min": 1, "max": 30}),
+        ("swarm_policy", "Swarm type", "choice", SWARM_POLICIES),
+        ("n_agents", "Irregulars", "int", {"min": 2, "max": 300}),
+        ("comm_range", "Radio range (wires)", "int", {"min": 0, "max": 12}),
+        ("bandwidth", "Shares each Irregular takes in per tick", "int", {"min": 0, "max": 20}),
+        ("memory_cap", "Rows each Irregular remembers", "int", {"min": 4, "max": 1000}),
+        ("quorum_frac", "Votes needed to close the case (share, 0-1)", "float", {"min": 0.02, "max": 1}),
+        ("skip_unchanged", "Save calls: an Irregular with nothing new waits without asking Jev", "bool", {}),
     ]),
     ("Models and costs", [
         ("concurrency", "Model calls at the same time", "int", {"min": 1, "max": 128}),
-        ("request_timeout_s", "Time allowed per call (s)", "float", {"min": 0.5}),
+        ("request_timeout_s", "Time allowed per Jev call (s)", "float", {"min": 0.5}),
         ("jev_model", "Jev model", "text", {}),
         ("jev_key", "Jev key file (OpenRouter)", "text", {}),
         ("chat_model", "Genius model", "text", {}),
@@ -123,8 +163,8 @@ def coerce(cfg):
                 out[k] = str(v)
         except (TypeError, ValueError):
             pass
-    if out["mode"] not in MODES:
-        out["mode"] = "jev"
-    if out["bug_type"] not in BUG_TYPES:
-        out["bug_type"] = "any"
+    for k, opts in (("mode", MODES), ("solo_policy", SOLO_POLICIES), ("holmes", HOLMES), ("boy_policy", BOYS),
+                    ("swarm_policy", SWARM_POLICIES), ("bug_type", BUG_TYPES)):
+        if out[k] not in opts:
+            out[k] = DEFAULTS[k]
     return out

@@ -15,7 +15,7 @@
 <section id="launch">
   <header class="topbar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span> Circuit
-      <span class="brand-sub">one hardware bug in a pipelined CPU: Holmes, Wiggins and the Irregulars against a lone genius</span></div>
+      <span class="brand-sub">debugging a pipelined CPU: solo, Baker Street, or a swarm</span></div>
     <span class="grow"></span>
     <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
   </header>
@@ -23,21 +23,21 @@
   <div class="launch-grid">
     <main class="launch-main">
       <div class="intro">
-        <h1>Can a swarm of cheap local probes find a CPU bug as well as one expert reading the whole netlist?</h1>
-        <p>The CPU is an 8-bit, 5-stage pipeline built from <b>96 blocks</b> (ALU, register file, forwarding, hazard and
-          branch units, pipeline registers). Each bug number injects <b>one bug</b> into one block: a stuck-at wire,
-          swapped mux inputs, a wrong forwarding path or an off-by-one. A test fails. The investigators probe blocks
-          against their specs until someone names the faulty block, the signal, the bug type and the fix; the fix is
-          graded by re-running every test.</p>
+        <h1>Who finds a hardware bug: one debugger, Holmes with his street boys, or a leaderless swarm?</h1>
+        <p>The CPU is an 8-bit, 5-stage pipeline built from <b>96 blocks</b>. Each bug number hides one bug (sometimes
+          two) in one block: a stuck-at wire, swapped mux inputs, a wrong forwarding path or an off-by-one, some of them
+          rare-trigger. The investigators only learn which registers end up wrong. Every probe costs 15 minutes of bench
+          time, about one reading in twenty is glitched, and some boys and Irregulars are bribed. Someone must name the
+          broken block, the signal, the bug type and the fix; the fix is graded by re-running every test.</p>
       </div>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">Step 1</span><h2>Who debugs</h2><span class="meta">every mode gets the same bug, probe budget and dollar budget</span></div>
+        <div class="part-head"><span class="part-tag">Step 1</span><h2>Who debugs</h2><span class="meta">every family gets the same bug, clock and spend cap</span></div>
         <div id="modes" class="modes" role="radiogroup" aria-label="Who debugs"></div>
       </section>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">Step 2</span><h2>The bug and the budgets</h2><span class="meta">same bug number, same bug</span></div>
+        <div class="part-head"><span class="part-tag">Step 2</span><h2>Settings</h2><span class="meta">the family&#39;s own knobs, then the bug and the clock</span></div>
         <div id="casePanel" class="card case-panel"></div>
       </section>
 

@@ -57,10 +57,12 @@ class Block:
         return {k: int(v) & mask(self.outs[k]) for k, v in out.items()}
 
     def eff(self, fault=None):
-        """Params with `fault` ({block, key, value}) applied if it is in this block; active stuck-at bits precomputed."""
+        """Params with `fault` (one {block, key, value} or a list of them) applied where they are in this block;
+        active stuck-at bits precomputed."""
         p = dict(self.params)
-        if fault and fault["block"] == self.name:
-            p[fault["key"]] = fault["value"]
+        for f in (fault if isinstance(fault, list) else [fault] if fault else []):
+            if f["block"] == self.name:
+                p[f["key"]] = f["value"]
         p["_stuck"] = [(k.split(":")[1], int(k.split(":")[2]), v) for k, v in p.items()
                        if v is not None and k.startswith("stuck:")]
         return p
@@ -393,11 +395,23 @@ def build_cpu():
 
 
 # --------------------------------------------------------------------------------------------------- simulator
+def trig_active(inp, m):
+    """A rare-trigger fault misbehaves only when this hash of the block's inputs is 0 mod m."""
+    if not m:
+        return True
+    h = 7
+    for k in sorted(inp):
+        h = (h * 131 + inp[k] + 1) % 1000003
+    return h % m == 0
+
+
 class CPU:
     def __init__(self, blocks, fault=None):
         self.blocks = blocks
         self.by = {b.name: b for b in blocks}
-        self.fault = fault              # {"block", "key", "value"} or None
+        self.faults = list(fault) if isinstance(fault, list) else ([fault] if fault else [])
+        self.fault = self.faults[0] if self.faults else None
+        self.trig = {f["block"]: f.get("trigger") for f in self.faults if f.get("trigger")}
         self.drivers = {}
         for b in blocks:
             for port in b.outs:
@@ -405,7 +419,13 @@ class CPU:
         self.order = self._topo()
 
     def params(self, b):
-        return b.eff(self.fault)
+        return b.eff(self.faults)
+
+    def eval_block(self, b, inp, state=None, p=None, spec=None):
+        """Evaluate one block as built (faults applied, rare triggers respected)."""
+        if b.name in self.trig and not trig_active(inp, self.trig[b.name]):
+            return b.eval(spec or b.eff(None), inp, state)
+        return b.eval(p or self.params(b), inp, state)
 
     def _topo(self):
         seen, out = set(), []
@@ -432,12 +452,16 @@ class CPU:
             mem[a % MEM_SIZE] = v & 255
         state["dmem"] = mem
         P = {b.name: self.params(b) for b in self.blocks}
+        SP = {name: self.by[name].eff(None) for name in self.trig}
         vals, states, halted = [], [], None
         for c in range(max_cycles):
             v = {}
             for b in self.order:
                 inp = {port: v.get(n, 0) for port, n in b.ins.items()}
-                out = b.eval(P[b.name], inp, state.get(b.name))
+                if b.name in SP and not trig_active(inp, self.trig[b.name]):
+                    out = b.eval(SP[b.name], inp, state.get(b.name))
+                else:
+                    out = b.eval(P[b.name], inp, state.get(b.name))
                 for port, x in out.items():
                     v[b.net(port)] = x
             vals.append(v)
@@ -537,10 +561,13 @@ def retire_diff(tr, g):
 
 
 def apply_fix(fault, fix):
-    """The fault left after a fix {block, key}: None when the fix puts the faulty param back."""
-    if fault and fix and fix.get("block") == fault["block"] and fix.get("key") == fault["key"]:
-        return None
-    return fault
+    """The faults left after fixes ({block, key} or a list): a fix removes the fault whose param it puts back."""
+    faults = list(fault) if isinstance(fault, list) else ([fault] if fault else [])
+    fixes = list(fix) if isinstance(fix, list) else ([fix] if fix else [])
+    left = [f for f in faults if not any(x and x.get("block") == f["block"] and x.get("key") == f["key"] for x in fixes)]
+    if isinstance(fault, list):
+        return left
+    return left[0] if left else None
 
 
 def all_faults(blocks):

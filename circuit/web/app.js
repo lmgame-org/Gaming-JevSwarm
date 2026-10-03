@@ -12,14 +12,22 @@ const agentPos = {};
 const flashes = [];
 let lastProbeN = 0;
 
-const MODE_INFO = {
-  jev: { name: "Jev swarm", color: "--jev" },
-  hybrid: { name: "Hybrid swarm", color: "--hybrid" },
-  cone: { name: "Exact cone tracing", color: "--cone" },
-  rule_swarm: { name: "Rule swarm", color: "--rule" },
-  genius: { name: "Solo genius", color: "--genius" },
+const TRACKS = {
+  solo: { name: "Solo debugger", color: "--genius", sub: "One investigator, one probe at a time, a small probe budget" },
+  leader: { name: "Baker Street", color: "--jev", sub: "Holmes directs a dozen boys; Wiggins carries orders and reports" },
+  swarm: { name: "Swarm", color: "--hybrid", sub: "100 Irregulars, no leader: radio range, liar defence, quorum" },
 };
-const SWARM = new Set(["jev", "hybrid", "rule_swarm"]);
+const POLICY_COLOR = { chat: "--genius", jev: "--jev", rule: "--rule", random: "--faint", hybrid: "--hybrid" };
+function trackColor(c) {
+  if (c.mode === "solo") return POLICY_COLOR[c.solo_policy];
+  if (c.mode === "leader") return POLICY_COLOR[c.boy_policy];
+  return POLICY_COLOR[c.swarm_policy];
+}
+function settingLabel(c) {
+  if (c.mode === "solo") return `Solo · ${SCHEMA ? SCHEMA.solo_policies[c.solo_policy] : c.solo_policy}`;
+  if (c.mode === "leader") return `Baker Street · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes, ${c.boy_policy} boys${c.wiggins ? "" : ", no Wiggins"}`;
+  return `Swarm · ${c.swarm_policy} · ${c.comm_range} wires`;
+}
 
 /* ---------------------------------------------------------------------------------------------- theme */
 function effectiveTheme() {
@@ -125,16 +133,15 @@ function setCfg(patch, opts = {}) {
 function renderModes() {
   const el = $("#modes");
   el.innerHTML = "";
-  Object.entries(SCHEMA.modes).forEach(([k, desc]) => {
+  Object.entries(TRACKS).forEach(([k, t]) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "mode"; b.setAttribute("role", "radio");
     b.setAttribute("aria-checked", String(cfg.mode === k));
-    const [title, rest] = desc.split(": ");
-    b.innerHTML = `<b><i class="dot" style="background:var(${MODE_INFO[k].color})"></i>${esc(title)}</b><span>${esc(rest || "")}</span>`;
+    b.innerHTML = `<b><i class="dot" style="background:var(${t.color})"></i>${esc(t.name)}</b><span>${esc(t.sub)}</span>`;
     b.addEventListener("click", () => setCfg({ mode: k }, { panel: true }));
     el.appendChild(b);
   });
-  $("#modeChip").textContent = MODE_INFO[cfg.mode].name;
+  $("#modeChip").textContent = settingLabel(cfg);
 }
 function ctl(label, input, hint) {
   const d = document.createElement("div");
@@ -155,43 +162,53 @@ function numInput(key, { min, max, step = 1 } = {}, opts = {}) {
 function selInput(key, choices, opts = {}) {
   const s = document.createElement("select");
   Object.entries(choices).forEach(([k, v]) => { const o = document.createElement("option"); o.value = k; o.textContent = v; s.appendChild(o); });
-  s.value = cfg[key];
-  s.addEventListener("change", () => setCfg({ [key]: s.value }, opts));
+  s.value = String(cfg[key]);
+  s.addEventListener("change", () => setCfg({ [key]: s.value === "true" ? true : s.value === "false" ? false : s.value }, opts));
   return s;
 }
 function renderCase() {
   const el = $("#casePanel");
   el.innerHTML = "";
+  const tp = document.createElement("div"); tp.className = "ctls";
+  if (cfg.mode === "solo") {
+    tp.append(ctl("Debugger", selInput("solo_policy", SCHEMA.solo_policies, { panel: true })),
+      ctl("Probes allowed", numInput("probe_budget", { min: 1, max: 200 }), "checks, bench drives and (genius) waveform reads"));
+    if (cfg.solo_policy === "chat") tp.append(ctl("Probes per turn", numInput("probes_per_turn", { min: 1, max: 20 })), ctl("Most turns", numInput("max_turns", { min: 1, max: 30 })));
+  } else if (cfg.mode === "leader") {
+    tp.append(ctl("Holmes", selInput("holmes", SCHEMA.holmes, { panel: true })), ctl("Street boys", selInput("boy_policy", SCHEMA.boys)),
+      ctl("Number of boys", numInput("n_boys", { min: 1, max: 100 })), ctl("Wiggins", selInput("wiggins", { true: "on: collects reports at a forward post", false: "off: every boy runs back to 221B" })),
+      ctl("Most blocks per errand", numInput("errand_max", { min: 1, max: 6 })));
+    if (cfg.holmes === "chat") tp.append(ctl("Most planning rounds", numInput("hq_max_calls", { min: 1, max: 40 })));
+  } else {
+    tp.append(ctl("Swarm type", selInput("swarm_policy", SCHEMA.swarm_policies)), ctl("Irregulars", numInput("n_agents", { min: 2, max: 300 })),
+      ctl("Radio range (wires)", numInput("comm_range", { min: 0, max: 12 })), ctl("Quorum (share)", numInput("quorum_frac", { min: 0.02, max: 1, step: 0.05 })),
+      ctl("Shares taken in per tick", numInput("bandwidth", { min: 0, max: 20 })));
+  }
+  const head = (t) => { const h = document.createElement("h4"); h.textContent = t; return h; };
   const seed = document.createElement("div");
   seed.className = "seedrow";
   const si = numInput("seed", { min: 0 }, { preview: true, panel: true });
   const prev = document.createElement("button"); prev.type = "button"; prev.textContent = "◀"; prev.title = "previous bug";
   const next = document.createElement("button"); next.type = "button"; next.textContent = "▶"; next.title = "next bug";
-  const rnd = document.createElement("button"); rnd.type = "button"; rnd.textContent = "random";
   prev.onclick = () => setCfg({ seed: Math.max(0, cfg.seed - 1) }, { preview: true, panel: true });
   next.onclick = () => setCfg({ seed: cfg.seed + 1 }, { preview: true, panel: true });
-  rnd.onclick = () => setCfg({ seed: Math.floor(Math.random() * 1000) }, { preview: true, panel: true });
-  seed.append(si, prev, next, rnd);
-  const bt = SCHEMA.schema.find((g) => g[0] === "The bug")[1].find((f) => f[0] === "bug_type")[3];
+  seed.append(si, prev, next);
+  const bt = SCHEMA.schema.find((g) => g[0].startsWith("The bug"))[1].find((f) => f[0] === "bug_type")[3];
   const g1 = document.createElement("div"); g1.className = "ctls";
-  g1.append(ctl("Bug number", seed, "same number, same bug"), ctl("Kind of bug", selInput("bug_type", bt, { preview: true }), "the bug type is hidden from the investigators"),
-    ctl("Cycles per check probe", numInput("window", { min: 1, max: 12 }, { preview: true }), "a check shows this many cycles"));
+  g1.append(ctl("Bug number", seed, "same number, same bug"), ctl("Kind of bug", selInput("bug_type", bt, { preview: true })),
+    ctl("What they are told", selInput("failure_info", { final: "final wrong values only", first: "first wrong instruction" }, { preview: true })),
+    ctl("Glitched readings (share)", numInput("noise", { min: 0, max: 0.5, step: 0.01 })),
+    ctl("Rare-trigger bugs (share)", numInput("rare_frac", { min: 0, max: 1, step: 0.1 }, { preview: true })),
+    ctl("Two-bug cases (share)", numInput("double_frac", { min: 0, max: 1, step: 0.1 }, { preview: true })));
   const g2 = document.createElement("div"); g2.className = "ctls";
-  g2.append(ctl("Probe budget", numInput("probe_budget", { min: 1 }), "checks + bench drives, every mode"),
-    ctl("Dollar budget per case", numInput("budget_usd", { min: 0, step: 0.05 }), "the genius gets exactly this"));
-  el.append(g1, g2);
-  if (SWARM.has(cfg.mode)) {
-    const g3 = document.createElement("div"); g3.className = "ctls";
-    g3.append(ctl("Irregulars", numInput("n_irregulars", { min: 1, max: 64 })),
-      ctl("Probes per Irregular per round", numInput("probes_per_irregular", { min: 1, max: 6 })),
-      ctl("Most rounds", numInput("max_rounds", { min: 1, max: 40 })),
-      ctl("Each Irregular gets", selInput("assign", { mixed: "a block or a window (mixed)", block: "one block", window: "a window of the waveform" })));
-    el.append(g3);
-  } else if (cfg.mode === "genius") {
-    const g3 = document.createElement("div"); g3.className = "ctls";
-    g3.append(ctl("Probes per turn", numInput("probes_per_turn", { min: 1, max: 20 })), ctl("Most turns", numInput("max_turns", { min: 1, max: 30 })));
-    el.append(g3);
-  }
+  g2.append(ctl("Time limit (case hours)", numInput("deadline_hours", { min: 0.5, max: 48, step: 0.5 }), "15 minutes per tick"),
+    ctl("Model spend cap per case ($)", numInput("budget_usd", { min: 0, step: 0.05 })),
+    ctl("Liars (share of boys / Irregulars)", numInput("liar_frac", { min: 0, max: 1, step: 0.05 })),
+    ctl("Liar defence", selInput("liar_defence", { true: "on", false: "off" })));
+  el.append(head(TRACKS[cfg.mode].name), tp, head("The bug (hardening)"), g1, head("Clock, budget and liars"), g2);
+  const ez = document.createElement("button"); ez.type = "button"; ez.textContent = "Use the original easy setting";
+  ez.onclick = () => setCfg({ failure_info: "first", test_pick: "shortest", window: 4, noise: 0, rare_frac: 0, double_frac: 0, liar_frac: 0, probe_budget: 40 }, { panel: true, preview: true });
+  el.append(ez);
 }
 function renderForm() {
   const f = $("#cfgForm");
@@ -222,20 +239,22 @@ function renderKeys() {
 function renderRuns() {
   const r = SCHEMA.runs || [];
   $("#runsList").innerHTML = r.length ? r.map((x) => `<div class="run"><span class="mono">${esc(x.name.slice(0, 15))}</span>
-    <span>${esc(MODE_INFO[x.mode]?.name || x.mode)} #${x.seed}</span><span class="${x.fix_ok ? "ok" : "no"}">${x.fix_ok ? "fixed" : "not fixed"}</span>
+    <span>${esc(x.setting || x.mode)} #${x.seed}</span><span class="${x.fix_ok ? "ok" : "no"}">${x.fix_ok ? "fixed" : "not fixed"}</span>
     <span class="muted">${x.probes} probes · $${(x.cost || 0).toFixed(3)}</span></div>`).join("") : "<span class='muted'>none yet</span>";
 }
 function estimate() {
-  const c = cfg, lines = [];
-  if (SWARM.has(c.mode)) {
-    lines.push(`<p><b>${c.n_irregulars}</b> Irregulars × up to <b>${c.probes_per_irregular}</b> probes per round, at most <b>${c.max_rounds}</b> rounds.</p>`);
-    if (c.mode === "jev") lines.push("<p>Jev decides every probe and judges every block; Jev Holmes names the bug. Typically well under $0.01 per case.</p>");
-    if (c.mode === "hybrid") lines.push("<p>Jev decides every probe and which input to follow; the verdicts and the deduction are exact. Typically well under $0.01 per case.</p>");
-    if (c.mode === "rule_swarm") lines.push("<p>No model calls: free.</p>");
-  } else if (c.mode === "cone") lines.push("<p>One exact tracer checks the nearest unchecked block on the back-trace, one probe at a time. Free.</p>");
-  else lines.push(`<p>gpt-6-astra reads the whole netlist each turn (up to ${c.max_turns} turns, ${c.probes_per_turn} probes per turn). Roughly $0.03-0.06 per turn.</p>`);
-  lines.push(`<p class="muted">Budgets for every mode: ${c.probe_budget} probes, $${Number(c.budget_usd).toFixed(2)}.</p>`);
+  const c = cfg, lines = [], bench = (SCHEMA.bench || {})[benchKey(c)];
+  if (c.mode === "solo") lines.push(`<p>One debugger, <b>${c.probe_budget}</b> probes, ${c.deadline_hours} case hours. Each probe costs 15 minutes; walking far costs 15 more.</p>`);
+  else if (c.mode === "leader") lines.push(`<p>Holmes (${c.holmes === "chat" ? "gpt-6-astra" : "exact counting"}) and <b>${c.n_boys}</b> boys (${c.boy_policy})${c.wiggins ? " with Wiggins" : ", no Wiggins"}, ${c.deadline_hours} case hours.</p>`);
+  else lines.push(`<p><b>${c.n_agents}</b> ${c.swarm_policy} Irregulars, radio range ${c.comm_range} wires, quorum ${Math.round(c.quorum_frac * c.n_agents)}, ${c.deadline_hours} case hours.</p>`);
+  lines.push(`<p class="muted">Hardening: ${c.failure_info === "final" ? "final values only" : "first wrong instruction"}, ${Math.round(c.noise * 100)}% glitches, ${Math.round(c.rare_frac * 100)}% rare-trigger bugs, ${Math.round(c.double_frac * 100)}% two-bug cases, ${Math.round(c.liar_frac * 100)}% liars (defence ${c.liar_defence ? "on" : "off"}). Spend cap $${Number(c.budget_usd).toFixed(2)}.</p>`);
+  if (bench) lines.push(`<p><b>20-case benchmark:</b> solved ${bench.solved}/${bench.n}, ${bench.cost}</p>`);
   $("#estimate").innerHTML = lines.join("");
+}
+function benchKey(c) {
+  if (c.mode === "solo") return `solo_${c.solo_policy === "chat" ? "genius" : c.solo_policy}`;
+  if (c.mode === "leader") return `baker_${c.holmes === "chat" ? "genius" : "rule"}_${c.boy_policy}${c.wiggins ? "" : "_nowiggins"}`;
+  return `swarm_${c.swarm_policy}_r${c.comm_range}`;
 }
 let pvTimer = null;
 function preview() {
@@ -289,8 +308,7 @@ async function startDash() {
   FRAME = null; SECRET = null; SEL = null; lastProbeN = 0; flashes.length = 0;
   for (const k of Object.keys(agentPos)) delete agentPos[k];
   $("#launch").hidden = true; $("#dash").hidden = false;
-  const m = MODE_INFO[STATIC.mode];
-  $("#dTitle").textContent = `${m.name} · bug #${STATIC.cfg.seed} · ${STATIC.brief.test}`;
+  $("#dTitle").textContent = `${settingLabel(STATIC.cfg)} · bug #${STATIC.cfg.seed} · ${STATIC.brief.test}`;
   $("#fTest").textContent = STATIC.brief.test;
   $("#fText").textContent = STATIC.brief.failure;
   $("#speed").value = STATIC.cfg.speed;
@@ -313,26 +331,35 @@ function onFrame(f) {
     lastProbeN = f.probes;
   }
   renderMetrics(f); renderSuspects(f); renderEvents(f); renderGuesses(f);
-  $("#dPhase").textContent = f.ended ? "finished" : `${f.mode === "genius" ? "turn" : "round"} ${f.round} · ${f.phase}`;
+  $("#dPhase").textContent = f.ended ? "finished" : `tick ${f.tick}/${f.deadline} · ${(f.tick * f.tick_min / 60).toFixed(2)} h`;
   $("#bPause").textContent = f.paused ? "Resume" : "Pause";
   if (f.ended) showResult(f);
   drawWave();
 }
 function renderLegend() {
   const items = [["--logic", "logic block"], ["--pipe", "register / memory (verified)"], ["--front", "next on the back-trace", true],
-    ["--good", "cleared"], ["--warn", "unsure"], ["--bad", "suspect"]];
+    ["--good", "cleared"], ["--warn", "mismatched once"], ["--bad", "confirmed bad"]];
   $("#legend").innerHTML = items.map(([v, t, ring]) => `<span><i style="${ring ? `border:2px solid var(${v});background:transparent` : `background:var(${v})`}"></i>${t}</span>`).join("");
 }
 function card(label, value, title) { return `<div class="mc" title="${esc(title || "")}"><b>${value}</b><span>${label}</span></div>`; }
 function renderMetrics(f) {
-  $("#metrics").innerHTML = [
-    card("probes used", `${f.probes}<span class="meta">/${f.probe_budget}</span>`, "checks and bench drives"),
+  const cards = [
+    card("case time", `${(f.tick * f.tick_min / 60).toFixed(1)}<span class="meta">/${(f.deadline * f.tick_min / 60).toFixed(0)} h</span>`, `tick ${f.tick} of ${f.deadline}`),
+    card("probes", f.probe_budget ? `${f.probes}<span class="meta">/${f.probe_budget}</span>` : f.probes, "checks and bench drives"),
     card("model spend", `$${f.cost.toFixed(4)}`, `cap $${f.budget_usd}`),
     card("model calls", f.calls, `${f.failures} failed, ${f.fallbacks} fell back to the rule`),
-    card(f.mode === "genius" ? "turn" : "round", f.round, f.phase),
-    card("Irregulars", f.agents.length),
+    card(f.mode === "swarm" ? "Irregulars" : f.mode === "leader" ? "boys" : "debugger", f.agents.length),
     card("seconds", f.elapsed.toFixed(0)),
-  ].join("");
+  ];
+  let extra = "";
+  if (f.mode === "swarm" && f.tally) {
+    const need = Math.ceil(f.quorum_need);
+    extra = `<div class="tally small"><b>Votes</b> (quorum ${need})` + (f.tally.length ? f.tally.map(([lab, k]) =>
+      `<div class="sus"><span class="mono">${esc(lab.replace("|", " / "))}</span><span class="meta">${k}</span><div class="bar"><i style="width:${Math.min(100, Math.round(100 * k / need))}%;background:var(--accent)"></i></div></div>`).join("") : "<p class='muted'>nobody votes yet</p>") + "</div>";
+  }
+  if (f.mode === "leader") extra = `<p class="small muted">Holmes planned ${f.holmes?.calls ?? 0} time(s) with the model · ${f.queue ?? 0} errand(s) waiting · Wiggins' bag: ${f.bag ?? 0}` +
+    (f.holmes?.distrusted?.length ? ` · distrusts boy(s) ${f.holmes.distrusted.join(", ")}` : "") + "</p>";
+  $("#metrics").innerHTML = `<div class="metrics">${cards.join("")}</div>${extra}`;
 }
 function renderSuspects(f) {
   const rows = Object.entries(f.heat).filter(([, v]) => v[1] === "x" || v[1] === "u" || v[1] === "r")
@@ -363,12 +390,15 @@ function showResult(f) {
   el.hidden = false;
   el.className = "card result " + (r.fix_ok ? "win" : "lose");
   const mk = (ok) => `<span class="${ok ? "ok" : "no"}">${ok ? "yes" : "no"}</span>`;
-  el.innerHTML = `<h3>${r.fix_ok ? "Fixed: every test passes" : "Not fixed"}</h3>
-    <p class="small">${a ? `Named <span class="mono">${esc(a.block)}.${esc(a.port)}</span>: ${esc(a.desc || "")}` : "No answer."}</p>
-    <p class="small">The bug: <span class="mono">${esc(s.block)}.${esc(s.port)}</span>, ${esc(s.type_label)}: ${esc(s.desc)}.</p>
-    <div class="marks small"><span>Faulty block</span>${mk(r.block_ok)}<span>Exact location (block + signal)</span>${mk(r.location_ok)}
+  const named = a ? a.fixes.map((x) => `<span class="mono">${esc(x.block)}.${esc(x.port)}</span>: ${esc(x.desc || "")}`).join("<br>") : (f.mode === "swarm" ? "No quorum: the swarm gave no answer." : "No answer.");
+  const bugs = s.bugs.map((b) => `<span class="mono">${esc(b.block)}.${esc(b.port)}</span>, ${esc(b.type_label)}: ${esc(b.desc)}${b.rare ? " (rare trigger)" : ""}`).join("<br>");
+  el.innerHTML = `<h3>${r.fix_ok ? "Fixed: every test passes" : f.summary?.wrong_quorum ? "Wrong quorum" : "Not fixed"}</h3>
+    <p class="small">${named}</p>
+    <p class="small">The bug${s.bugs.length > 1 ? "s" : ""}: ${bugs}</p>
+    <div class="marks small"><span>Faulty block${s.bugs.length > 1 ? "s" : ""}</span>${mk(r.block_ok)}<span>Signal</span>${mk(r.location_ok)}
       <span>Bug type</span>${mk(r.type_ok)}<span>Fix passes the tests</span><span>${mk(r.fix_ok)} <span class="meta">${r.tests_passed ?? "-"}/${r.tests_total}</span></span>
-      <span>Probes</span><span class="mono">${f.probes}/${f.probe_budget}</span><span>Model spend</span><span class="mono">$${f.cost.toFixed(4)}</span></div>
+      <span>Case time</span><span class="mono">${f.summary ? f.summary.sim_hours : "-"} h</span><span>Probes</span><span class="mono">${f.probes}</span>
+      <span>Model spend</span><span class="mono">$${f.cost.toFixed(4)}</span>${f.liars && f.liars.length ? `<span>Liars</span><span class="mono">#${f.liars.join(", #")}</span>` : ""}</div>
     <button type="button" id="bNew2" class="primary">New case</button>`;
   $("#bNew2").onclick = goLaunch;
 }
@@ -455,32 +485,59 @@ function drawSchem(now) {
 }
 function drawAgents(ctx, L, w, h) {
   if (!FRAME) return;
-  const color = css(MODE_INFO[FRAME.mode].color);
+  const color = css(trackColor(STATIC.cfg) || "--jev");
+  const swarm = FRAME.mode === "swarm";
   const at = {};
-  FRAME.agents.forEach((a) => { const k = a.status === "idle" || !a.block ? "_hq" : a.block; (at[k] = at[k] || []).push(a); });
+  FRAME.agents.forEach((a) => { const k = a.block || "_" + (a.where || "hq"); (at[k] = at[k] || []).push(a); });
+  // Holmes at 221B (bottom left), Wiggins at his post
+  if (FRAME.mode === "leader") {
+    ctx.fillStyle = css("--ink"); ctx.font = "600 10px " + css("--f-ui"); ctx.textAlign = "left";
+    ctx.fillText("221B Baker Street", 10, h - 30);
+    drawToken(ctx, 22, h - 14, "H", css("--ink"), 9);
+    if (FRAME.post !== null && FRAME.post !== undefined && L.colX[FRAME.post]) {
+      const [x, cw] = L.colX[FRAME.post];
+      drawToken(ctx, x + cw / 2, h - 14, "W", css("--accent"), 9);
+    }
+  }
+  const leading = swarm && FRAME.tally && FRAME.tally[0] ? FRAME.tally[0][0] : null;
   for (const [k, list] of Object.entries(at)) {
     list.forEach((a, i) => {
       let tx, ty;
-      if (k === "_hq") { tx = 20 + (a.id - 1) * 20; ty = h - 16; }
-      else {
+      if (k.startsWith("_")) {
+        const base = k === "_post" && FRAME.post !== null && L.colX[FRAME.post] ? L.colX[FRAME.post][0] : 40;
+        tx = base + 14 + (i % 12) * 15; ty = h - 14 - Math.floor(i / 12) * 15;
+      } else {
         const p = L.pos[k];
         if (!p) return;
-        const n = list.length;
-        tx = p.x + p.w - 4 - (i % 4) * 13 - (n > 4 ? 0 : 0);
-        ty = p.y + p.h / 2 + (i >= 4 ? 10 : 0);
+        if (swarm) { tx = p.x + 4 + (i % 8) * (p.w - 8) / 8; ty = p.y + p.h - 3 - Math.floor(i / 8) * 4; }
+        else { tx = p.x + p.w - 6 - (i % 4) * 13; ty = p.y + p.h / 2 + (i >= 4 ? 9 : 0); }
       }
-      const cur = agentPos[a.id] || (agentPos[a.id] = { x: 20 + (a.id - 1) * 20, y: h - 16 });
-      cur.x += (tx - cur.x) * 0.12; cur.y += (ty - cur.y) * 0.12;
-      ctx.beginPath(); ctx.arc(cur.x, cur.y, 7.5, 0, Math.PI * 2);
-      ctx.fillStyle = color; ctx.fill();
-      ctx.lineWidth = 1.5; ctx.strokeStyle = a.status === "probing" ? css("--ink") : css("--surface"); ctx.stroke();
-      ctx.fillStyle = "#fff"; ctx.font = "600 9px " + css("--f-ui"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(FRAME.mode === "genius" ? "G" : FRAME.mode === "cone" ? "T" : String(a.id), cur.x, cur.y + 0.5);
+      const cur = agentPos[a.id] || (agentPos[a.id] = { x: tx, y: ty });
+      cur.x += (tx - cur.x) * 0.15; cur.y += (ty - cur.y) * 0.15;
+      if (swarm) {
+        ctx.beginPath(); ctx.arc(cur.x, cur.y, 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = a.vote ? (a.vote === leading ? css("--accent") : css("--bad")) : color;
+        ctx.fill();
+      } else {
+        drawToken(ctx, cur.x, cur.y, FRAME.mode === "solo" ? "S" : String(a.id), color, 7.5, a.status === "probing");
+      }
     });
   }
-  ctx.fillStyle = css("--muted"); ctx.font = "10.5px " + css("--f-ui"); ctx.textAlign = "left";
-  const idle = (at._hq || []).length;
-  ctx.fillText(idle ? "Baker Street (waiting for the next round)" : "", 20 + idle * 20, h - 16);
+  if (swarm && FRAME.shares) {
+    for (const b of FRAME.shares) {
+      const p = L.pos[b];
+      if (!p) continue;
+      ctx.strokeStyle = alpha(css("--info"), 0.35); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(p.x + p.w / 2, p.y + p.h / 2, 10 + 12 * (FRAME.range || 2), 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+}
+function drawToken(ctx, x, y, label, color, r, ring) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = color; ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = ring ? css("--ink") : css("--surface"); ctx.stroke();
+  ctx.fillStyle = "#fff"; ctx.font = "600 9px " + css("--f-ui"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(label, x, y + 0.5);
 }
 function hit(x, y) {
   if (!LAYOUT) return null;
@@ -565,7 +622,7 @@ function drawWave() {
     if (cy % 5 === 0) { ctx.fillStyle = css("--faint"); ctx.fillText(String(cy), left + cy * cw + cw / 2, 7); }
   }
   // failure and frontier
-  const fc = STATIC.brief.first_bad_cycle;
+  const fc = STATIC.brief.first_bad_cycle ?? null;
   if (fc !== null && fc !== undefined) {
     ctx.strokeStyle = css("--bad"); ctx.lineWidth = 2;
     ctx.strokeRect(left + fc * cw, top, cw, rh * rows.length);

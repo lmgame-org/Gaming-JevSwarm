@@ -6,7 +6,6 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path[:0] = [os.path.dirname(HERE), os.path.join(os.path.dirname(os.path.dirname(HERE)), "common")]
 
-from cpudebug import agents as A  # noqa: E402
 from cpudebug.case import Case  # noqa: E402
 from cpudebug.engine import Engine  # noqa: E402
 from cpudebug.isa import golden, assemble, load_tests  # noqa: E402
@@ -28,17 +27,17 @@ def test_golden_interpreter():
     assert g["halted"] and g["regs"][2] == 45
 
 
+HARD = {"window": 2, "noise": 0.05, "rare_frac": 0.4, "double_frac": 0.2, "failure_info": "final",
+        "test_pick": "longest"}
+
+
 def test_every_seed_has_a_failing_test_and_a_slice():
     for s in range(1, 13):
-        c = Case({"seed": s, "window": 4})
+        c = Case(dict(HARD, seed=s))
         assert any(not r["ok"] for r in c.results)
-        assert c.diff is not None and c.starts
-        assert c.fit(c.fault["block"], []) == []  # no rows, no fit
-        # the faulty block lies in the back-slice of the failure
-        anc = set()
-        for st in c.starts:
-            anc |= {n[0] for n in c.ancestors(st)}
-        assert c.fault["block"] in anc, (s, c.fault)
+        assert c.starts and c.diff is not None
+        assert c.fit(c.fault["block"], []) == []
+        assert c.brief()["first_bad_cycle"] is None  # hardened: final state only
 
 
 def test_fault_fit_and_grading():
@@ -49,10 +48,62 @@ def test_fault_fit_and_grading():
         rows += c.drive(b, k)["rows"]
     fits = c.fit(b, rows)
     assert any(f["key"] == c.fault["key"] for f in fits)
-    good = c.grade({"block": b, "port": c.fault["port"], "type": c.fault["type"], "key": c.fault["key"]})
+    good = c.grade({"fixes": [{"block": f["block"], "port": f["port"], "type": f["type"], "key": f["key"]}
+                              for f in c.faults]})
     assert good["fix_ok"] and good["location_ok"] and good["type_ok"]
-    bad = c.grade({"block": "alu_and", "port": "out", "type": "stuck_at", "key": "stuck:out:0"})
+    bad = c.grade({"fixes": [{"block": "alu_and", "port": "out", "type": "stuck_at", "key": "stuck:out:0"}]})
     assert not bad["fix_ok"] and not bad["block_ok"]
+
+
+def test_double_bug_needs_both_fixes():
+    for s in range(1, 30):
+        c = Case(dict(HARD, seed=s))
+        if len(c.faults) == 2:
+            one = c.grade({"fixes": [dict(c.faults[0])]})
+            both = c.grade({"fixes": [dict(f) for f in c.faults]})
+            assert not one["fix_ok"] and both["fix_ok"]
+            return
+    raise AssertionError("no double-bug case in seeds 1-29")
+
+
+def test_notebook_glitch_does_not_confirm():
+    from cpudebug.kb import Notebook
+    c = Case(dict(HARD, seed=4, noise=0.0))
+    innocent = "alu_and"
+    p = c.check(innocent, c.n - 2)
+    r = dict(p["rows"][0])
+    r["out"] = {"out": r["out"]["out"] ^ 1}
+    r["ok"] = False
+    nb = Notebook(c, owner=1, need_sources=2)
+    nb.add_probe(dict(p, rows=[r]), 7, 1, first_hand=False)
+    assert nb.block_view(innocent)["suspect"] and not nb.block_view(innocent)["confirmed"]
+
+
+def test_families_run_offline_and_respect_budgets():
+    for cfg in ({"mode": "solo", "solo_policy": "rule"}, {"mode": "solo", "solo_policy": "random"},
+                {"mode": "leader", "holmes": "rule", "boy_policy": "rule"},
+                {"mode": "leader", "holmes": "rule", "boy_policy": "rule", "wiggins": False},
+                {"mode": "swarm", "swarm_policy": "rule", "n_agents": 40}):
+        for s in (1, 2):
+            e = Engine(dict(cfg, seed=s), realtime=False, log=False)
+            e.run()
+            sm = e.summary
+            assert not sm["errors"], sm["errors"]
+            assert sm["inference"]["calls"] == 0
+            assert sm["ticks"] <= e.deadline + 1
+            if cfg["mode"] == "solo":
+                assert sm["probes"] <= e.cfg["probe_budget"]
+            json.dumps(e.frame(), default=str)
+
+
+def test_easy_setting_is_easy():
+    solved = 0
+    for s in range(1, 6):
+        e = Engine({"preset": "easy", "mode": "leader", "holmes": "rule", "boy_policy": "rule", "seed": s},
+                   realtime=False, log=False)
+        e.run()
+        solved += e.summary["result"]["block_ok"]
+    assert solved >= 4
 
 
 def test_catalogue_detection_rate():
@@ -62,44 +113,29 @@ def test_catalogue_detection_rate():
     assert caught >= len(faults) - 2
 
 
-def test_exact_modes_run_offline_and_respect_budget():
-    for mode in ("cone", "rule_swarm"):
-        solved = 0
-        for s in range(1, 5):
-            e = Engine({"mode": mode, "seed": s, "probe_budget": 40}, realtime=False, log=False)
-            e.run()
-            sm = e.summary
-            assert sm["probes"] <= 40 and not sm["errors"]
-            assert sm["inference"]["calls"] == 0
-            solved += sm["result"]["fix_ok"]
-            json.dumps(e.frame(), default=str)
-        assert solved >= 2, mode
-
-
 class FakeJev:
-    """Stands in for the Jev client: picks the first option, says 'broken' only when out != spec_out."""
+    """Stands in for the Jev client: always picks the first option."""
 
     def ask(self, state, questions, retries=0):
-        st = json.loads(state)
         ans = {}
         for k, q in questions.items():
-            if q["type"] == "choice":
-                ans[k] = {"choice": next(iter(q["criteria"]))}
-            else:
-                seen = st.get("seen") or [{"rows": s.get("rows", [])} for s in st.get("suspects", [])]
-                bad = any(r["out"] != r["spec_out"] for p in seen for r in p["rows"])
-                ans[k] = {"noul": 0.9 if bad else 0.1}
+            ans[k] = {"choice": next(iter(q["criteria"]))} if q["type"] == "choice" else {"noul": 0.5}
         return ans, {"usage": {"input_tokens": 10, "output_tokens": 2, "cost": 1e-6}, "model": "fake"}
 
 
-def test_jev_swarm_with_a_fake_model():
-    e = Engine({"mode": "jev", "seed": 1}, realtime=False, log=False)
-    e.irr.client = FakeJev()
-    e.holmes.client = FakeJev()
-    e.run()
-    sm = e.summary
-    assert sm["probes"] <= e.cfg["probe_budget"]
-    assert sm["inference"]["calls"] > 0 and sm["answer"] is not None
+def test_jev_paths_with_a_fake_model():
+    for cfg in ({"mode": "solo", "solo_policy": "jev"}, {"mode": "leader", "holmes": "rule", "boy_policy": "jev"},
+                {"mode": "swarm", "swarm_policy": "jev", "n_agents": 30},
+                {"mode": "swarm", "swarm_policy": "hybrid", "n_agents": 30}):
+        e = Engine(dict(cfg, seed=3, deadline_hours=2), realtime=False, log=False)
+        g = e.game
+        for attr in ("jev",):
+            if hasattr(g, attr):
+                setattr(g, attr, FakeJev())
+        e.run()
+        sm = e.summary
+        assert not sm["errors"], sm["errors"]
+        assert sm["inference"]["calls"] > 0
 
 
 if __name__ == "__main__":

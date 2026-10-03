@@ -1,0 +1,281 @@
+setting,label,seed,test,n_bugs,bug_blocks,bug_types,bug_keys,rare,named_blocks,named_keys,block_ok,location_ok,type_ok,fix_ok,tests_passed,sim_hours,ran_to_deadline,wrong_quorum,probes,calls,failures,fallbacks,cost_usd,wall_s,liars,errors
+solo_genius,Solo · gpt-6-astra,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_mux,swap:0:1,False,False,False,False,2,1.25,False,False,5,5,0,0,0.2616,23.7,0,
+solo_genius,Solo · gpt-6-astra,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,fwd_b,memwb_first,True,True,True,True,9,1.25,False,False,5,5,0,0,0.11513,18.7,0,
+solo_genius,Solo · gpt-6-astra,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,alu_sub,stuck:out:3,True,True,True,True,9,2.75,True,False,9,7,0,0,0.35777,20.6,0,
+solo_genius,Solo · gpt-6-astra,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,0.5,False,False,2,3,0,0,0.05324,10.4,0,
+solo_genius,Solo · gpt-6-astra,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,1.0,False,False,4,3,0,0,0.07207,15.8,0,
+solo_genius,Solo · gpt-6-astra,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,swap_codes,True,True,True,True,9,1.0,False,False,4,5,0,0,0.11439,18.5,0,
+solo_genius,Solo · gpt-6-astra,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_add_lo,cin=1,True,True,True,False,1,1.75,False,False,7,5,0,0,0.22347,19.6,0,
+solo_genius,Solo · gpt-6-astra,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_add,stuck:out:1,True,True,True,True,9,3.5,True,False,10,6,0,0,0.36395,26.0,0,
+solo_genius,Solo · gpt-6-astra,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,pc_mux,swap:0:1,False,False,False,False,8,0.75,False,False,3,4,0,0,0.21608,14.7,0,
+solo_genius,Solo · gpt-6-astra,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,hazard,check_rs1,True,True,True,True,9,1.25,False,False,5,5,0,0,0.14979,17.1,0,
+solo_genius,Solo · gpt-6-astra,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,fwd_b+alu_shr,swap_codes+bias=1,True,True,True,False,7,2.25,False,False,9,6,0,0,0.18209,33.3,0,
+solo_genius,Solo · gpt-6-astra,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,0.5,False,False,2,3,0,0,0.13997,10.7,0,
+solo_genius,Solo · gpt-6-astra,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,0.5,False,False,2,3,0,0,0.07998,7.6,0,
+solo_genius,Solo · gpt-6-astra,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,fwd_a,use_regwrite,True,True,True,True,9,2.5,False,False,8,5,0,0,0.12227,18.0,0,
+solo_genius,Solo · gpt-6-astra,15,fibonacci,1,br_target,off_by_one,plus,1,br_target,plus=2,True,True,True,False,7,0.75,False,False,3,4,0,0,0.11154,12.9,0,
+solo_genius,Solo · gpt-6-astra,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,2.25,False,False,9,6,0,0,0.22015,25.9,0,
+solo_genius,Solo · gpt-6-astra,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,1.25,False,False,5,4,0,0,0.22689,12.1,0,
+solo_genius,Solo · gpt-6-astra,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,1.5,True,False,6,7,0,0,0.18329,28.3,0,
+solo_genius,Solo · gpt-6-astra,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,dec_rs1,lo_m1,True,True,True,True,9,2.5,False,False,8,5,0,0,0.17217,19.9,0,
+solo_genius,Solo · gpt-6-astra,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,0.75,False,False,3,3,0,0,0.05922,8.0,0,
+solo_jev,Solo · Jev,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_mux,swap:0:1,False,False,False,False,2,2.25,False,False,8,10,0,0,0.00047,99.2,0,
+solo_jev,Solo · Jev,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,alu_res,swap:0:1,False,False,False,False,8,2.75,True,False,10,10,0,0,0.00041,128.1,0,
+solo_jev,Solo · Jev,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,wb_dec,stuck:onehot:0,False,False,False,False,6,2.75,True,False,10,10,0,0,0.00041,166.4,0,
+solo_jev,Solo · Jev,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,ctrl_memread,stuck:out:0,False,False,False,False,8,3.5,True,False,10,10,0,0,0.0004,192.4,0,
+solo_jev,Solo · Jev,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,0.25,False,False,1,3,0,0,0.00012,27.7,0,
+solo_jev,Solo · Jev,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,ctrl_memread,stuck:out:0,False,False,False,False,5,3.0,True,False,10,10,0,0,0.00041,179.4,0,
+solo_jev,Solo · Jev,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,ctrl_memwrite,stuck:out:0,False,False,False,False,1,3.0,True,False,10,10,0,0,0.00045,78.3,0,
+solo_jev,Solo · Jev,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,ctrl_memwrite,stuck:out:0,False,False,False,False,0,3.5,True,False,10,11,0,0,0.00047,225.6,0,
+solo_jev,Solo · Jev,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,alu_res,swap:0:1,False,False,False,False,0,3.0,True,False,10,10,0,0,0.00044,155.5,0,
+solo_jev,Solo · Jev,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,alu_res,swap:0:1,False,False,False,False,7,2.5,True,False,10,10,0,0,0.00042,171.2,0,
+solo_jev,Solo · Jev,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_res,stuck:out:1,False,False,False,False,2,3.0,True,False,10,11,0,0,0.00054,311.5,0,
+solo_jev,Solo · Jev,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,0.25,False,False,1,3,0,0,0.0001,40.8,0,
+solo_jev,Solo · Jev,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,2.25,False,False,6,8,0,0,0.00038,209.8,0,
+solo_jev,Solo · Jev,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,ctrl_memread,stuck:out:0,False,False,False,False,8,2.75,True,False,10,10,0,0,0.00041,171.2,0,
+solo_jev,Solo · Jev,15,fibonacci,1,br_target,off_by_one,plus,1,dec_op,stuck:out:0,False,False,False,False,7,2.5,True,False,10,10,0,0,0.00042,167.5,0,
+solo_jev,Solo · Jev,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,br_decide,stuck:taken:0,False,False,False,False,6,3.0,True,False,10,10,0,0,0.00043,176.4,0,
+solo_jev,Solo · Jev,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_b,stuck:out:1,False,False,False,False,0,2.5,True,False,10,11,0,0,0.00053,125.6,0,
+solo_jev,Solo · Jev,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,ctrl_memread,stuck:out:0,False,False,False,False,5,3.25,True,False,10,10,0,0,0.00041,188.2,0,
+solo_jev,Solo · Jev,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,alu_res,swap:0:1,False,False,False,False,3,3.25,True,False,10,10,0,0,0.00043,278.4,0,
+solo_jev,Solo · Jev,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,dec_rd,stuck:out:2,False,False,False,False,8,3.5,False,False,9,11,0,0,0.00049,221.3,0,
+solo_rule,Solo · rule (cone tracing),1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_mux,swap:0:1,False,False,False,False,2,2.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,dec_rd,lo_m1,False,False,False,False,8,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,wb_dec,stuck:onehot:0,False,False,False,False,6,2.75,True,False,10,0,0,0,0.0,0.2,0,
+solo_rule,Solo · rule (cone tracing),4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,wb_guard,stuck:we:0,False,False,False,False,8,3.25,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,1.5,False,False,6,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,dec_rd,lo_m1,False,False,False,False,5,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),7,loop_sum,1,alu_add_lo,off_by_one,cin,1,wb_mux,swap:0:1,False,False,False,False,1,2.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_res,swap:0:1,False,False,False,False,0,3.25,True,False,10,0,0,0,0.0,0.2,0,
+solo_rule,Solo · rule (cone tracing),9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,wb_dec,stuck:onehot:0,False,False,False,False,0,2.75,True,False,10,0,0,0,0.0,0.2,0,
+solo_rule,Solo · rule (cone tracing),10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,wb_dec,stuck:onehot:0,False,False,False,False,7,2.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,ctrl_aluop,stuck:out:0,False,False,False,False,2,3.25,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,0.5,False,False,2,0,0,0,0.0,0.2,0,
+solo_rule,Solo · rule (cone tracing),13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,2.5,False,False,8,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,ctrl_memread,stuck:out:0,False,False,False,False,8,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),15,fibonacci,1,br_target,off_by_one,plus,1,hazard,check_rs1,False,False,False,False,7,2.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,ctrl_regwrite,stuck:out:0,False,False,False,False,6,2.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,alu_res,stuck:out:1,False,False,False,False,0,2.5,True,False,10,0,0,0,0.0,0.3,0,
+solo_rule,Solo · rule (cone tracing),18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,dec_rd,lo_m1,False,False,False,False,5,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,alu_res,swap:0:1,False,False,False,False,3,3.25,True,False,10,0,0,0,0.0,0.1,0,
+solo_rule,Solo · rule (cone tracing),20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,ctrl_memread,stuck:out:0,False,False,False,False,8,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,alu_add,stuck:out:4,False,False,False,False,0,3.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,dec_funct,stuck:out:2,False,False,False,False,8,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,ctrl_alusrc,stuck:out:0,False,False,False,False,6,3.75,True,False,10,0,0,0,0.0,0.2,0,
+solo_random,Solo · random,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,3.25,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,alu_add_lo,stuck:c:0,False,False,False,False,0,3.5,True,False,10,0,0,0,0.0,0.0,0,
+solo_random,Solo · random,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,alu_src,stuck:out:3,False,False,False,False,5,3.25,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_res,swap:0:8,False,False,False,False,1,2.5,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,ctrl_branch,stuck:out:1,False,False,False,False,0,3.75,True,False,10,0,0,0,0.0,0.2,0,
+solo_random,Solo · random,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,wb_guard,stuck:we:0,False,False,False,False,0,3.75,True,False,10,0,0,0,0.0,0.2,0,
+solo_random,Solo · random,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,fwd_b,stuck:sel:1,False,False,False,False,7,3.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,ctrl_alusrc,stuck:out:0,False,False,False,False,2,2.75,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,regb_addr,stuck:out:0,False,False,False,False,0,3.5,True,False,10,0,0,0,0.0,0.2,0,
+solo_random,Solo · random,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,imm8,stuck:out:6,False,False,False,False,7,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,pc_mux,stuck:out:6,False,False,False,False,8,4.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,15,fibonacci,1,br_target,off_by_one,plus,1,pc_inc,stuck:out:4,False,False,False,False,7,3.5,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,3.5,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,pc_inc,stuck:out:1,False,False,False,False,0,3.25,True,False,10,0,0,0,0.0,0.3,0,
+solo_random,Solo · random,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,alu_add_lo,stuck:s:3,False,False,False,False,5,3.5,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,fwd_mux_b,stuck:out:1,False,False,False,False,3,3.0,True,False,10,0,0,0,0.0,0.1,0,
+solo_random,Solo · random,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,fwd_a,stuck:sel:0,False,False,False,False,8,3.5,True,False,10,0,0,0,0.0,0.1,0,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_mux,swap:0:1,False,False,False,False,2,6.0,True,False,133,163,12,12,0.16871,1119.9,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,fwd_b,memwb_first,True,True,True,True,9,6.0,True,False,144,159,13,13,0.11249,1154.4,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,alu_sub,stuck:out:3,True,True,True,True,9,6.0,True,False,123,145,13,13,0.16251,1158.4,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,6.0,True,False,97,123,7,7,0.11384,911.3,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,6.0,True,False,147,165,0,0,0.17975,647.7,1,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,6.0,True,False,141,158,2,2,0.12894,521.5,1,TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_add_lo,cin=1,True,True,True,False,1,6.0,True,False,137,167,0,0,0.1517,331.9,1,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_add,stuck:out:1,True,True,True,True,9,6.0,True,False,125,157,0,0,0.12157,318.7,1,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,wb_dec,stuck:onehot:0,False,False,False,False,0,6.0,True,False,127,162,1,1,0.10783,325.0,1,LLMError: ValueError: no JSON object in model output
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,hazard,check_rs1,True,True,True,True,9,6.0,True,False,135,166,0,0,0.13504,212.0,1,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shr+fwd_b,bias+swap_codes,True,True,True,True,9,6.0,True,False,157,174,14,14,0.18893,1119.3,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,6.0,True,False,75,82,6,6,0.12403,645.2,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,6.0,True,False,117,154,13,13,0.11572,1151.5,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,fwd_a,use_regwrite=False,True,True,True,False,8,6.0,True,False,145,162,3,3,0.14936,672.8,1,"TimeoutError: ; LLMError: HTTP 529 from openrouter System One: {""error"":{""message"":""HTTP 529: {\""detail\"":{\""error_type\"":\""system_overloaded\"",\""message\"":\""We are currently experiencing high traffic"
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",15,fibonacci,1,br_target,off_by_one,plus,1,br_target,plus=2,True,True,True,False,7,6.0,True,False,121,153,1,1,0.15671,473.1,1,TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:2:3,True,True,True,False,6,6.0,True,False,131,163,0,0,0.13199,453.9,1,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,dec_rs1+br_lt,stuck:out:2+stuck:out:0,False,False,False,False,0,6.0,True,False,125,156,2,2,0.20579,465.8,1,TimeoutError: ; TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,6.0,True,False,149,165,1,1,0.13309,340.4,1,TimeoutError: 
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,dec_rs1,lo_m1,True,True,True,True,9,6.0,True,False,138,162,0,0,0.13608,240.5,1,
+baker_genius_jev,"Baker Street · gpt-6-astra Holmes, Jev boys",20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,6.0,True,False,137,160,0,0,0.12846,107.6,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_mux,swap:0:1,False,False,False,False,2,3.25,False,False,70,81,8,8,0.00212,532.7,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,fwd_b,memwb_first,True,True,True,True,9,3.5,False,False,70,76,6,6,0.002,512.8,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,idex_clear,stuck:out:0,False,False,False,False,6,6.0,True,False,68,93,1,1,0.00232,485.8,1,TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,6.0,True,False,100,118,2,2,0.00309,475.3,1,TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,4.5,False,False,88,98,2,2,0.0026,326.2,1,TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,6.0,True,False,130,138,1,1,0.00364,424.5,1,TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_add_lo,cin,True,True,True,True,9,4.25,False,False,82,95,1,1,0.00257,159.0,1,TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_add,stuck:out:1,True,True,True,True,9,3.25,False,False,53,69,0,0,0.00178,127.5,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,pc_mux,swap:0:1,False,False,False,False,8,6.0,True,False,111,138,0,0,0.00363,242.5,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,hazard,check_rs1,True,True,True,True,9,4.75,False,False,103,120,0,0,0.00318,173.0,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shr,bias,False,False,False,False,2,4.75,False,False,101,109,8,8,0.00293,812.1,1,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,4.25,False,False,13,16,1,1,0.00041,124.1,1,TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,6.0,True,False,105,137,3,3,0.00351,616.5,1,TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,ctrl_usert,stuck:out:0,False,False,False,False,8,6.0,True,False,122,136,3,3,0.00353,483.4,1,TimeoutError: ; TimeoutError: ; TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",15,fibonacci,1,br_target,off_by_one,plus,1,br_target,stuck:out:0,True,True,False,False,7,4.5,False,False,80,102,0,0,0.00262,329.9,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,4.25,False,False,78,105,1,1,0.00278,236.6,1,TimeoutError: 
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,alu_res,swap:0:1,False,False,False,False,0,6.0,True,False,103,129,0,0,0.00336,293.1,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,4.25,False,False,84,92,0,0,0.00238,131.5,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,dec_rs1,lo_m1,True,True,True,True,9,5.25,False,False,98,117,0,0,0.00305,285.1,1,
+baker_rule_jev,"Baker Street · counting Holmes, Jev boys",20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,3.75,False,False,70,79,0,0,0.00207,154.3,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_mux,swap:0:1,False,False,False,False,2,3.5,False,False,96,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,fwd_b,memwb_first,True,True,True,True,9,4.0,False,False,91,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,wb_dec,stuck:onehot:0,False,False,False,False,6,6.0,True,False,101,0,0,0,0.0,0.2,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,5.0,False,False,113,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,3.5,False,False,85,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,3.5,False,False,77,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_add_lo,cin,True,True,True,True,9,3.5,False,False,87,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_add,stuck:out:1,True,True,True,True,9,3.75,False,False,89,0,0,0,0.0,0.2,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,dec_rd,stuck:out:0,False,False,False,False,0,6.0,True,False,163,0,0,0,0.0,0.3,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,hazard,check_rs1,True,True,True,True,9,6.0,True,False,165,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shr,bias,False,False,False,False,2,3.25,False,False,73,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,4.5,False,False,22,0,0,0,0.0,0.3,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,5.5,False,False,134,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,fwd_a,use_regwrite,True,True,True,True,9,6.0,True,False,146,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",15,fibonacci,1,br_target,off_by_one,plus,1,br_target,stuck:out:0,True,True,False,False,7,4.5,False,False,122,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,4.5,False,False,114,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,6.0,True,False,139,0,0,0,0.0,0.3,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,wb_dec,stuck:onehot:0,False,False,False,False,5,6.0,True,False,120,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,dec_rs1,lo_m1,True,True,True,True,9,6.0,False,False,153,0,0,0,0.0,0.1,1,
+baker_rule_rule,"Baker Street · counting Holmes, rule boys",20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,4.5,False,False,99,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,ctrl_branch+wb_mux,stuck:out:1+swap:0:1,False,False,False,False,2,3.0,False,False,72,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,fwd_b,memwb_first,True,True,True,True,9,4.75,False,False,93,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,wb_dec,stuck:onehot:0,False,False,False,False,6,6.0,True,False,91,0,0,0,0.0,0.2,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,4.75,False,False,91,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,3.25,False,False,64,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,3.75,False,False,75,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_add_lo,cin,True,True,True,True,9,3.5,False,False,75,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_add,stuck:out:1,True,True,True,True,9,3.5,False,False,69,0,0,0,0.0,0.2,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,pc_mux,swap:0:1,False,False,False,False,8,3.75,False,False,79,0,0,0,0.0,0.2,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,hazard,check_rs1,True,True,True,True,9,4.5,False,False,98,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,dec_rd,stuck:out:1,False,False,False,False,2,2.5,False,False,48,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,3.25,False,False,15,0,0,0,0.0,0.2,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,6.0,True,False,135,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,dec_op,stuck:out:0,False,False,False,False,8,3.75,False,False,73,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",15,fibonacci,1,br_target,off_by_one,plus,1,br_target,stuck:out:0,True,True,False,False,7,3.25,False,False,69,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,3.0,False,False,68,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,5.75,False,False,107,0,0,0,0.0,0.3,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,wb_dec,stuck:onehot:0,False,False,False,False,5,6.0,True,False,123,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,dec_rs1,lo_m1,True,True,True,True,9,4.75,False,False,101,0,0,0,0.0,0.1,1,
+baker_rule_rule_nowiggins,"Baker Street · counting Holmes, rule boys, no Wiggins",20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,3.5,False,False,71,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,ctrl_memread,stuck:out:0,False,False,False,False,0,6.0,True,False,87,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,fwd_b,memwb_first,True,True,True,True,9,5.5,False,False,58,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,pc_mux,swap:0:1,False,False,False,False,6,6.0,True,False,33,0,0,0,0.0,0.2,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,alu_shr,stuck:out:1,True,True,True,True,9,4.25,False,False,48,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,3.5,False,False,37,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,fwd_b,memwb_first,True,True,True,False,5,3.75,False,False,43,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",7,loop_sum,1,alu_add_lo,off_by_one,cin,1,alu_add_lo,cin,True,True,True,True,9,5.25,False,False,51,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,alu_add,stuck:out:1,True,True,True,True,9,3.75,False,False,47,0,0,0,0.0,0.2,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,fwd_mux_b,stuck:out:5,False,False,False,False,0,6.0,True,False,66,0,0,0,0.0,0.2,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,br_decide,stuck:taken:0,False,False,False,False,7,6.0,True,False,97,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shr,bias,False,False,False,False,2,3.5,False,False,38,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,3.75,False,False,12,0,0,0,0.0,0.2,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,alu_res,swap:6:7,True,True,True,True,9,6.0,True,False,68,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,dec_rd,stuck:out:1,False,False,False,False,8,6.0,True,False,66,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",15,fibonacci,1,br_target,off_by_one,plus,1,alu_src,stuck:out:3,False,False,False,False,7,6.0,True,False,77,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,ctrl_branch,stuck:out:0,False,False,False,False,6,6.0,True,False,84,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,6.0,False,False,69,0,0,0,0.0,0.3,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,idex_clear,stuck:out:0,False,False,False,False,5,6.0,True,False,79,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,wb_dec,stuck:onehot:0,False,False,False,False,3,6.0,True,False,78,0,0,0,0.0,0.1,1,
+baker_rule_random,"Baker Street · counting Holmes, random boys",20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,4.75,False,False,47,0,0,0,0.0,0.1,1,
+swarm_rule_r2,Swarm · rule · 2 wires,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,,,False,False,False,False,,6.0,True,False,1128,0,0,0,0.0,0.4,10,
+swarm_rule_r2,Swarm · rule · 2 wires,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,hazard,stuck:go:0,False,False,False,False,8,0.75,False,True,153,0,0,0,0.0,0.1,10,
+swarm_rule_r2,Swarm · rule · 2 wires,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,,,False,False,False,False,,6.0,True,False,1154,0,0,0,0.0,0.5,10,
+swarm_rule_r2,Swarm · rule · 2 wires,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,,,False,False,False,False,,6.0,True,False,1059,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,3.5,False,False,647,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,1088,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,,,False,False,False,False,,6.0,True,False,1136,0,0,0,0.0,0.4,10,
+swarm_rule_r2,Swarm · rule · 2 wires,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,,,False,False,False,False,,6.0,True,False,1143,0,0,0,0.0,0.5,10,
+swarm_rule_r2,Swarm · rule · 2 wires,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,,,False,False,False,False,,6.0,True,False,1124,0,0,0,0.0,0.5,10,
+swarm_rule_r2,Swarm · rule · 2 wires,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,,,False,False,False,False,,6.0,True,False,1154,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,,,False,False,False,False,,6.0,True,False,1119,0,0,0,0.0,0.4,10,
+swarm_rule_r2,Swarm · rule · 2 wires,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,1.0,False,False,143,0,0,0,0.0,0.2,10,
+swarm_rule_r2,Swarm · rule · 2 wires,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,,,False,False,False,False,,6.0,True,False,1125,0,0,0,0.0,0.6,10,
+swarm_rule_r2,Swarm · rule · 2 wires,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,fwd_a,use_regwrite,True,True,True,True,9,4.0,False,False,713,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,15,fibonacci,1,br_target,off_by_one,plus,1,,,False,False,False,False,,6.0,True,False,1159,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,5.75,False,False,1088,0,0,0,0.0,0.6,10,
+swarm_rule_r2,Swarm · rule · 2 wires,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,2.0,False,False,382,0,0,0,0.0,0.4,10,
+swarm_rule_r2,Swarm · rule · 2 wires,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,1069,0,0,0,0.0,0.3,10,
+swarm_rule_r2,Swarm · rule · 2 wires,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,hazard,stuck:go:0,False,False,False,False,3,1.25,False,True,255,0,0,0,0.0,0.1,10,
+swarm_rule_r2,Swarm · rule · 2 wires,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,5.5,False,False,1001,0,0,0,0.0,0.4,10,
+swarm_random_r2,Swarm · random · 2 wires,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,wb_guard,stuck:we:0,False,False,False,False,0,0.75,False,True,50,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,hazard,check_rs1,False,False,False,False,8,1.0,False,True,51,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,fwd_mux_b,swap:0:1,False,False,False,False,6,1.0,False,True,67,0,0,0,0.0,0.2,10,
+swarm_random_r2,Swarm · random · 2 wires,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,wb_guard,stuck:we:0,False,False,False,False,8,0.75,False,True,33,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,ctrl_aluop,stuck:out:0,False,False,False,False,0,1.0,False,True,73,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,dec_op,stuck:out:0,False,False,False,False,5,1.0,False,True,51,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,idex_clear,stuck:out:0,False,False,False,False,1,0.75,False,True,38,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,rf_read_b,swap:1:2,False,False,False,False,0,1.0,False,True,59,0,0,0,0.0,0.2,10,
+swarm_random_r2,Swarm · random · 2 wires,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,fwd_a,memwb_first,False,False,False,False,0,0.75,False,True,45,0,0,0,0.0,0.3,10,
+swarm_random_r2,Swarm · random · 2 wires,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,wb_mux,swap:0:1,False,False,False,False,7,0.75,False,True,46,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shl,bias,False,False,False,False,2,1.0,False,True,55,0,0,0,0.0,0.2,10,
+swarm_random_r2,Swarm · random · 2 wires,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,pc_inc,inc,False,False,False,False,0,1.0,False,True,28,0,0,0,0.0,0.3,10,
+swarm_random_r2,Swarm · random · 2 wires,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,dec_rd,lo_m1,False,False,False,False,7,1.0,False,True,56,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,dec_rs1,lo_m1,False,False,False,False,8,0.75,False,True,40,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,15,fibonacci,1,br_target,off_by_one,plus,1,br_lt,le,False,False,False,False,7,0.75,False,True,44,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,wb_mux,swap:0:1,False,False,False,False,6,0.75,False,True,58,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,ctrl_aluop,stuck:out:0,False,False,False,False,0,1.0,False,True,65,0,0,0,0.0,0.4,10,
+swarm_random_r2,Swarm · random · 2 wires,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,pc_inc,inc,False,False,False,False,5,1.25,False,True,64,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,hazard,check_rs1,False,False,False,False,3,0.75,False,True,50,0,0,0,0.0,0.1,10,
+swarm_random_r2,Swarm · random · 2 wires,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_src,swap:0:1,False,False,False,False,8,0.75,False,True,39,0,0,0,0.0,0.1,10,
+swarm_jev_r2,Swarm · Jev · 2 wires,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,,,False,False,False,False,,6.0,True,False,1060,161,12,12,0.0081,962.3,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,hazard,stuck:go:0,False,False,False,False,8,0.75,False,True,121,47,2,2,0.00202,120.9,10,TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,fwd_mux_b,swap:0:1,False,False,False,False,6,0.75,False,True,147,33,1,1,0.00177,93.7,10,TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,wb_guard,stuck:we:0,False,False,False,False,8,1.5,False,True,256,68,4,4,0.00368,230.9,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,2.0,False,False,334,111,6,6,0.00572,398.1,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,1005,195,5,5,0.01018,628.3,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,,,False,False,False,False,,6.0,True,False,1114,103,0,0,0.00524,278.8,10,
+swarm_jev_r2,Swarm · Jev · 2 wires,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,rf_read_b,swap:1:2,False,False,False,False,0,1.0,False,True,183,40,0,0,0.00226,121.0,10,
+swarm_jev_r2,Swarm · Jev · 2 wires,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,fwd_a,memwb_first,False,False,False,False,0,0.75,False,True,142,41,1,1,0.0021,60.7,10,TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,wb_mux,swap:0:1,False,False,False,False,7,0.75,False,True,128,56,1,1,0.00245,121.9,10,TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shl,bias,False,False,False,False,2,1.25,False,True,235,36,2,2,0.00204,121.0,10,TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,1.0,False,False,125,71,2,2,0.00323,181.0,10,TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,dec_rd,lo_m1,False,False,False,False,7,1.0,False,True,192,40,1,1,0.00241,120.7,10,TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,dec_rs1,lo_m1,False,False,False,False,8,0.75,False,True,114,68,2,2,0.00308,153.8,10,TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,15,fibonacci,1,br_target,off_by_one,plus,1,br_lt,le,False,False,False,False,7,0.75,False,True,127,63,0,0,0.00287,120.6,10,
+swarm_jev_r2,Swarm · Jev · 2 wires,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,wb_mux,swap:0:1,False,False,False,False,6,0.75,False,True,146,37,1,1,0.00181,120.6,10,TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,1.5,False,False,242,83,1,1,0.00428,206.0,10,TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,995,180,12,12,0.01017,1037.7,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_jev_r2,Swarm · Jev · 2 wires,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,hazard,stuck:go:0,False,False,False,False,3,0.75,False,True,132,63,0,0,0.0033,79.1,10,
+swarm_jev_r2,Swarm · Jev · 2 wires,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_src,swap:0:1,False,False,False,False,8,1.0,False,True,180,39,1,1,0.00169,125.0,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,,,False,False,False,False,,6.0,True,False,1052,151,13,13,0.00703,1040.9,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,hazard,stuck:go:0,False,False,False,False,8,0.75,False,True,121,47,1,1,0.00183,120.9,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,,,False,False,False,False,,6.0,True,False,1108,75,6,6,0.00349,461.2,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,,,False,False,False,False,,6.0,True,False,910,163,8,8,0.00802,730.6,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,fwd_mux_b,swap:0:1,True,True,True,True,9,2.0,False,False,335,90,1,1,0.00443,232.2,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,999,157,2,2,0.00701,461.3,10,TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,,,False,False,False,False,,6.0,True,False,1117,88,1,1,0.00397,273.6,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,,,False,False,False,False,,6.0,True,False,1079,86,0,0,0.00428,190.4,10,
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,,,False,False,False,False,,6.0,True,False,1091,69,0,0,0.0032,121.1,10,
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,,,False,False,False,False,,6.0,True,False,1101,75,1,1,0.0031,159.7,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,alu_shr,bias,False,False,False,False,2,6.0,False,True,1031,130,10,10,0.00638,821.6,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,1.0,False,False,133,54,1,1,0.00218,153.9,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,,,False,False,False,False,,6.0,True,False,1089,93,1,1,0.00464,520.9,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,,,False,False,False,False,,6.0,True,False,1044,109,4,4,0.00444,456.3,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,15,fibonacci,1,br_target,off_by_one,plus,1,,,False,False,False,False,,6.0,True,False,1078,88,1,1,0.00364,255.1,10,TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,rf_read_b,swap:3:4,True,True,True,True,9,3.75,False,False,660,136,4,4,0.00697,319.2,10,TimeoutError: ; TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,1.75,False,False,281,92,2,2,0.00447,243.8,10,TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,1030,93,3,3,0.00427,336.7,10,TimeoutError: ; TimeoutError: ; TimeoutError: 
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,hazard,stuck:go:0,False,False,False,False,3,1.25,False,True,190,68,0,0,0.00327,110.0,10,
+swarm_hybrid_r2,Swarm · hybrid · 2 wires,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,5.0,False,False,817,129,2,2,0.00544,304.3,10,TimeoutError: ; TimeoutError: 
+swarm_rule_r4,Swarm · rule · 4 wires,1,loop_sum,2,fwd_mux_a+wb_mux,swapped_mux+swapped_mux,swap:1:2+swap:0:1,1+0,,,False,False,False,False,,6.0,True,False,1122,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,2,forward_mix,1,fwd_b,wrong_forwarding,memwb_first,0,hazard,stuck:go:0,False,False,False,False,8,0.5,False,True,104,0,0,0,0.0,0.1,10,
+swarm_rule_r4,Swarm · rule · 4 wires,3,countdown_mul,1,alu_sub,stuck_at,stuck:out:3,0,,,False,False,False,False,,6.0,True,False,1135,0,0,0,0.0,0.5,10,
+swarm_rule_r4,Swarm · rule · 4 wires,4,logic_shift,1,alu_shr,stuck_at,stuck:out:1,0,,,False,False,False,False,,6.0,True,False,1055,0,0,0,0.0,0.3,10,
+swarm_rule_r4,Swarm · rule · 4 wires,5,forward_mix,1,fwd_mux_b,swapped_mux,swap:0:1,0,,,False,False,False,False,,6.0,True,False,1115,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,6,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,1099,0,0,0,0.0,0.3,10,
+swarm_rule_r4,Swarm · rule · 4 wires,7,loop_sum,1,alu_add_lo,off_by_one,cin,1,,,False,False,False,False,,6.0,True,False,1138,0,0,0,0.0,0.3,10,
+swarm_rule_r4,Swarm · rule · 4 wires,8,fibonacci,1,alu_add,stuck_at,stuck:out:1,0,,,False,False,False,False,,6.0,True,False,1142,0,0,0,0.0,0.5,10,
+swarm_rule_r4,Swarm · rule · 4 wires,9,fibonacci,2,pc_mux+sext6,swapped_mux+off_by_one,swap:0:1+sign_bit,1+0,,,False,False,False,False,,6.0,True,False,1114,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,10,max_scan,1,hazard,wrong_forwarding,check_rs1,0,,,False,False,False,False,,6.0,True,False,1155,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,11,logic_shift,2,alu_shr+fwd_b,off_by_one+wrong_forwarding,bias+swap_codes,0+0,,,False,False,False,False,,6.0,True,False,1114,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,12,fibonacci,1,idex_clear,stuck_at,stuck:out:0,0,idex_clear,stuck:out:0,True,True,True,True,9,1.0,False,False,143,0,0,0,0.0,0.2,10,
+swarm_rule_r4,Swarm · rule · 4 wires,13,countdown_mul,1,alu_res,swapped_mux,swap:6:7,0,,,False,False,False,False,,6.0,True,False,1129,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,14,load_store,1,fwd_a,wrong_forwarding,use_regwrite,1,,,False,False,False,False,,6.0,True,False,1111,0,0,0,0.0,0.3,10,
+swarm_rule_r4,Swarm · rule · 4 wires,15,fibonacci,1,br_target,off_by_one,plus,1,,,False,False,False,False,,6.0,True,False,1151,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,16,countdown_mul,1,rf_read_b,swapped_mux,swap:3:4,1,,,False,False,False,False,,6.0,True,False,1148,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,17,fibonacci,1,fwd_mux_a,swapped_mux,swap:1:2,0,fwd_mux_a,swap:1:2,True,True,True,True,9,2.5,False,False,480,0,0,0,0.0,0.4,10,
+swarm_rule_r4,Swarm · rule · 4 wires,18,forward_mix,1,fwd_b,wrong_forwarding,swap_codes,1,,,False,False,False,False,,6.0,True,False,1089,0,0,0,0.0,0.3,10,
+swarm_rule_r4,Swarm · rule · 4 wires,19,fibonacci,1,dec_rs1,off_by_one,lo_m1,1,hazard,stuck:go:0,False,False,False,False,3,1.25,False,True,255,0,0,0,0.0,0.1,10,
+swarm_rule_r4,Swarm · rule · 4 wires,20,reg_sweep,1,alu_xor,stuck_at,stuck:out:7,0,alu_xor,stuck:out:7,True,True,True,True,9,4.5,False,False,818,0,0,0,0.0,0.4,10,

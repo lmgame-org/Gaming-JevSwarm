@@ -10,7 +10,7 @@ from swarmcore.llm import JevClient, LLMClient
 from swarmcore.web import BaseHandler, redact, serve as _serve
 
 from .case import Case
-from .config import DEFAULTS, MODES, PRESETS, SCHEMA, coerce
+from .config import BOYS, DEFAULTS, HOLMES, MODES, PRESETS, SCHEMA, SOLO_POLICIES, SWARM_POLICIES, coerce
 from .engine import RUNS, Engine
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,9 +29,32 @@ def list_runs():
         with open(p) as f:
             s = json.load(f)
         r = s.get("result") or {}
-        out.append({"name": name, "mode": s.get("mode"), "seed": s.get("seed"), "fix_ok": r.get("fix_ok"),
+        out.append({"name": name, "mode": s.get("mode"), "setting": s.get("setting"), "seed": s.get("seed"),
+                    "fix_ok": r.get("fix_ok"),
                     "location_ok": r.get("location_ok"), "probes": s.get("probes"),
                     "cost": (s.get("inference") or {}).get("cost"), "bug": (s.get("bug") or {}).get("desc")})
+    return out
+
+
+def bench():
+    """Per-setting results of the newest benchmark CSVs in docs/ (shown on the launch screen)."""
+    import csv
+    import glob
+    out = {}
+    rows = []
+    for p in sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_*.csv"))):
+        with open(p) as f:
+            rows += list(csv.DictReader(f))
+    for r in rows:
+        if "setting" not in r:
+            continue
+        d = out.setdefault(r["setting"], {"solved": 0, "n": 0, "spend": 0.0})
+        d["n"] += 1
+        d["solved"] += r["fix_ok"] == "True"
+        d["spend"] += float(r["cost_usd"] or 0)
+    for d in out.values():
+        c = d["spend"] / max(1, d["n"])
+        d["cost"] = "free" if c == 0 else f"${c:.4f} per case"
     return out
 
 
@@ -52,6 +75,8 @@ class Handler(BaseHandler):
         if path == "/api/schema":
             return self.send_json({"schema": [[g, [list(f) for f in fields]] for g, fields in SCHEMA],
                                    "defaults": DEFAULTS, "presets": PRESETS, "modes": MODES,
+                                   "solo_policies": SOLO_POLICIES, "holmes": HOLMES, "boys": BOYS,
+                                   "swarm_policies": SWARM_POLICIES, "bench": bench(),
                                    "key_files": key_files(), "runs": list_runs(),
                                    "running": bool(eng and not eng.ended)})
         if path == "/api/preview":
