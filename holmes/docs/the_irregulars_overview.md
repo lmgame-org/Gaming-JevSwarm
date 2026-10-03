@@ -172,8 +172,9 @@ waits at Baker Street for them to report. `baker_street` follows that chain of c
 
 ### 2.6 The live viewer and tooling
 
-- **Launch screen:** presets, every knob, a live preview of the seeded map with a solvability check, model and
-  key tests, and a cost estimate.
+- **Launch screen:** presets grouped by family (Solo, Swarm, Hybrid, Baker Street) with a one-line description and the
+  measured cost per case, every knob in collapsible sections, a live preview of the seeded map with a solvability check,
+  model and key tests, and a cost estimate. Light and dark themes (follows the system, with a toggle).
 - **Live map:** districts, the Thames, the street graph, 221B, Scotland Yard, the scene, candidate hideouts and
   suspects' homes. Solo shows the cab route and lights up visited addresses; Swarm shows each Irregular as a dot
   coloured by its vote, with shouts rippling out to the shouting range. Baker Street shows Wiggins (W) and his post,
@@ -457,4 +458,4 @@ python3 tests/test_checks.py
 ```
 
 Detailed pilot tables: [pilot_2026-10-01.md](pilot_2026-10-01.md). Screenshots:
-[viewer_solo.jpg](viewer_solo.jpg), [viewer_swarm.jpg](viewer_swarm.jpg), [viewer_baker_street.jpg](viewer_baker_street.jpg).
+[viewer_launch.jpg](viewer_launch.jpg), [viewer_solo.jpg](viewer_solo.jpg), [viewer_swarm.jpg](viewer_swarm.jpg), [viewer_baker_street.jpg](viewer_baker_street.jpg).
