@@ -22,16 +22,16 @@ const BENCH = [
   {label: "Solo · Jev", stat: "5/20 · $0.005", cfg: {mode: "solo", policy: "jev"}},
   {label: "Solo · rule algorithm", stat: "9/20 · free", cfg: {mode: "solo", policy: "rule"}},
   {label: "Solo · random", stat: "0/20 · free", cfg: {mode: "solo", policy: "random"}},
-  {label: "Baker Street · gpt-6-astra Holmes, Jev boys", stat: "19/20 · $0.62", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "chat", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
-  {label: "Baker Street · counting Holmes, Jev boys", stat: "19/20 · $0.002", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
-  {label: "Baker Street · counting Holmes, rule boys", stat: "19/20 · free", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "rule", n_irregulars: 12, swarm_ticks: 48}},
-  {label: "Swarm · Jev · 1 km", stat: "5/20 · $0.17", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
-  {label: "Swarm · Jev · 2 km", stat: "10/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
-  {label: "Swarm · rule · 1 km", stat: "13/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
-  {label: "Swarm · rule · 2 km", stat: "18/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
-  {label: "Swarm · random · 1 km", stat: "0/20 · free", cfg: {mode: "swarm", swarm_policy: "random", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
-  {label: "Hybrid · 1 km", stat: "10/20 · $0.21", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
-  {label: "Hybrid · 2 km", stat: "17/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
+  {label: "Baker Street Irregulars · gpt-6-astra Holmes, Jev boys", stat: "19/20 · $0.62", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "chat", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Baker Street Irregulars · counting Holmes, Jev boys", stat: "19/20 · $0.002", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Baker Street Irregulars · counting Holmes, rule boys", stat: "19/20 · free", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "rule", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Swarm Detectives · Jev · 1 km", stat: "5/20 · $0.17", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm Detectives · Jev · 2 km", stat: "10/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
+  {label: "Swarm Detectives · rule · 1 km", stat: "13/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm Detectives · rule · 2 km", stat: "18/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
+  {label: "Swarm Detectives · random · 1 km", stat: "0/20 · free", cfg: {mode: "swarm", swarm_policy: "random", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm Detectives · hybrid · 1 km", stat: "10/20 · $0.21", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm Detectives · hybrid · 2 km", stat: "17/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
 ];
 const SOLO_OPTS = [
   {v: "chat", label: "gpt-6-astra", sub: "A large model that re-reads the whole notebook before each move", stat: "Solved 11 of 20 · $0.35 per case"},
@@ -302,15 +302,15 @@ function renderCase() {
     (v) => setCfg({misinformed_frac: v / n}))));
   const adv = document.createElement("details");
   const swarmOnly = t !== "other";
-  adv.innerHTML = `<summary>More: stubborn and forgetful boys (self-organising swarms only)</summary>`;
+  adv.innerHTML = `<summary>More: stubborn and forgetful boys (Swarm Detectives only)</summary>`;
   adv.appendChild(ctlGrid(
     sliderCtl("Boys who never change their vote", swarmOnly ? 0 : Math.round(cfg.stubborn_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: swarmOnly,
       fmt: (x) => swarmOnly ? "n/a" : `${x} of ${n}`,
-      hint: swarmOnly ? "Not used here: Baker Street boys don't vote, and a solo detective has no boys." : "Once they hold a full answer they keep it, whatever they hear."},
+      hint: swarmOnly ? "Not used here: the Baker Street Irregulars don't vote, and a solo detective has no boys." : "Once they hold a full answer they keep it, whatever they hear."},
     (v) => setCfg({stubborn_frac: v / n})),
     sliderCtl("Forgetfulness", swarmOnly ? 0 : cfg.forget_rate, {min: 0, max: 1, step: 0.05, off: swarmOnly,
       fmt: (x) => swarmOnly ? "n/a" : `${Math.round(x * 100)}% chance per tick`,
-      hint: swarmOnly ? "Not used here: Baker Street boys hand over everything they carry." : "Each tick, each boy may forget one lead he was holding."},
+      hint: swarmOnly ? "Not used here: the Baker Street Irregulars hand over everything they carry." : "Each tick, each boy may forget one lead he was holding."},
     (v) => setCfg({forget_rate: v}))));
   dec.appendChild(adv);
   p.appendChild(dec);
@@ -402,8 +402,8 @@ function preview() {
 function setupName(c) {
   const t = trackOf(c);
   if (t === "solo") return `Solo · ${(SOLO_OPTS.find((o) => o.v === c.policy) || {}).label || c.policy}`;
-  if (t === "baker") return `Baker Street · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes · ${c.boy_policy === "jev" ? "Jev" : c.boy_policy} boys`;
-  return (OTHER_OPTS.find((o) => o.v === c.swarm_policy) || {}).label || c.swarm_policy;
+  if (t === "baker") return `Baker Street Irregulars · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes · ${c.boy_policy === "jev" ? "Jev" : c.boy_policy} boys`;
+  return `Swarm Detectives · ${(OTHER_OPTS.find((o) => o.v === c.swarm_policy) || {}).label || c.swarm_policy}`;
 }
 
 function estimate() {
@@ -484,8 +484,8 @@ function onFrame(f, redraw = false) {
   const sc = {mode: f.mode, policy: f.policy, swarm_policy: f.hq ? "baker_street" : f.policy};
   tag.style.setProperty("--chip", `var(${seriesVar(sc)})`);
   tag.textContent = solo ? `Solo · ${f.policy === "chat" ? "gpt-6-astra" : f.policy}` : f.hq
-    ? `Baker Street · ${f.hq.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes`
-    : `Swarm · ${f.policy} · ${f.irregulars.length} Irregulars`;
+    ? `Baker Street Irregulars · ${f.hq.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes`
+    : `Swarm Detectives · ${f.policy} · ${f.irregulars.length} boys`;
   if (CASE) {
     const seed = (/_s(\d+)$/.exec(f.run || "") || [0, "?"])[1];
     const t = caseTitle(CASE.brief, seed);
