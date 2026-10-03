@@ -233,6 +233,24 @@ def test_baker_street_rule_holmes_solves_most():
     assert solved >= 7, solved
 
 
+def test_holmesian_case_fools_counting_but_is_solvable():
+    for seed in range(1, 11):
+        c = Case(coerce({"seed": seed, "difficulty": "holmesian"}))
+        assert all(c.solvable.values()), (seed, c.solvable)  # a careful reader sees through the frame-up
+        assert not c.counting_fooled["culprit"], seed  # plain counting picks the framed suspect
+        assert c.framed != c.truth["culprit"]
+        assert any(l.get("src") == "frame" for l in c.leads.values())
+        assert any(l["fact"][0] == "bribe" for l in c.leads.values())
+        b = c.brief()
+        assert "time_of_death" in b and "holmes_index" in b
+        assert all(not c.clears(l["fact"]) or not l["lie"] for l in c.leads.values())
+
+
+def test_standard_case_unchanged_by_difficulty_default():
+    a, b = Case(coerce({"seed": 3})), Case(coerce({"seed": 3, "difficulty": "standard"}))
+    assert a.leads == b.leads and "time_of_death" not in a.brief()
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):

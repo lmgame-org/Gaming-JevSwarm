@@ -49,7 +49,7 @@ class Handler(BaseHandler):
             q = {k: v[0] for k, v in parse_qs(url.query).items()}
             c = Case(coerce(q))
             return self.send_json({"map": c.public_map(), "brief": c.brief(), "solvable": c.solvable,
-                                   "kinds": _kind_counts(c)})
+                                   "counting": getattr(c, "counting_fooled", None), "kinds": _kind_counts(c)})
         if path == "/api/irregular":
             if not eng:
                 return self.send_json({"error": "no run"}, 404)

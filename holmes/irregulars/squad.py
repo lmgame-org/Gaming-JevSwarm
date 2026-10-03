@@ -20,7 +20,7 @@ from swarmcore.llm import JevClient, LLMClient, LLMError
 from .case import TRAITS
 from .reasoning import deduce
 
-KEY_KINDS = {"trait", "alibi", "motive", "hide_district", "hide_type", "hide_found"}
+KEY_KINDS = {"trait", "alibi", "motive", "hide_district", "hide_type", "hide_found", "seen", "trace", "bribe"}
 BOY_NAMES = ["Simpson", "Alfie", "Nobby", "Tom", "Billy", "Jem", "Sid", "Mick", "Charlie", "Ned", "Kit", "Dodger",
              "Bert", "Lenny", "Ike", "Pip", "Ollie", "Sam", "Toby", "Fred"]
 BOY_INSTRUCTION = (

@@ -22,6 +22,29 @@ cd holmes && python3 -m irregulars --port 8781
 - **Reproducible**: everything comes from the seed. The launch screen previews the case and says whether it is
   solvable by counting all leads.
 
+### Holmesian cases (`difficulty = holmesian`)
+
+A second tab under step 2, "The Mystery Case", for a harder, planned crime. The same seed gives the same map and
+people as the standard case, with different leads:
+
+- **Frame-up**: the culprit's own servants describe an innocent suspect, two matching copies of each false trait
+  against one copy of the truth, and swear the culprit never left home. Counting how often a clue is repeated
+  names the framed suspect (it does in all 20 benchmark seeds).
+- **Planted clue**: one clue at the scene points at the framed suspect but gives itself away (a bone-dry pipe after
+  a night of rain, one footprint with no trail).
+- **The bribe**: two witnesses saw the culprit pay his servants. A reader who connects this to who gave the
+  matching descriptions can discount them.
+- **Single key clues**: each true trait of the culprit turns up once.
+- **Timed alibis**: "seen at the Feathers from 11 until half past twelve". The case file gives the time of death and
+  which districts are too far away; decoy sightings (too early, or too close) clear nobody.
+- **Traces**: hideout clues are mud and dust ("red brick-clay"), decoded with Holmes's index in the case file.
+
+Every Holmesian case is generated so that a careful reader who discounts the bribed witnesses and the planted clue
+reaches the truth. The counting heuristics read timed alibis and traces correctly (that is just arithmetic and a
+lookup), but they don't judge who is speaking, so they fall for the frame-up. Free first results on seeds 1-20:
+solo heuristic 0/20, Baker Street counting Holmes with heuristic boys 0/20, heuristic swarm 0/20 at 1 km and 2 km
+(motive and hideout are mostly right; the culprit is the framed suspect).
+
 All lead text is original; the only borrowed names are public-domain characters (Holmes, Mrs Hudson, Lestrade,
 Wiggins's Irregulars, the Professor).
 

@@ -13,6 +13,14 @@ Fact kinds:
   hide_found / hide_not  searched a candidate hideout: occupied / untouched (never lies)
   pointer(address)       go and ask at that address (it holds a true key lead)
   herring / bland        no evidential value
+
+Holmesian cases (difficulty = holmesian) add:
+  seen(suspect, address, from, to)  a timed sighting; an alibi only if it covers the time of death and the address is
+                                    beyond the scene's neighbouring districts
+  trace(phrase)          mud or dust that names the hideout district only through the index in the case file
+  bribe(suspect)         this suspect paid witnesses to tell one story (true; the clue that exposes the frame-up)
+and a frame-up: the culprit's own servants give matching false descriptions of an innocent suspect (two copies of
+each lie against one copy of the truth) plus a false alibi for the culprit, and one clue at the scene is planted.
 """
 import heapq
 import math
@@ -137,6 +145,37 @@ HERRINGS = ["{S} was seen buying arsenic here; the chemist confirms it is for th
 ALIBI_LEADS = ["{who} swears {S} was here from nine until past two that night and never once left.",
                "{S} spent the whole night at the bedside of a sick child here, says {who}.",
                "The register here shows {S} signed in at ten and the night porter saw no one leave before six."]
+# Holmesian cases: the mud and dust of each district (published in the case file as Holmes's index)
+TRACES = {
+    "Kensington": "fine yellow gravel from the walks of the Royal Gardens",
+    "Marylebone": "pale sand from the riding tracks of the Regent's Park",
+    "Bloomsbury": "white plaster dust from the works at the Museum",
+    "Soho": "sawdust soaked in wine from the eating-house floors",
+    "Covent Garden": "crushed cabbage leaf and orange peel from the market",
+    "Westminster": "grey stone-dust from the Abbey masons' yard",
+    "The City": "printer's ink and paper fluff from the presses",
+    "Whitechapel": "the black, sour dye of the tanneries",
+    "Southwark": "red brick-clay from the Bankside kilns",
+    "Limehouse": "tar and loose hemp from the rope-walks by the docks",
+}
+TRACE_TO_DISTRICT = {v: k for k, v in TRACES.items()}
+TRACE_LEADS = ["{Who} sold bread at dawn to a stranger whose boots were caked with {t}.",
+               "The cloak the culprit threw into the area railings is streaked with {t}, says {who}.",
+               "{Who} noticed {t} on the cuffs of a hurried stranger asking for the cheapest room going."]
+SERVANTS = ["the coachman in {C}'s service", "{C}'s housekeeper", "a groom from {C}'s stables", "{C}'s valet",
+            "a clerk employed by {C}", "{C}'s cook", "the boot-boy in {C}'s house"]
+BRIBE_LEADS = ["The publican saw {C} hand a sovereign each to three of {C}'s own servants the morning after, saying "
+               "'and mind you all tell it the same way.'",
+               "A bank clerk says {C} drew twenty pounds in sovereigns at opening time the day after the murder; by "
+               "noon {C}'s household staff were all wearing new boots."]
+PLANTED = {
+    "tobacco": {"pipe": "a clay pipe still packed with coarse shag", "cigar": "the stub of a Havana cigar",
+                "turkish": "the end of a Turkish cigarette", "snuff": "a small silver snuff-box"},
+}
+SIGHT_PLACES = ["drinking at the {p}", "playing whist at the {p}", "seen by the doorman at the {p}",
+                "arguing with a cabman outside the {p}"]
+DEATH = ("23:30", "00:00")
+
 FIRST = ["Arthur", "Edith", "Henry", "Clara", "Walter", "Agnes", "Frederick", "Maud", "Septimus", "Lydia", "Ambrose",
          "Harriet", "Cornelius", "Beatrice", "Rupert", "Florence", "Silas", "Winifred", "Jasper", "Ottilie", "Bertram",
          "Isadora", "Leopold", "Prudence"]
@@ -162,7 +201,15 @@ class Case:
         self.r = r
         self._build_map(cfg["n_addresses"])
         self._build_cast(cfg["n_suspects"], cfg["n_motives"], cfg["n_hideouts"])
-        self._place_leads()
+        self.holmesian = cfg.get("difficulty") == "holmesian"
+        self.framed = None
+        if self.holmesian:
+            for _ in range(12):  # regenerate until a careful reader can solve it
+                self._place_leads_holmesian()
+                if all(self.solvable.values()):
+                    break
+        else:
+            self._place_leads()
 
     # ------------------------------------------------------------------ map
     def _build_map(self, n):
@@ -406,6 +453,176 @@ class Case:
             self._set(a, ("herring",) if r.random() < cfg["red_herring_rate"] else ("bland",))
         self.solvable = self._oracle()
 
+    # ------------------------------------------------------------------ Holmesian leads
+    def near_districts(self):
+        """The scene's district and its neighbours: nobody beyond them could reach the scene at the time of death."""
+        d = self.by_id[self.scene]["district"]
+        return {d, *ADJACENT[d]}
+
+    def clears(self, f):
+        """Does a seen(...) fact give that suspect an alibi?"""
+        if f[0] != "seen" or len(f) < 5:
+            return False
+        frm, to = _tmin(f[3]), _tmin(f[4])
+        return frm <= _tmin(DEATH[0]) and to >= _tmin(DEATH[1]) and \
+            self.by_id[f[2]]["district"] not in self.near_districts()
+
+    def _place_leads_holmesian(self):
+        r, cfg = self.r, self.cfg
+        culprit = self.suspect(self.truth["culprit"])
+        C = culprit["name"]
+        hide = self.hideout(self.truth["hideout"])
+        self.leads = {}
+        near = self.near_districts()
+        far = [a for a in self.by_id if self.by_id[a]["district"] not in near]
+        close = [a for a in self.by_id if self.by_id[a]["district"] in near]
+        # 1. culprit facts: traits (one copy each) until three suspects remain, then timed sightings for the others
+        dims = list(TRAITS)
+        r.shuffle(dims)
+        alive, used = list(self.suspects), []
+        for d in dims:
+            if len(alive) <= 3 and len(used) >= 2:
+                break
+            used.append(d)
+            alive = [s for s in alive if s["traits"][d] == culprit["traits"][d]]
+        innocents = [s for s in self.suspects if s is not culprit]
+        # the framed suspect: an innocent who differs from the culprit on as many of those traits as possible
+        framed = max(innocents, key=lambda s: (sum(s["traits"][d] != culprit["traits"][d] for d in used), r.random()))
+        if framed in alive:
+            alive.remove(framed)
+        self.framed = framed["id"]
+        key = [("trait", d, culprit["traits"][d]) for d in used]
+        sightings = []
+        for s in alive:
+            if s is culprit:
+                continue
+            frm, to = r.choice([("22:45", "01:00"), ("23:00", "00:30"), ("23:15", "00:15")])
+            sightings.append(("seen", s["id"], None, frm, to))
+        key += [("motive", self.truth["motive"])] * 2
+        key += [("trace", TRACES[hide["district"]])] * 2 + [("hide_type", hide["type"])] * 2
+        taken = {self.specials["baker"], self.specials["yard"], self.scene}
+        for h in self.hideouts:
+            self._set(h["address"], ("hide_found" if h is hide else "hide_not", h["address"]), h=h)
+            taken.add(h["address"])
+        placed_key = []
+
+        def put(fact, pool, **kw):
+            pool = [a for a in pool if a not in taken]
+            if not pool:
+                pool = [a for a in self.by_id if a not in taken]
+            if not pool:
+                return None
+            a = r.choice(pool[:12])
+            self._set(a, fact, **kw)
+            taken.add(a)
+            return a
+
+        for f in key:
+            a = self._spot(f, taken) if f[0] != "trace" else put(f, self.nearest(hide["address"], 22))
+            if a and f[0] != "trace":
+                self._set(a, f)
+                taken.add(a)
+            if a:
+                placed_key.append(a)
+        true_seen = []
+        for f in sightings:
+            a = put(None, r.sample(far, len(far)))
+            f = ("seen", f[1], a, f[3], f[4])
+            self._set(a, f)
+            true_seen.append(f)
+            placed_key.append(a)
+        # 2. decoy sightings that clear nobody: the culprit early in the evening far away, the framed man close by
+        decoys = [("seen", culprit["id"], None, "20:30", "22:00"), ("seen", framed["id"], None, "23:20", "23:50")]
+        for f, pool in zip(decoys, (far, close)):
+            a = put(None, r.sample(pool, len(pool)))
+            if a:
+                self._set(a, ("seen", f[1], a, f[3], f[4]))
+        # 3. the frame-up: the culprit's servants describe the framed suspect (two copies per trait) and alibi the
+        #    culprit; one clue at the scene is planted
+        self.frame_addrs = []
+        servants = r.sample(SERVANTS, len(SERVANTS))
+        k = 0
+        frame_facts = [("trait", d, framed["traits"][d]) for d in used if framed["traits"][d] != culprit["traits"][d]]
+        frame_facts = [f for f in frame_facts for _ in range(2)] + [("alibi", culprit["id"])] * 2
+        for f in frame_facts:
+            who = servants[k % len(servants)].format(C=C)
+            k += 1
+            a = put(None, self.nearest(self.scene, 30))
+            if not a:
+                break
+            if f[0] == "alibi":
+                text = (f"{who[0].upper() + who[1:]} swears {C} was at home all that evening and never went out "
+                        f"until breakfast.")
+                self._set(a, f, lie=True, who=who, text=text)
+            else:
+                self._set(a, f, lie=True, who=who)
+            self.leads[a]["src"] = "frame"
+            self.frame_addrs.append(a)
+        pd = next((d for d in ("tobacco", "boots", "hair") if framed["traits"][d] != culprit["traits"][d]), None)
+        if pd:
+            v = framed["traits"][pd]
+            if pd == "tobacco":
+                text = (f"By the body lies {PLANTED['tobacco'].get(v, 'a tobacco tin')}. Odd: it is bone-dry, though "
+                        "rain fell until three in the morning and everything else on the step is soaked.")
+            elif pd == "boots":
+                text = (f"One sharp print of a {v} boot sits in the flower-bed by the window, yet no other prints "
+                        "lead to it or away from it.")
+            else:
+                text = (f"A few {TRAITS['hair'][v].replace('-haired', '')} hairs lie neatly across the victim's lapel, "
+                        "as if laid there, though the room shows a long and desperate struggle.")
+            self._set(self.scene, ("trait", pd, v), lie=True, text=text)
+            self.leads[self.scene]["src"] = "planted"
+        else:
+            self._set(self.scene, ("bland",))
+        # 4. the clue that exposes the frame (two copies)
+        bribes = []
+        for t in BRIBE_LEADS:
+            a = put(None, self.nearest(culprit["home"], 20))
+            if a:
+                self._set(a, ("bribe", culprit["id"]), text=t.format(C=C))
+                bribes.append(a)
+        # 5. ordinary lies, single copies, only against the motive and hideout facts (which have two true copies)
+        targets = [f for f in key if f[0] in ("motive", "hide_type")] + [("hide_district", hide["district"])]
+        n_lies = round(cfg["lie_rate"] * len(targets) * 2)
+        self.lies = list(self.frame_addrs) + ([self.scene] if pd else [])
+        seen = set()
+        for _ in range(4 * max(1, n_lies)):
+            if n_lies <= 0:
+                break
+            f = r.choice(targets)
+            lie = self._lie(f, culprit)
+            if not lie or lie in seen:
+                continue
+            if lie[0] == "hide_district":
+                lie = ("trace", TRACES[lie[1]])
+            a = put(None, r.sample(list(self.by_id), len(self.by_id)))
+            if not a:
+                break
+            self._set(a, lie, lie=True)
+            seen.add(lie)
+            self.lies.append(a)
+            n_lies -= 1
+        self.key_facts = [tuple(f) for f in key] + true_seen + [("bribe", culprit["id"])]
+        # 6. pointers: Mrs Hudson and Lestrade point at true leads; more tips near the scene
+        targets = [a for a in placed_key + bribes if a != self.scene]
+        r.shuffle(targets)
+        first = targets[0] if targets else None
+        self._set(self.specials["baker"], ("pointer", first) if first else ("bland",), who="Mrs Hudson",
+                  text=(f"Mrs Hudson hands over a telegram from Inspector Lestrade: 'Witness worth hearing at "
+                        f"{self.label(first)}.'") if first else None)
+        second = targets[1] if len(targets) > 1 else first
+        self._set(self.specials["yard"], ("pointer", second) if second else ("bland",), who="Inspector Lestrade",
+                  text=(f"Inspector Lestrade is sure {framed['name']} did it, and has three witnesses to prove "
+                        f"it; but he admits someone at {self.label(second)} told a constable something odd.")
+                  if second else None)
+        for t in targets[2:2 + round(cfg["pointer_rate"] * len(targets))]:
+            put(("pointer", t), self.nearest(self.scene, 25))
+        for a in self.by_id:
+            if a not in self.leads:
+                self._set(a, ("herring",) if r.random() < cfg["red_herring_rate"] else ("bland",))
+        self.solvable = self._oracle()
+        self.counting_fooled = self._oracle(careful=False)
+
     def _spot(self, f, taken):
         """A free address appropriate for fact f."""
         r = self.r
@@ -448,6 +665,9 @@ class Case:
 
     def _set(self, a, fact, lie=False, who=None, text=None, h=None):
         r = self.r
+        if fact is None:  # reserve the address; the caller sets the lead once it knows where it is
+            self.leads[a] = {"address": a, "text": "", "fact": ["bland"], "lie": False}
+            return
         who = who or r.choice(WITNESSES)
         text = text or self._text(fact, who, h)
         self.leads[a] = {"address": a, "text": text, "fact": list(fact), "lie": lie}
@@ -468,6 +688,13 @@ class Case:
             s = r.choice(MOTIVE_LEADS[f[1]]).format(who=who, V=V)
         elif kind == "hide_district":
             s = r.choice(DISTRICT_LEADS).format(who=who, d=f[1])
+        elif kind == "trace":
+            s = r.choice(TRACE_LEADS).format(who=who, Who=Who, t=f[1])
+        elif kind == "seen":
+            s = (f"{Who} says {self.suspect(f[1])['name']} was " + r.choice(SIGHT_PLACES).format(p=self.by_id[f[2]]['type'])
+                 + f" here, {self.label(f[2])}, from {_clock(f[3])} until {_clock(f[4])} on the night of the murder.")
+        elif kind == "bribe":
+            s = r.choice(BRIBE_LEADS).format(C=self.suspect(f[1])["name"])
         elif kind == "hide_type":
             s = TYPE_LEADS[f[1]].format(who=who)
         elif kind == "hide_found":
@@ -489,17 +716,22 @@ class Case:
         x = self.by_id[a]
         return f"{x['street']}, {x['district']}"
 
-    def _oracle(self):
-        """Would a perfect reader who saw every lead reach the truth by majority? (evaluator only)"""
+    def _oracle(self, careful=True):
+        """Would a perfect reader who saw every lead reach the truth by majority? (evaluator only) In a Holmesian
+        case a careful reader also sees through the frame-up (witnesses exposed by a bribe clue) and the planted clue;
+        careful=False is plain counting, which the frame-up is built to fool."""
         from .reasoning import deduce
-        b = deduce([l["fact"] for l in self.leads.values()], self)
+        bribed = {l["fact"][1] for l in self.leads.values() if l["fact"][0] == "bribe"} if careful else set()
+        facts = [l["fact"] for l in self.leads.values()
+                 if not (careful and (l.get("src") == "planted" or (l.get("src") == "frame" and bribed)))]
+        b = deduce(facts, self)
         t = self.truth_ids()
         return {k: b[k]["best"] == t[k] for k in ("culprit", "motive", "hideout")}
 
     # ------------------------------------------------------------------ views
     def brief(self):
         """What every detective is told at the start (no truth)."""
-        return {
+        out = {
             "victim": f"{self.victim['name']}, {self.victim['occupation']}, found dead at {self.label(self.scene)} "
                       f"({self.scene}) this morning",
             "victim_home": f"{self.label(self.victim['home'])} ({self.victim['home']})",
@@ -512,6 +744,17 @@ class Case:
             "task": "Name the culprit, the motive and the hideout. Witnesses sometimes lie; true facts usually "
                     "turn up at more than one address.",
         }
+        if self.holmesian:
+            d = self.by_id[self.scene]["district"]
+            out["task"] = ("Name the culprit, the motive and the hideout. This crime was planned. Some witnesses may "
+                           "have been paid to tell the same false story, and a clue may have been planted, so weigh "
+                           "who is speaking and whether a clue makes sense, not how often it is repeated. A key clue "
+                           "may turn up only once.")
+            out["time_of_death"] = "between 11:30 pm and midnight (the police surgeon is certain)"
+            out["alibis"] = (f"The scene is in {d}. In that half hour nobody could have reached it from beyond "
+                             f"{d} and its neighbouring districts ({', '.join(ADJACENT[d])}).")
+            out["holmes_index"] = {k: v for k, v in TRACES.items()}
+        return out
 
     def motive_id(self, m):
         return f"M{self.motives.index(m) + 1}"
@@ -535,6 +778,20 @@ class Case:
             "hideout": self.label(self.hideout(self.truth["hideout"])["address"])},
             "lead_kinds": {a: ("lie" if l["lie"] else l["fact"][0]) for a, l in self.leads.items()},
             "solvable": self.solvable, "key_facts": [list(f) for f in self.key_facts], "lies": len(self.lies)}
+
+
+def _tmin(hhmm):
+    """Minutes since noon, so the night does not wrap at midnight."""
+    h, m = map(int, hhmm.split(":"))
+    return (h + 24 if h < 12 else h) * 60 + m - 720
+
+
+def _clock(hhmm):
+    h, m = map(int, hhmm.split(":"))
+    if h == 0 and m == 0:
+        return "midnight"
+    hh = h % 12 or 12
+    return f"{hh}:{m:02d} {'pm' if 12 <= h < 24 else 'am'}" if m else f"{hh} {'pm' if 12 <= h < 24 else 'am'}"
 
 
 def _river_y(x):

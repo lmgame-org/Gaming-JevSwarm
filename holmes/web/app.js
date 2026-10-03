@@ -15,7 +15,7 @@ const SUS_COLORS = ["#d1495b", "#2a9d8f", "#e9a03b", "#3d6fd1", "#8e5bd0", "#5c9
 const DISTRICT_HUES = {"Kensington": "#d1495b", "Marylebone": "#e9a03b", "Bloomsbury": "#b5a12a", "Soho": "#5c9e3a",
   "Covent Garden": "#2a9d8f", "Westminster": "#1f9fc4", "The City": "#3d6fd1", "Whitechapel": "#8e5bd0",
   "Southwark": "#d16ba5", "Limehouse": "#b5651d"};
-const KEY = new Set(["trait", "alibi", "motive", "hide_district", "hide_type", "hide_found"]);
+const KEY = new Set(["trait", "alibi", "motive", "hide_district", "hide_type", "hide_found", "seen", "trace", "bribe"]);
 // Measured on the 20-case benchmark (2 Oct 2026); hybrid + Yard genius from the 3-case pilot.
 const BENCH = [
   {label: "Solo · gpt-6-astra", stat: "11/20 · $0.35", cfg: {mode: "solo", policy: "chat"}},
@@ -266,11 +266,21 @@ function renderTracks() {
 function renderCase() {
   const p = $("#casePanel"); p.innerHTML = "";
   const t = trackOf(cfg), n = squad();
+  const hard = cfg.difficulty === "holmesian";
+  document.querySelectorAll("#caseKinds button").forEach((b) => {
+    b.setAttribute("aria-selected", String(b.dataset.kind === (cfg.difficulty || "standard")));
+    b.onclick = () => setCfg({difficulty: b.dataset.kind}, {preview: true});
+  });
   const info = PREVIEW_INFO;
   const name = document.createElement("div");
   name.className = "case-name";
   name.innerHTML = info ? `${esc(info.title)} <span class="meta">${esc(info.sub)}</span>` : "&nbsp;";
   p.appendChild(name);
+  const how = document.createElement("p"); how.className = "how";
+  how.innerHTML = hard
+    ? "<b>A Holmesian case.</b> The murder was planned. The culprit has paid his own servants to describe an innocent suspect and to swear he never left home, so the false story turns up more often than the truth. One clue at the scene was planted, and gives itself away to a careful eye. Somewhere a witness saw the bribe being paid. Each true clue about the culprit turns up only once. Alibis are timed sightings that you have to check against the time of death, and hideout clues are traces of mud and dust, decoded with Holmes's index in the case file. Counting how often a clue is repeated leads to the wrong suspect; weighing who is speaking does not."
+    : "<b>A standard case.</b> Every true fact turns up at two addresses and each lie is a lone voice, so careful counting is enough to solve it.";
+  p.appendChild(how);
   const hrs = clockHours();
   p.appendChild(ctlGrid(
     numCtl("Case number", cfg.seed, {min: 0, max: 99999, hint: "The same number always gives the same map, people and leads"}, (v) => setCfg({seed: v | 0}, {preview: true})),
@@ -289,7 +299,8 @@ function renderCase() {
   dec.appendChild(ctlGrid(
     sliderCtl("Witnesses who lie", cfg.lie_rate, {min: 0, max: 0.5, step: 0.05,
       fmt: (x) => `${Math.round(x * 100)}%`,
-      hint: lies != null ? `This case has ${lies} lying witness${lies === 1 ? "" : "es"}. Each lie contradicts one true fact (true facts turn up at two addresses). Applies to every approach.` : "Applies to every approach."},
+      hint: hard ? `Extra lone lies about the motive and hideout, on top of the frame-up${lies != null ? ` (this case has ${lies} false leads in all, frame-up included)` : ""}. Applies to every approach.`
+        : lies != null ? `This case has ${lies} lying witness${lies === 1 ? "" : "es"}. Each lie contradicts one true fact (true facts turn up at two addresses). Applies to every approach.` : "Applies to every approach."},
     (v) => setCfg({lie_rate: v}, {preview: true})),
     sliderCtl("Street boys who lie (bribed by Moriarty)", noBoys ? 0 : Math.round(cfg.liar_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
       fmt: (x) => noBoys ? "n/a" : `${x} of ${n}`,
@@ -359,7 +370,7 @@ function renderForm() {
       input.id = "f_" + key;
       input.onchange = () => {
         const v = kind === "bool" ? input.checked : kind === "int" ? parseInt(input.value) : kind === "float" ? parseFloat(input.value) : input.value;
-        const pv = ["seed", "n_addresses", "n_suspects", "n_motives", "n_hideouts", "redundancy", "lie_rate", "red_herring_rate", "pointer_rate"].includes(key);
+        const pv = ["seed", "difficulty", "n_addresses", "n_suspects", "n_motives", "n_hideouts", "redundancy", "lie_rate", "red_herring_rate", "pointer_rate"].includes(key);
         setCfg({[key]: v}, {preview: pv});
       };
       const lab = document.createElement("label"); lab.htmlFor = input.id; lab.textContent = label;
@@ -381,12 +392,12 @@ function preview() {
   clearTimeout(pvTimer);
   pvTimer = setTimeout(async () => {
     const q = new URLSearchParams();
-    for (const k of ["seed", "n_addresses", "n_suspects", "n_motives", "n_hideouts", "redundancy", "lie_rate", "red_herring_rate", "pointer_rate"]) q.set(k, cfg[k]);
+    for (const k of ["seed", "difficulty", "n_addresses", "n_suspects", "n_motives", "n_hideouts", "redundancy", "lie_rate", "red_herring_rate", "pointer_rate"]) q.set(k, cfg[k]);
     const r = await api("/api/preview?" + q);
     PREVIEW = {map: r.map, brief: r.brief};
     drawMap($("#preview"), PREVIEW, null, {preview: true});
     const k = r.kinds;
-    const key = ["trait", "alibi", "motive", "hide_district", "hide_type"].reduce((s, x) => s + (k[x] || 0), 0);
+    const key = ["trait", "alibi", "motive", "hide_district", "hide_type", "seen", "trace", "bribe"].reduce((s, x) => s + (k[x] || 0), 0);
     const t = caseTitle(r.brief, cfg.seed);
     PREVIEW_INFO = {...t, lies: k.lie || 0};
     $("#pvKey").innerHTML = [["star", "221B Baker Street"], ["sq-solid", "Scotland Yard (police headquarters)"], ["cross", "crime scene"],
@@ -394,8 +405,9 @@ function preview() {
     $("#pvTitle").textContent = t.title;
     $("#pvInfo").textContent = `${r.map.addresses.length} addresses · ${Object.keys(r.brief.suspects).length} suspects`;
     $("#pvKinds").innerHTML = `${esc(t.sub)}.<br>On the map: ${key} real clues, ${k.lie || 0} lie${(k.lie || 0) === 1 ? "" : "s"}, ${k.pointer || 0} "ask at..." tips,
-      ${k.herring || 0} red herrings and ${k.bland || 0} empty addresses. All the clues together point to the right answer:
-      ${Object.values(r.solvable).every(Boolean) ? "yes" : "<span class='err'>no</span>"}.`;
+      ${k.herring || 0} red herrings and ${k.bland || 0} empty addresses. ${r.counting
+        ? `A careful reader who sees through the frame-up can solve it: ${Object.values(r.solvable).every(Boolean) ? "yes" : "<span class='err'>no</span>"}. Simply counting the clues names the right culprit: ${r.counting.culprit ? "yes" : "no, it falls for the frame-up"}.`
+        : `All the clues together point to the right answer: ${Object.values(r.solvable).every(Boolean) ? "yes" : "<span class='err'>no</span>"}.`}`;
     renderCase();
   }, 150);
 }
@@ -520,7 +532,9 @@ function renderBrief() {
     <h4>Suspects</h4>` + Object.entries(b.suspects).map(([k, v], i) =>
     `<div class="sus"><i style="background:${SUS_COLORS[i % 16]}"></i><b>${k}</b><span>${esc(v)}</span></div>`).join("") +
     `<h4>Motives</h4><div>${Object.entries(b.motives).map(([k, v]) => `<b class="mono">${k}</b> ${esc(v)}`).join("<br>")}</div>
-    <h4>Possible hideouts</h4><div>${Object.entries(b.possible_hideouts).map(([k, v]) => `<b class="mono">${k}</b> ${esc(v)}`).join("<br>")}</div>`;
+    <h4>Possible hideouts</h4><div>${Object.entries(b.possible_hideouts).map(([k, v]) => `<b class="mono">${k}</b> ${esc(v)}`).join("<br>")}</div>` +
+    (b.time_of_death ? `<h4>Time of death</h4><div>${esc(b.time_of_death)}. ${esc(b.alibis)}</div>
+    <h4>Holmes's index of London mud and dust</h4><div>${Object.entries(b.holmes_index).map(([k, v]) => `<b>${esc(k)}</b>: ${esc(v)}`).join("<br>")}</div>` : "");
 }
 
 function name(kind, id) {

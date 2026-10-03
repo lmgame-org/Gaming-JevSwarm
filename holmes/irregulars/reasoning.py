@@ -4,6 +4,8 @@ motive list, hideout candidates); it does not know which leads are lies.
 """
 from collections import Counter
 
+from .case import TRACE_TO_DISTRICT
+
 
 def deduce(facts, case, need=2):
     """facts: list of fact lists. Returns {culprit|motive|hideout: {scores, best, margin, confident}} using ids."""
@@ -20,6 +22,10 @@ def deduce(facts, case, need=2):
             motive[f[1]] += 1
         elif k == "hide_district":
             hd[f[1]] += 1
+        elif k == "trace" and len(f) > 1 and f[1] in TRACE_TO_DISTRICT:
+            hd[TRACE_TO_DISTRICT[f[1]]] += 1  # mud and dust, read through the index in the case file
+        elif k == "seen" and case.clears(f):
+            alibi[f[1]] += 1  # a sighting far away at the time of death
         elif k == "hide_type":
             ht[f[1]] += 1
         elif k == "hide_found" and len(f) > 1:

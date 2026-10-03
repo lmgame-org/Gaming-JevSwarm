@@ -11,6 +11,7 @@ DEFAULTS = {
     "seed": 1,
     "speed": 1.5,                # steps (Solo visits or Swarm ticks) per wall second, live-adjustable
     # case
+    "difficulty": "standard",    # standard | holmesian (frame-up, planted clue, timed alibis, single key clues)
     "n_addresses": 100,
     "n_suspects": 10,
     "n_motives": 6,
@@ -113,6 +114,8 @@ SCHEMA = [
         ("speed", "Playback speed (steps per second)", "float", {"min": 0.1, "max": 30}),
     ]),
     ("The case", [
+        ("difficulty", "Kind of case", "choice", {"standard": "standard: true facts repeat, lies are lone voices",
+                                                  "holmesian": "Holmesian: a planned crime with a frame-up, a planted clue and timed alibis"}),
         ("n_addresses", "Addresses on the map", "int", {"min": 20, "max": 300}),
         ("n_suspects", "Suspects", "int", {"min": 3, "max": 16}),
         ("n_motives", "Possible motives", "int", {"min": 2, "max": 6}),
@@ -211,6 +214,8 @@ def coerce(cfg):
     out["n_hideouts"] = max(2, min(8, out["n_hideouts"]))
     # room for Baker Street, the Yard, the scene, the victim's home, hideouts, suspects' homes and some leads
     out["n_addresses"] = max(out["n_addresses"], out["n_suspects"] + out["n_hideouts"] + 12)
+    if out["difficulty"] not in ("standard", "holmesian"):
+        out["difficulty"] = "standard"
     if out["mode"] not in ("solo", "swarm"):
         out["mode"] = "solo"
     return out

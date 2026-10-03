@@ -16,8 +16,9 @@ from swarmcore.llm import JevClient, LLMError
 from .case import TRAITS
 from .reasoning import deduce
 
-KEY_KINDS = {"trait", "alibi", "motive", "hide_district", "hide_type", "hide_found", "hide_not", "pointer"}
-SHARE_ORDER = ["hide_found", "motive", "trait", "alibi", "hide_district", "hide_type", "hide_not"]
+KEY_KINDS = {"trait", "alibi", "motive", "hide_district", "hide_type", "hide_found", "hide_not", "pointer", "seen",
+             "trace", "bribe"}
+SHARE_ORDER = ["hide_found", "bribe", "motive", "trait", "alibi", "seen", "hide_district", "trace", "hide_type", "hide_not"]
 INSTRUCTION = (
     "You are one of Wiggins's Baker Street Irregulars, a street child helping Sherlock Holmes with a murder case. "
     "You know only the leads you saw yourself and those other Irregulars shouted to you; some witnesses and some "
