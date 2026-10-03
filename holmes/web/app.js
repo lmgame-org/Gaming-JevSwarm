@@ -20,15 +20,15 @@ const KEY = new Set(["trait", "alibi", "motive", "hide_district", "hide_type", "
 const BENCH = [
   {label: "Solo · gpt-6-astra", stat: "11/20 · $0.35", cfg: {mode: "solo", policy: "chat"}},
   {label: "Solo · Jev", stat: "5/20 · $0.005", cfg: {mode: "solo", policy: "jev"}},
-  {label: "Solo · rule algorithm", stat: "9/20 · free", cfg: {mode: "solo", policy: "rule"}},
+  {label: "Solo · heuristic", stat: "9/20 · free", cfg: {mode: "solo", policy: "rule"}},
   {label: "Solo · random", stat: "0/20 · free", cfg: {mode: "solo", policy: "random"}},
   {label: "Baker Street Irregulars · gpt-6-astra Holmes, Jev boys", stat: "19/20 · $0.62", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "chat", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
-  {label: "Baker Street Irregulars · counting Holmes, Jev boys", stat: "19/20 · $0.002", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
-  {label: "Baker Street Irregulars · counting Holmes, rule boys", stat: "19/20 · free", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "rule", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Baker Street Irregulars · heuristic Holmes, Jev boys", stat: "19/20 · $0.002", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Baker Street Irregulars · heuristic Holmes, heuristic boys", stat: "19/20 · free", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "rule", n_irregulars: 12, swarm_ticks: 48}},
   {label: "Swarm Detectives · Jev · 1 km", stat: "5/20 · $0.17", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
   {label: "Swarm Detectives · Jev · 2 km", stat: "10/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
-  {label: "Swarm Detectives · rule · 1 km", stat: "13/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
-  {label: "Swarm Detectives · rule · 2 km", stat: "18/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
+  {label: "Swarm Detectives · heuristic · 1 km", stat: "13/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm Detectives · heuristic · 2 km", stat: "18/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
   {label: "Swarm Detectives · random · 1 km", stat: "0/20 · free", cfg: {mode: "swarm", swarm_policy: "random", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
   {label: "Swarm Detectives · hybrid · 1 km", stat: "10/20 · $0.21", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
   {label: "Swarm Detectives · hybrid · 2 km", stat: "17/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
@@ -36,22 +36,22 @@ const BENCH = [
 const SOLO_OPTS = [
   {v: "chat", label: "gpt-6-astra", sub: "A large model that re-reads the whole notebook before each move", stat: "About $0.35 per case"},
   {v: "jev", label: "Jev", sub: "A fast, cheap model: one short decision per move", stat: "About $0.005 per case"},
-  {v: "rule", label: "Rule algorithm", sub: "No model: follows tips and counts which facts agree", stat: "Free"},
+  {v: "rule", label: "Heuristic", sub: "No model: follows tips and counts which facts agree", stat: "Free"},
   {v: "random", label: "Random", sub: "Visits at random and guesses: the floor to beat", stat: "Free"},
 ];
 const HOLMES_OPTS = [
   {v: "chat", label: "gpt-6-astra", sub: "Reads every report and writes the next assignments itself", stat: "About $0.62 per case"},
-  {v: "rule", label: "Exact counting algorithm", sub: "No model: tallies which facts agree and plans by fixed rules", stat: "About $0.002 per case (with Jev boys)"},
+  {v: "rule", label: "Counting heuristic", sub: "No model: tallies which facts agree and plans by fixed priorities", stat: "About $0.002 per case (with Jev boys)"},
   {v: "jev", label: "Jev", sub: "Not available yet: Jev can't write assignments in this version", disabled: true},
 ];
 const BOY_OPTS = [
   {v: "jev", label: "Jev", sub: "Decides which nearby door to try, whether to follow a suspect, and when to run back"},
-  {v: "rule", label: "Rule algorithm", sub: "Works through the assignment in order and hurries back with a strong lead"},
+  {v: "rule", label: "Heuristic", sub: "Works through the assignment in order and hurries back with a strong lead"},
   {v: "random", label: "Random", sub: "Makes every small choice at random"},
 ];
 const OTHER_OPTS = [
   {v: "jev", label: "Jev swarm", sub: "Every boy chooses his moves and his vote with Jev", stat: "About $0.13-0.17 per case"},
-  {v: "rule", label: "Rule swarm", sub: "Every boy follows the same simple rule; no model", stat: "Free"},
+  {v: "rule", label: "Heuristic swarm", sub: "Every boy follows the same simple heuristic; no model", stat: "Free"},
   {v: "hybrid", label: "Hybrid", sub: "Jev chooses moves and what to share; votes come from counting facts", stat: "About $0.13-0.21 per case"},
   {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads shouted near Scotland Yard go to gpt-6-astra, who decides", stat: "About $0.41 per case"},
   {v: "random", label: "Random swarm", sub: "Random moves, shouts and votes: the floor to beat", stat: "Free"},
@@ -89,6 +89,9 @@ function themeChanged() {
 try { const t = localStorage.getItem("irregulars-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { /* ignore */ }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (!document.documentElement.dataset.theme) themeChanged(); });
 
+function polName(p) {
+  return {chat: "gpt-6-astra", jev: "Jev", rule: "heuristic", random: "random", hybrid: "hybrid", hybrid_genius: "hybrid + Yard genius"}[p] || p;
+}
 function seriesVar(c) {
   if (!c) return "--ink";
   if (c.mode === "solo") return c.policy === "chat" ? "--genius" : c.policy === "jev" ? "--jev" : "--rule";
@@ -399,7 +402,7 @@ function preview() {
 function setupName(c) {
   const t = trackOf(c);
   if (t === "solo") return `Solo · ${(SOLO_OPTS.find((o) => o.v === c.policy) || {}).label || c.policy}`;
-  if (t === "baker") return `Baker Street Irregulars · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes · ${c.boy_policy === "jev" ? "Jev" : c.boy_policy} boys`;
+  if (t === "baker") return `Baker Street Irregulars · ${c.holmes === "chat" ? "gpt-6-astra" : "heuristic"} Holmes · ${polName(c.boy_policy)} boys`;
   return `Swarm Detectives · ${(OTHER_OPTS.find((o) => o.v === c.swarm_policy) || {}).label || c.swarm_policy}`;
 }
 
@@ -427,7 +430,7 @@ function estimate() {
     else if (cfg.swarm_policy === "hybrid") s += `<p>Estimated cost: at most about <b>$${(calls * 0.00006).toFixed(2)}</b> per case; the votes themselves are free.</p>`;
     else if (cfg.swarm_policy === "jev") s += `<p>Estimated cost: at most about <b>$${(calls * 0.000105).toFixed(2)}</b> per case. Each tick waits 1-2 s for its calls.</p>`;
     else s += "<p>No model is used: free and instant.</p>";
-    if (cfg.budget_cap_usd > 0) s += `<p>Spending is capped at $${cfg.budget_cap_usd}; above it the simple rule decides.</p>`;
+    if (cfg.budget_cap_usd > 0) s += `<p>Spending is capped at $${cfg.budget_cap_usd}; above it the heuristic decides.</p>`;
   }
   $("#estimate").innerHTML = s;
 }
@@ -480,9 +483,9 @@ function onFrame(f, redraw = false) {
   const tag = $("#modeTag");
   const sc = {mode: f.mode, policy: f.policy, swarm_policy: f.hq ? "baker_street" : f.policy};
   tag.style.setProperty("--chip", `var(${seriesVar(sc)})`);
-  tag.textContent = solo ? `Solo · ${f.policy === "chat" ? "gpt-6-astra" : f.policy}` : f.hq
-    ? `Baker Street Irregulars · ${f.hq.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes`
-    : `Swarm Detectives · ${f.policy} · ${f.irregulars.length} boys`;
+  tag.textContent = solo ? `Solo · ${polName(f.policy)}` : f.hq
+    ? `Baker Street Irregulars · ${f.hq.holmes === "chat" ? "gpt-6-astra" : "heuristic"} Holmes`
+    : `Swarm Detectives · ${polName(f.policy)} · ${f.irregulars.length} boys`;
   if (CASE) {
     const seed = (/_s(\d+)$/.exec(f.run || "") || [0, "?"])[1];
     const t = caseTitle(CASE.brief, seed);
@@ -647,7 +650,7 @@ function renderHQ(f) {
   const q = f.hq, A = q.answer, truth = SECRET && (truthOn() || f.ended) ? SECRET.truth : null;
   const mark = (k) => truth && A ? (A[k] === truth[k] ? " <span style='color:var(--good)'>✓</span>" : " <span style='color:var(--bad)'>✗</span>") : "";
   const cov = f.coverage;
-  $("#sideTitle").innerHTML = `Holmes at 221B <span class="meta">${q.holmes === "chat" ? "gpt-6-astra" : "exact counting"} · planning round ${q.calls} of ${q.max_calls}</span>`;
+  $("#sideTitle").innerHTML = `Holmes at 221B <span class="meta">${q.holmes === "chat" ? "gpt-6-astra" : "counting heuristic"} · planning round ${q.calls} of ${q.max_calls}</span>`;
   $("#cov").textContent = `${q.reports} reports received · ${cov.key_leads_found} of ${cov.key_leads} real clues reported`;
   let h = `<div class="hq-answer"><b>Current answer:</b> ${A ? `${esc(name("culprit", A.culprit))}${mark("culprit")} / ${esc(name("motive", A.motive))}${mark("motive")} / ${esc(name("hideout", A.hideout))}${mark("hideout")} <span class="meta">${A.accuse ? "named as the answer" : "his best guess, not sure yet"}</span>` : "<span class='muted'>none yet</span>"}</div>`;
   if (A && A.note) h += `<p class="small muted" style="margin:4px 0 0">${esc(A.note)}</p>`;
@@ -694,7 +697,7 @@ function renderInference(f) {
   $("#infCards").innerHTML = [
     card("decisions made", i.decisions), card("model calls", i.calls), card("typical call time", i.latency_p50 != null ? i.latency_p50 + " s" : "-"),
     card("tokens sent", (i.tokens_in / 1000).toFixed(1) + "k", `${i.tokens_cached} of them cached`), card("tokens received", (i.tokens_out / 1000).toFixed(1) + "k"),
-    card("cost so far", "$" + i.cost.toFixed(4)), card("rule stood in", i.fallbacks, "decisions made by the simple rule because a call failed or was too slow"),
+    card("cost so far", "$" + i.cost.toFixed(4)), card("heuristic stood in", i.fallbacks, "decisions made by the heuristic because a call failed or was too slow"),
     card("calls too slow", i.timeouts), card("model", (i.models[0] || i.policy).replace("typesafe/", "")),
   ].join("");
   $("#errors").innerHTML = f.errors.map(esc).join("<br>");

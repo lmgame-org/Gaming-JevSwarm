@@ -72,13 +72,13 @@ DEFAULTS = {
 POLICIES = {
     "jev": "Jev: one quick call per step",
     "chat": "gpt-6-astra: reads the whole notebook each step",
-    "rule": "rule algorithm: follows tips, counts corroboration (free)",
+    "rule": "heuristic: follows tips, counts corroboration (free)",
     "random": "random visits and guess (free)",
 }
 SWARM_POLICIES = {
     "baker_street": "Baker Street: Holmes directs the boys, who report back",
     "jev": "Jev swarm: every Irregular decides and votes with Jev",
-    "rule": "rule swarm: a shared rule for every Irregular (free)",
+    "rule": "heuristic swarm: the same simple heuristic for every Irregular (free)",
     "hybrid": "hybrid: Jev moves and shares, exact counting votes",
     "hybrid_genius": "hybrid + genius at the Yard: gpt-6-astra reads leads reaching Scotland Yard",
     "random": "random swarm (free)",
@@ -154,8 +154,8 @@ SCHEMA = [
     ]),
     ("Baker Street", [
         ("holmes", "Holmes, the decision-maker", "choice", {"chat": "gpt-6-astra reads the reports and plans",
-                                                            "rule": "exact counting with rule-based planning (free)"}),
-        ("boy_policy", "Street boys' choices", "choice", {"jev": "Jev", "rule": "rule algorithm (free)", "random": "random (free)"}),
+                                                            "rule": "counting heuristic: tallies the facts, plans by fixed priorities (free)"}),
+        ("boy_policy", "Street boys' choices", "choice", {"jev": "Jev", "rule": "heuristic (free)", "random": "random (free)"}),
         ("wiggins", "Wiggins collects reports at a post near the boys", "bool", {}),
         ("pay", "Pay the boys", "choice", {"shilling_guinea": "a shilling a day and a guinea for the key lead",
                                           "none": "unpaid: boys give up after two addresses"}),
