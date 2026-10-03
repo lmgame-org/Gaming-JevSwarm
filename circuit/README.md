@@ -87,8 +87,8 @@ The genius's waveform reads are no longer free.
 |---|---|---|
 | Solo · gpt-6-astra | 14/20 | $0.171 |
 | Solo · Jev / rule / random | 3/20 · 3/20 · 2/20 | $0.0004 · free · free |
-| Baker Street · gpt-6-astra Holmes, Jev boys | 11/20 | $0.143 |
-| Baker Street · counting Holmes, Jev boys | 11/20 | $0.0027 |
+| Baker Street · gpt-6-astra Holmes, Jev boys / rule boys | 11/20 / 12/20 | $0.143 / $0.137 |
+| Baker Street · counting Holmes, Jev boys (no Wiggins) | 11/20 (8/20) | $0.0027 |
 | Baker Street · counting Holmes, rule boys (no Wiggins) | 13/20 (12/20) | free |
 | Swarm · rule 2 wires / 4 wires | 6/20 / 3/20 | free |
 | Swarm · Jev / hybrid / random, 2 wires | 3/20 (13 wrong quorums) / 5/20 / 0/20 | $0.004 / $0.005 / free |

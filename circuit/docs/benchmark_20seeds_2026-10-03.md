@@ -49,7 +49,9 @@ Holmes detective game: one debugger, Holmes directing street boys, and a leaderl
 | Solo · rule (cone tracing) | 3/20 (0.05-0.36) | 3 / 3 / 3 / 3 | 2.8 h / 3.2 h | 17 | 0.1 s / 0.2 s | 0 | free | - |
 | Solo · random | 2/20 (0.03-0.30) | 2 / 2 / 2 / 2 | 3.5 h / 3.8 h | 20 | 0.1 s / 0.2 s | 0 | free | - |
 | Baker Street · gpt-6-astra Holmes, Jev boys | 11/20 (0.34-0.74) | 17 / 17 / 17 / 11 | 6.0 h / 6.0 h | 20 | 473.1 s / 1151.5 s | 155 | $0.143 | - |
+| Baker Street · gpt-6-astra Holmes, rule boys | 12/20 (0.39-0.78) | 18 / 18 / 18 / 12 | 6.0 h / 6.0 h | 19 | 33.8 s / 42.3 s | 6 | $0.137 | - |
 | Baker Street · counting Holmes, Jev boys | 11/20 (0.34-0.74) | 14 / 14 / 13 / 11 | 4.5 h / 6.0 h | 7 | 293.1 s / 532.7 s | 102 | $0.0027 | - |
+| Baker Street · counting Holmes, Jev boys, no Wiggins | 8/20 (0.22-0.61) | 9 / 9 / 9 / 8 | 5.5 h / 6.0 h | 10 | 5.7 s / 7.4 s | 93 | $0.0024 | - |
 | Baker Street · counting Holmes, rule boys | 13/20 (0.43-0.82) | 15 / 15 / 14 / 13 | 4.5 h / 6.0 h | 6 | 0.1 s / 0.3 s | 0 | free | - |
 | Baker Street · counting Holmes, rule boys, no Wiggins | 12/20 (0.39-0.78) | 14 / 14 / 13 / 12 | 3.8 h / 6.0 h | 3 | 0.1 s / 0.2 s | 0 | free | - |
 | Baker Street · counting Holmes, random boys | 9/20 (0.26-0.66) | 10 / 10 / 10 / 9 | 6.0 h / 6.0 h | 10 | 0.1 s / 0.2 s | 0 | free | - |
@@ -58,6 +60,38 @@ Holmes detective game: one debugger, Holmes directing street boys, and a leaderl
 | Swarm · Jev · 2 wires | 3/20 (0.05-0.36) | 3 / 3 / 3 / 3 | 1.0 h / 6.0 h | 4 | 121.9 s / 628.3 s | 77 | $0.0039 | 13 |
 | Swarm · hybrid · 2 wires | 5/20 (0.11-0.47) | 5 / 5 / 5 / 5 | 6.0 h / 6.0 h | 12 | 273.6 s / 730.6 s | 100 | $0.0046 | 3 |
 | Swarm · rule · 4 wires | 3/20 (0.05-0.36) | 3 / 3 / 3 / 3 | 6.0 h / 6.0 h | 15 | 0.4 s / 0.4 s | 0 | free | 2 |
+
+### Baker Street, every combination (added on 3 October, evening)
+
+Holmes × boys × Wiggins on the same 20 seeds. Two rows were added after the first run:
+- gpt-6-astra Holmes with rule boys;
+- counting Holmes with Jev boys and no Wiggins.
+
+| Holmes | Boys | Wiggins | Solved (95% CI) | Block / signal / type / fix | Case time p50 / p90 | Ran to deadline | Calls / case | Cost / case |
+|---|---|---|---|---|---|---|---|---|
+| gpt-6-astra | Jev | on | 11/20 (0.34-0.74) | 17 / 17 / 17 / 11 | 6.0 h / 6.0 h | 20 | 155 | $0.143 |
+| gpt-6-astra | rule | on | 12/20 (0.39-0.78) | 18 / 18 / 18 / 12 | 6.0 h / 6.0 h | 19 | 6 | $0.137 |
+| counting | Jev | on | 11/20 (0.34-0.74) | 14 / 14 / 13 / 11 | 4.5 h / 6.0 h | 7 | 102 | $0.0027 |
+| counting | Jev | off | 8/20 (0.22-0.61) | 9 / 9 / 9 / 8 | 5.5 h / 6.0 h | 10 | 93 | $0.0024 |
+| counting | rule | on | 13/20 (0.43-0.82) | 15 / 15 / 14 / 13 | 4.5 h / 6.0 h | 6 | 0 | free |
+| counting | rule | off | 12/20 (0.39-0.78) | 14 / 14 / 13 / 12 | 3.8 h / 6.0 h | 3 | 0 | free |
+| counting | random | on | 9/20 (0.26-0.66) | 10 / 10 / 10 / 9 | 6.0 h / 6.0 h | 10 | 0 | free |
+
+- **Holmes decides the location; the counting rule is better at naming the fix.**
+  - Both gpt-6-astra rows find the block in 17-18/20 against 9-15/20 for the counting Holmes. But they run to the
+    deadline in 19-20 of 20 cases and solve only 11-12/20.
+  - Rule boys and Jev boys behave about the same under gpt-6-astra (12 vs 11 solved), so the boys are not the
+    bottleneck there.
+- **Wiggins matters more with Jev boys.**
+  - With Jev boys: 11/20 with Wiggins, 8/20 without.
+  - With rule boys: 13/20 with Wiggins, 12/20 without.
+  - Without Wiggins each boy walks back to 221B after every errand. Jev boys run back more often (they choose
+    RETURN), so they lose more of the clock to walking.
+- **The two added rows ran later, when the Jev endpoint was no longer shared:** 0 fallbacks in 1,988 calls, and about
+  6 s per case for the no-Wiggins row. Real time for that row is therefore not comparable with the earlier Jev-boys
+  row (293 s median).
+- **Two-bug cases:** gpt-6-astra Holmes with rule boys also fixed one of the 3, making two Baker Street settings that
+  did, both with a gpt-6-astra Holmes.
 
 **Wrong quorums.** All 13 of the Jev swarm's wrong quorums were the liars' frame-up block, and so were all 20 of the
 random swarm's. For the other swarms: hybrid 2 of 3, rule 2 of 2 at each range.
@@ -114,15 +148,17 @@ setting fixed 0 of 3. On the 9 rare-trigger cases:
 
 ## Spend
 
-**Total $6.51**, well under the $15 guard:
+**Total $9.31** over 320 runs, under the $15 guard:
 
 | Setting | Spend |
 |---|---|
 | Solo gpt-6-astra | $3.42 |
-| Baker Street, gpt-6-astra Holmes | $2.85 |
+| Baker Street, gpt-6-astra Holmes, Jev boys | $2.85 |
+| Baker Street, gpt-6-astra Holmes, rule boys (added) | $2.75 |
 | Jev swarm | $0.08 |
 | Hybrid swarm | $0.09 |
 | Baker Street, counting Holmes, Jev boys | $0.05 |
+| Baker Street, counting Holmes, Jev boys, no Wiggins (added) | $0.05 |
 | Solo Jev | $0.01 |
 
 The free settings cost nothing.
@@ -143,7 +179,7 @@ The free settings cost nothing.
 cd circuit
 export PYTHONPATH=.:../common
 python3 -m cpudebug.batch --settings solo_genius,solo_jev,solo_rule,solo_random --seeds 1-20 --out docs/a.csv
-python3 -m cpudebug.batch --settings baker_genius_jev,baker_rule_jev,baker_rule_rule,baker_rule_rule_nowiggins,baker_rule_random --seeds 1-20 --out docs/b.csv
+python3 -m cpudebug.batch --settings baker_genius_jev,baker_genius_rule,baker_rule_jev,baker_rule_jev_nowiggins,baker_rule_rule,baker_rule_rule_nowiggins,baker_rule_random --seeds 1-20 --out docs/b.csv
 python3 -m cpudebug.batch --settings swarm_rule_r2,swarm_random_r2,swarm_jev_r2,swarm_hybrid_r2,swarm_rule_r4 --seeds 1-20 --out docs/c.csv
 python3 -m cpudebug.report docs/a.csv docs/b.csv docs/c.csv
 ```
