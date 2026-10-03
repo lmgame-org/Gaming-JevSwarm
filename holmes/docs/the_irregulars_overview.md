@@ -358,7 +358,8 @@ report solved 5/5, and with exact counting as that decider it costs almost nothi
 | Hybrid round (hybrid 1 km and 2 km, 5 seeds each; hybrid_genius 2 km, 3 seeds; smoke tests) | $3.04 |
 | Baker Street round (gpt-6-astra Holmes $2.80 and counting Holmes $0.01 on 5 seeds; smoke test $0.12) | $2.93 |
 | 20-case benchmark (14 settings × 20 cases) | $32.16 |
-| **Total** | **about $45.00** |
+| 12-hour standardization (Jev and hybrid swarms, incl. a discarded attempt) | about $22.00 |
+| **Total** | **about $67.00** |
 
 gpt-6-astra is costed from token counts at OpenRouter's list price ($10 per million input tokens, $1 cached, $50
 output), because OpenAI's API does not return a cost. Jev costs are as reported by OpenRouter.
@@ -405,6 +406,30 @@ Wrong quorums: Jev swarm 1 km 6, Jev swarm 2 km 9, hybrid 2 km 1, rule swarm and
 - **Jev deciding everything stays weak:** 5/20 Solo, 5/20 and 10/20 as a swarm, with 6 and 9 wrong quorums.
 - **Real time follows the slowest model in the loop.** gpt-6-astra settings take 80-155 s per case. Jev settings
   take 5-37 s, set by how many ticks run until a quorum. Rule-only settings are instant.
+
+### 3.9 The same benchmark on one 12-hour clock (3 Oct)
+
+In section 3.8 the swarms ran on 8 hours while Solo and Baker Street had 12. The app now uses one time limit for every
+approach (default 12 case hours), and the swarm rows were re-run at 12 hours. Full table and flags:
+[benchmark_20seeds_12h_2026-10-03.md](benchmark_20seeds_12h_2026-10-03.md).
+
+| Setup | Solved, 8 h | Solved, 12 h |
+|---|---|---|
+| Baker Street Irregulars (either Holmes) | (12 h already) | 19/20 |
+| Heuristic swarm, 2 km | 18/20 | 18/20 |
+| Hybrid, 2 km | 17/20 | 16/20 * |
+| Heuristic swarm, 1 km | 13/20 | 13/20 |
+| Solo gpt-6-astra | (12 h already) | 11/20 |
+| Jev swarm, 2 km | 10/20 | 11/20 * |
+| Hybrid, 1 km | 10/20 | 10/20 * |
+| Jev swarm, 1 km | 5/20 | 2/20 * |
+
+\* Flagged. Re-run with 30 seconds per Jev decision instead of 8, because the Jev API was slow that day (0.02% of
+decisions still fell back to the heuristic). Accuracy and cost are comparable; real time is not. These rows should
+be cross-checked with the standard 8 seconds.
+
+More time changes little: swarms that agree, agree early. The ranking is unchanged. The Jev swarm at 1 km did worse
+with more time: 9 of its 11 quorums were on a wrong answer.
 
 ## 4. Conclusions
 

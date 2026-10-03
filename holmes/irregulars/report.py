@@ -16,16 +16,17 @@ from .batch import wilson
 
 def label(cfg, summary):
     mode = cfg.get("mode", "solo")
+    names = {"chat": "gpt-6-astra", "jev": "Jev", "rule": "heuristic", "random": "random"}
     if mode == "solo":
-        return "Solo · " + {"chat": "gpt-6-astra", "jev": "Jev", "rule": "rule", "random": "random"}[cfg["policy"]]
+        return "Solo detective · " + names[cfg["policy"]]
     sp = cfg.get("swarm_policy", "jev")
     km = f"{cfg.get('comm_range', 100) / 100:g} km"
     if sp == "baker_street":
-        holmes = "gpt-6-astra Holmes" if cfg.get("holmes", "chat") == "chat" else "counting Holmes"
-        return f"Baker Street · {holmes}, {cfg.get('boy_policy', 'jev').replace('jev', 'Jev')} boys"
+        holmes = "gpt-6-astra Holmes" if cfg.get("holmes", "chat") == "chat" else "counting-heuristic Holmes"
+        return f"Baker Street Irregulars · {holmes}, {names.get(cfg.get('boy_policy', 'jev'), 'Jev')} boys"
     if sp in ("hybrid", "hybrid_genius"):
-        return f"{'Hybrid' if sp == 'hybrid' else 'Hybrid + Yard genius'} · {km}"
-    return f"Swarm · {sp.replace('jev', 'Jev')} · {km}"
+        return f"Swarm Detectives · {'hybrid' if sp == 'hybrid' else 'hybrid + Yard genius'} · {km}"
+    return f"Swarm Detectives · {names.get(sp, sp)} swarm · {km}"
 
 
 def rows_from(folder):

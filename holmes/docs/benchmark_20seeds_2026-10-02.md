@@ -92,5 +92,5 @@ were re-run at 12 hours on seeds 1-20:
 | Swarm · heuristic · 2 km | 18/20 | 18/20 (one more quorum, on a wrong answer) |
 | Swarm · random · 1 km | 0/20 | 0/20 |
 
-The extra four hours change nothing for the heuristic swarm. The Jev and hybrid swarms have not been re-run at 12
-hours yet.
+The extra four hours change nothing for the heuristic swarm. The full standardized table, with the Jev and hybrid
+swarms re-run at 12 hours, is in [benchmark_20seeds_12h_2026-10-03.md](benchmark_20seeds_12h_2026-10-03.md).
