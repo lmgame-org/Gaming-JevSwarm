@@ -53,7 +53,6 @@ const OTHER_OPTS = [
   {v: "jev", label: "Jev swarm", sub: "Every boy chooses his moves and his vote with Jev", stat: "About $0.13-0.17 per case"},
   {v: "rule", label: "Heuristic swarm", sub: "Every boy follows the same simple heuristic; no model", stat: "Free"},
   {v: "hybrid", label: "Hybrid", sub: "Jev chooses moves and what to share; votes come from counting facts", stat: "About $0.13-0.21 per case"},
-  {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads shouted near Scotland Yard go to gpt-6-astra, who decides", stat: "About $0.41 per case"},
   {v: "random", label: "Random swarm", sub: "Random moves, shouts and votes: the floor to beat", stat: "Free"},
 ];
 const TRACK_DEFAULTS = {
