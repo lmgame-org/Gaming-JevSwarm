@@ -104,9 +104,6 @@ function clockHours() { return trackOf(cfg) === "solo" ? cfg.deadline_hours : cf
 async function initLaunch() {
   SCHEMA = await api("/api/schema");
   if (!cfg.mode) cfg = {...SCHEMA.defaults};
-  const sel = $("#benchSel");
-  sel.innerHTML = `<option value="">Choose one of the 14 setups from the 20-case benchmark…</option>` +
-    BENCH.map((b, i) => { const [sv, cost] = b.stat.split(" · "); return `<option value="${i}">${esc(b.label)}: solved ${sv.replace("/", " of ")}, ${cost === "free" ? "free" : cost + " per case"}</option>`; }).join("");
   const kf = SCHEMA.key_files.filter((k) => k.exists).map((k) => k.path);
   $("#keyStatus").innerHTML = `<p>Key files found: ${kf.length ? kf.map((p) => `<code>${esc(p)}</code>`).join(", ") : "none"}.</p>
     <p class="muted">Keys are read when a call is made and are never logged or sent to the browser.</p>`;
@@ -1288,7 +1285,6 @@ function onMapClick(ev) {
 
 /* ------------------------------------------------------------------ wiring */
 $("#launchBtn").onclick = launch;
-$("#benchSel").onchange = (e) => { if (e.target.value !== "") loadBench(+e.target.value); };
 $("#rejoinBtn").onclick = startDash;
 $("#testJev").onclick = () => testModel("jev");
 $("#testChat").onclick = () => testModel("chat");
