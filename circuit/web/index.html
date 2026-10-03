@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circuit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- ================================================================ launch screen -->
+<section id="launch">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span> Circuit
+      <span class="brand-sub">one hardware bug in a pipelined CPU: Holmes, Wiggins and the Irregulars against a lone genius</span></div>
+    <span class="grow"></span>
+    <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
+  </header>
+
+  <div class="launch-grid">
+    <main class="launch-main">
+      <div class="intro">
+        <h1>Can a swarm of cheap local probes find a CPU bug as well as one expert reading the whole netlist?</h1>
+        <p>The CPU is an 8-bit, 5-stage pipeline built from <b>96 blocks</b> (ALU, register file, forwarding, hazard and
+          branch units, pipeline registers). Each bug number injects <b>one bug</b> into one block: a stuck-at wire,
+          swapped mux inputs, a wrong forwarding path or an off-by-one. A test fails. The investigators probe blocks
+          against their specs until someone names the faulty block, the signal, the bug type and the fix; the fix is
+          graded by re-running every test.</p>
+      </div>
+
+      <section class="part">
+        <div class="part-head"><span class="part-tag">Step 1</span><h2>Who debugs</h2><span class="meta">every mode gets the same bug, probe budget and dollar budget</span></div>
+        <div id="modes" class="modes" role="radiogroup" aria-label="Who debugs"></div>
+      </section>
+
+      <section class="part">
+        <div class="part-head"><span class="part-tag">Step 2</span><h2>The bug and the budgets</h2><span class="meta">same bug number, same bug</span></div>
+        <div id="casePanel" class="card case-panel"></div>
+      </section>
+
+      <details class="all-settings">
+        <summary>All settings <span class="meta">every hyperparameter, including models, key files and prices</span></summary>
+        <form id="cfgForm" class="cfg"></form>
+      </details>
+    </main>
+
+    <aside class="launch-side">
+      <div class="card">
+        <div class="card-head"><h3 id="pvTitle">The failing test</h3><span id="pvInfo" class="meta"></span></div>
+        <canvas id="preview" class="preview" aria-label="Schematic of the CPU"></canvas>
+        <div id="pvFail" class="small"></div>
+        <div id="pvTests" class="tests small"></div>
+        <details><summary class="small">Program listing</summary><pre id="pvSrc" class="src small"></pre></details>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Your setup</h3><span id="modeChip" class="chip"></span></div>
+        <div id="estimate" class="small"></div>
+        <button id="launchBtn" class="primary big">Start debugging</button>
+        <button id="rejoinBtn" class="big" hidden>Return to the running case</button>
+        <div id="launchErr" class="err small"></div>
+      </div>
+      <details class="card">
+        <summary><h3>Model connections</h3></summary>
+        <div id="keyStatus" class="small"></div>
+        <div class="row gap">
+          <button type="button" id="testJev">Check Jev</button>
+          <button type="button" id="testChat">Check gpt-6-astra</button>
+        </div>
+        <pre id="testOut" class="small out" hidden></pre>
+      </details>
+      <details class="card">
+        <summary><h3>Recent runs</h3></summary>
+        <div id="runsList" class="small runs"></div>
+      </details>
+    </aside>
+  </div>
+</section>
+
+<!-- ================================================================ live viewer -->
+<section id="dash" hidden>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span> Circuit
+      <span id="dTitle" class="brand-sub"></span></div>
+    <span class="grow"></span>
+    <span id="dPhase" class="chip"></span>
+    <button type="button" id="bPause">Pause</button>
+    <button type="button" id="bStep">Step</button>
+    <label class="speed small">speed <input type="range" id="speed" min="0.2" max="20" step="0.2"><span id="speedVal" class="mono"></span></label>
+    <label class="small row gap"><input type="checkbox" id="tTruth"> show the bug</label>
+    <button type="button" class="primary" id="bNew">New case</button>
+    <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
+  </header>
+
+  <div class="dash-grid">
+    <main class="dash-main">
+      <div class="card schem-card">
+        <div class="card-head"><h3>Schematic</h3>
+          <span class="meta">click a block to inspect it or name it as your suspect</span>
+          <span class="grow"></span>
+          <div id="legend" class="legend small"></div>
+        </div>
+        <div class="schem-wrap"><canvas id="schem" aria-label="CPU schematic with suspicion heat map and Irregulars"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Failing test, cycle by cycle</h3>
+          <span id="wvInfo" class="meta"></span></div>
+        <div class="wave-wrap"><canvas id="wave" aria-label="Pipeline diagram of the failing test with probed windows"></canvas></div>
+        <div id="wvHover" class="small muted mono">&nbsp;</div>
+      </div>
+    </main>
+
+    <aside class="dash-side">
+      <div id="resultCard" class="card result" hidden></div>
+      <div class="card">
+        <div id="metrics" class="metrics"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>The failure</h3><span id="fTest" class="meta mono"></span></div>
+        <p id="fText" class="small"></p>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Suspicion map</h3><span class="meta">Wiggins' notebook</span></div>
+        <div id="suspects" class="small"></div>
+      </div>
+      <div id="inspector" class="card" hidden></div>
+      <div class="card">
+        <div class="card-head"><h3>Your speculation</h3></div>
+        <div id="guesses" class="small muted">Click a block, then “I suspect this block”. You'll see at the end whether you beat the investigators.</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>What happened</h3></div>
+        <div id="events" class="events small"></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script src="/app.js"></script>
+</body>
+</html>

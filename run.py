@@ -3,6 +3,7 @@
     python3 run.py fish       [--port 8777]   fish schooling under predator attack
     python3 run.py honeybee   [--port 8779]   honeybee nest-site selection
     python3 run.py holmes     [--port 8781]   The Irregulars: Holmes case, Solo detective or Irregular swarm
+    python3 run.py circuit    [--port 8783]   CPU debugging: Holmes, Wiggins and Jev Irregulars hunt one hardware bug
     python3 run.py list
 """
 import os
@@ -14,8 +15,9 @@ PROJECTS = {
     "fish": ("fish", "jevswarm", "Fish schooling under predator attack (Jev per fish)"),
     "honeybee": ("honeybee", "beeswarm", "Honeybee nest-site selection (Jev per scout)"),
     "holmes": ("holmes", "irregulars", "The Irregulars: Holmes case, Solo detective or Irregular swarm"),
+    "circuit": ("circuit", "cpudebug", "CPU debugging: Holmes, Wiggins and Jev Irregulars hunt one hardware bug"),
 }
-ALIASES = {"bee": "honeybee", "bees": "honeybee", "school": "fish", "irregulars": "holmes", "sherlock": "holmes"}
+ALIASES = {"bee": "honeybee", "bees": "honeybee", "school": "fish", "irregulars": "holmes", "sherlock": "holmes", "cpu": "circuit", "debug": "circuit"}
 
 
 def main():

@@ -7,14 +7,16 @@ Each study is a separate sub-project with its own launch screen, live viewer, te
 |---|---|---|---|
 | [`fish/`](fish/README.md) | Fish schooling under predator attack: local vision, escape waves, fragmentation | `python3 run.py fish` | http://127.0.0.1:8777 |
 | [`honeybee/`](honeybee/README.md) | Honeybee nest-site selection: waggle dances, quorum, misinformation, stubborn and biased scouts | `python3 run.py honeybee` | http://127.0.0.1:8779 |
+| [`circuit/`](circuit/README.md) | CPU debugging: one injected bug in a 96-block pipelined CPU; Jev Irregulars probe locally, Wiggins back-traces, Holmes names the block, bug type and fix (vs exact cone tracing and a gpt-6-astra solo genius) | `python3 run.py circuit` | http://127.0.0.1:8783 |
 | [`holmes/`](holmes/README.md) | The Irregulars: a seeded Sherlock Holmes case solved by one detective (Jev vs gpt-6-astra vs rule) or by a swarm of 100 Jev Irregulars with lies, limited range and quorum voting | `python3 run.py holmes` | http://127.0.0.1:8781 |
 
 ```
-run.py              launcher: python3 run.py <fish|honeybee|holmes|list> [--port N]
+run.py              launcher: python3 run.py <fish|honeybee|holmes|circuit|list> [--port N]
 common/swarmcore/   shared code: Jev and chat model clients, key lookup, web-server helpers
 fish/               fish schooling simulator (package jevswarm, web/, tests/, docs/, runs/)
 honeybee/           honeybee nest-site selection simulator (package beeswarm, web/, tests/, docs/, runs/)
 holmes/             The Irregulars detective game: case engine, Solo and Swarm modes (package irregulars)
+circuit/            CPU debugging with Holmes, Wiggins and Jev Irregulars (package cpudebug)
 ```
 
 Setup is one dependency: `python3 -m pip install numpy`. Models and keys are the same for every sub-project:

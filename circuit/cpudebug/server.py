@@ -1,0 +1,131 @@
+"""HTTP server: launch screen, live viewer (Server-Sent Events) and a small JSON API. Stdlib only."""
+import json
+import os
+import threading
+import time
+from urllib.parse import parse_qs, urlparse
+
+from swarmcore.keys import key_files
+from swarmcore.llm import JevClient, LLMClient
+from swarmcore.web import BaseHandler, redact, serve as _serve
+
+from .case import Case
+from .config import DEFAULTS, MODES, PRESETS, SCHEMA, coerce
+from .engine import RUNS, Engine
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATE = {"engine": None, "thread": None}
+LOCK = threading.Lock()
+
+
+def list_runs():
+    if not os.path.isdir(RUNS):
+        return []
+    out = []
+    for name in sorted(os.listdir(RUNS), reverse=True)[:40]:
+        p = os.path.join(RUNS, name, "summary.json")
+        if not os.path.isfile(p):
+            continue
+        with open(p) as f:
+            s = json.load(f)
+        r = s.get("result") or {}
+        out.append({"name": name, "mode": s.get("mode"), "seed": s.get("seed"), "fix_ok": r.get("fix_ok"),
+                    "location_ok": r.get("location_ok"), "probes": s.get("probes"),
+                    "cost": (s.get("inference") or {}).get("cost"), "bug": (s.get("bug") or {}).get("desc")})
+    return out
+
+
+def preview(q):
+    c = Case(coerce(q))
+    return {"blocks": c.public_blocks(), "edges": c.edges(), "brief": c.brief(), "results": c.results,
+            "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "src": c.test["src"], "window": c.window}
+
+
+class Handler(BaseHandler):
+    WEB = os.path.join(ROOT, "web")
+
+    def do_GET(self):
+        url = urlparse(self.path)
+        path = url.path
+        q = {k: v[0] for k, v in parse_qs(url.query).items()}
+        eng = STATE["engine"]
+        if path == "/api/schema":
+            return self.send_json({"schema": [[g, [list(f) for f in fields]] for g, fields in SCHEMA],
+                                   "defaults": DEFAULTS, "presets": PRESETS, "modes": MODES,
+                                   "key_files": key_files(), "runs": list_runs(),
+                                   "running": bool(eng and not eng.ended)})
+        if path == "/api/preview":
+            return self.send_json(preview(q))
+        if path == "/api/static":
+            return self.send_json(eng.static() if eng else {"error": "no run"}, 200 if eng else 404)
+        if path == "/api/frame":
+            return self.send_json(eng.frame(full=True) if eng else {"error": "no run"}, 200 if eng else 404)
+        if path == "/api/secret":  # viewer-only spoiler; investigators never get this
+            return self.send_json(eng.case.secret() if eng else {"error": "no run"}, 200 if eng else 404)
+        if path == "/api/inspect":
+            if not eng:
+                return self.send_json({"error": "no run"}, 404)
+            d = eng.inspect(q.get("block"), q.get("cycle", 0))
+            return self.send_json(d or {"error": "no such block"}, 200 if d else 404)
+        if path == "/api/stream":
+            if not eng:
+                return self.send_json({"error": "no run"}, 404)
+            return self.stream(eng, eng.frame(full=True), lambda: STATE["engine"] is eng)
+        return self.send_static(path)
+
+    def do_POST(self):
+        path = urlparse(self.path).path
+        body = self.read_body()
+        eng = STATE["engine"]
+        if path == "/api/test":
+            return self.send_json(test_model(body))
+        if path == "/api/launch":
+            with LOCK:
+                old = STATE["engine"]
+                if old:
+                    old.stopped = True
+                    if STATE["thread"]:
+                        STATE["thread"].join(timeout=10)
+                try:
+                    e = Engine(body.get("cfg") or {}, realtime=True)
+                except Exception as ex:  # noqa: BLE001
+                    return self.send_json({"ok": False, "error": redact(f"{type(ex).__name__}: {ex}")}, 400)
+                STATE["engine"] = e
+                th = threading.Thread(target=e.run, daemon=True)
+                STATE["thread"] = th
+                th.start()
+            return self.send_json({"ok": True, "run": os.path.basename(e.run_dir or "")})
+        if not eng:
+            return self.send_json({"error": "no run"}, 404)
+        if path == "/api/cmd":
+            eng.command(body)
+            return self.send_json({"ok": True})
+        if path == "/api/guess":
+            g = eng.add_guess(body)
+            return self.send_json({"ok": bool(g), "guess": g})
+        return self.send_json({"error": "not found"}, 404)
+
+
+def test_model(body):
+    cfg = coerce(body.get("cfg") or {})
+    t0 = time.time()
+    try:
+        if body.get("which") == "chat":
+            c = LLMClient("openai", cfg["chat_model"], cfg["chat_key"], timeout=60)
+            out = c.chat("Reply with JSON only.", 'Return {"ok": true}.', json_mode=True, max_tokens=200)
+            return {"ok": True, "model": c.model, "reply": out, "latency": round(time.time() - t0, 2)}
+        j = JevClient(cfg["jev_provider"], cfg["jev_model"], cfg["jev_key"], timeout=20)
+        ans, meta = j.ask(json.dumps({"block": "alu_sub", "spec": "a - b", "rows": [
+            {"in": {"a": 9, "b": 4}, "out": {"out": 6}, "spec_out": {"out": 5}}]}),
+            {"faulty": {"type": "noul", "instructions": "Does out differ from spec_out?"}})
+        return {"ok": True, "model": meta.get("model"), "reply": ans, "usage": meta.get("usage"),
+                "latency": round(time.time() - t0, 2)}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": redact(e)[:300]}
+
+
+def serve(host="127.0.0.1", port=8783):
+    def stop():
+        if STATE["engine"]:
+            STATE["engine"].stopped = True
+    _serve(Handler, host, port, "jev-swarm circuit (CPU debugging)", on_exit=stop)
