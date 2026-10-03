@@ -34,14 +34,14 @@ const BENCH = [
   {label: "Swarm Detectives · hybrid · 2 km", stat: "17/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
 ];
 const SOLO_OPTS = [
-  {v: "chat", label: "gpt-6-astra", sub: "A large model that re-reads the whole notebook before each move", stat: "Solved 11 of 20 · $0.35 per case"},
-  {v: "jev", label: "Jev", sub: "A fast, cheap model: one short decision per move", stat: "Solved 5 of 20 · $0.005 per case"},
-  {v: "rule", label: "Rule algorithm", sub: "No model: follows tips and counts which facts agree", stat: "Solved 9 of 20 · free"},
-  {v: "random", label: "Random", sub: "Visits at random and guesses: the floor to beat", stat: "Solved 0 of 20 · free"},
+  {v: "chat", label: "gpt-6-astra", sub: "A large model that re-reads the whole notebook before each move", stat: "About $0.35 per case"},
+  {v: "jev", label: "Jev", sub: "A fast, cheap model: one short decision per move", stat: "About $0.005 per case"},
+  {v: "rule", label: "Rule algorithm", sub: "No model: follows tips and counts which facts agree", stat: "Free"},
+  {v: "random", label: "Random", sub: "Visits at random and guesses: the floor to beat", stat: "Free"},
 ];
 const HOLMES_OPTS = [
-  {v: "chat", label: "gpt-6-astra", sub: "Reads every report and writes the next assignments itself", stat: "Solved 19 of 20 · $0.62 per case"},
-  {v: "rule", label: "Exact counting algorithm", sub: "No model: tallies which facts agree and plans by fixed rules", stat: "Solved 19 of 20 · $0.002 per case"},
+  {v: "chat", label: "gpt-6-astra", sub: "Reads every report and writes the next assignments itself", stat: "About $0.62 per case"},
+  {v: "rule", label: "Exact counting algorithm", sub: "No model: tallies which facts agree and plans by fixed rules", stat: "About $0.002 per case (with Jev boys)"},
   {v: "jev", label: "Jev", sub: "Not available yet: Jev can't write assignments in this version", disabled: true},
 ];
 const BOY_OPTS = [
@@ -50,11 +50,11 @@ const BOY_OPTS = [
   {v: "random", label: "Random", sub: "Makes every small choice at random"},
 ];
 const OTHER_OPTS = [
-  {v: "jev", label: "Jev swarm", sub: "Every boy chooses his moves and his vote with Jev", stat: "Solved 5 of 20 (1 km), 10 of 20 (2 km) · $0.13-0.17"},
-  {v: "rule", label: "Rule swarm", sub: "Every boy follows the same simple rule; no model", stat: "Solved 13 of 20 (1 km), 18 of 20 (2 km) · free"},
-  {v: "hybrid", label: "Hybrid", sub: "Jev chooses moves and what to share; votes come from counting facts", stat: "Solved 10 of 20 (1 km), 17 of 20 (2 km) · $0.13-0.21"},
-  {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads shouted near Scotland Yard go to gpt-6-astra, who decides", stat: "Solved 2 of 3 in a small test · $0.41 per case"},
-  {v: "random", label: "Random swarm", sub: "Random moves, shouts and votes: the floor to beat", stat: "Solved 0 of 20 · free"},
+  {v: "jev", label: "Jev swarm", sub: "Every boy chooses his moves and his vote with Jev", stat: "About $0.13-0.17 per case"},
+  {v: "rule", label: "Rule swarm", sub: "Every boy follows the same simple rule; no model", stat: "Free"},
+  {v: "hybrid", label: "Hybrid", sub: "Jev chooses moves and what to share; votes come from counting facts", stat: "About $0.13-0.21 per case"},
+  {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads shouted near Scotland Yard go to gpt-6-astra, who decides", stat: "About $0.41 per case"},
+  {v: "random", label: "Random swarm", sub: "Random moves, shouts and votes: the floor to beat", stat: "Free"},
 ];
 const TRACK_DEFAULTS = {
   solo: {mode: "solo"},
@@ -198,8 +198,8 @@ function benchLine(match) {
   const b = BENCH.find((x) => Object.entries(x.cfg).every(([k, v]) => ["n_irregulars", "swarm_ticks"].includes(k) || cfg[k] === v) &&
     (!match || match(x)));
   const d = document.createElement("div"); d.className = "bench-line";
-  if (b) { const [sv, cost] = b.stat.split(" · "); d.innerHTML = `Tested on 20 cases with default case settings: solved <b>${sv.replace("/", " of ")}</b>, <b>${cost === "free" ? "free" : cost + " per case"}</b>.`; }
-  else d.textContent = "This exact setup is not in the 20-case benchmark yet.";
+  if (b) { const cost = b.stat.split(" · ")[1]; d.innerHTML = cost === "free" ? "Measured cost: <b>free</b> (no model calls)." : `Measured cost on 20 test cases: <b>${cost} per case</b>.`; }
+  else d.textContent = "No measured cost for this exact setup yet; see the estimate on the right.";
   return d;
 }
 
