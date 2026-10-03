@@ -331,7 +331,7 @@ details.card[open] > summary { margin-bottom: 10px; }
 @keyframes stampin { from { opacity: 0; transform: rotate(-7deg) scale(1.8); } to { opacity: 1; transform: rotate(-7deg) scale(1); } }
 
 /* presentation mode: big map, captions, no lower panels */
-body.present .lower, body.present .controls .speed, body.present #newRun { display: none; }
+body.present .lower, body.present .controls .speed { display: none; }
 body.present .views { grid-template-columns: minmax(0, 1fr) 360px; max-width: none; padding: 10px 16px; }
 body.present .case-title { max-width: none; padding: 12px 16px 0; font-size: 24px; }
 body.present #map { max-height: calc(100vh - 150px); }

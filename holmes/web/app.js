@@ -454,7 +454,7 @@ function startDash() {
   $("#launch").hidden = true; $("#dash").hidden = false; $("#endBanner").hidden = true;
   frame = null; CASE = null; SECRET = null; selected = -1; seenNotes = 0; pulses = []; AG.cur.clear(); AG.prev.clear(); AG.det = null; AG.last = 0;
   TRAILS.clear(); CAPS_SEEN = new Set(); LAST_REPORTS = 0; LAST_PLAN = 0; Object.assign(CAM, {z: 1, cx: 500, cy: 350, to: null});
-  $("#captions").innerHTML = ""; $("#stamp").hidden = true; $("#titleCard").hidden = true;
+  $("#captions").innerHTML = ""; $("#stamp").hidden = true; $("#titleCard").hidden = true; $("#showResult").hidden = true;
   $("#tTruth").checked = false;
   $("#selId").textContent = "-"; $("#irrDetail").innerHTML = ""; $("#selTraits").textContent = "";
   if (es) es.close();
@@ -769,7 +769,7 @@ function showEnd(f) {
   b.hidden = false;
   verdictStamp(cold ? "cold" : cls, verdict);
   setTimeout(focusTruth, 400);
-  $("#hideEnd").onclick = () => b.hidden = true;
+  $("#hideEnd").onclick = () => { b.hidden = true; $("#showResult").hidden = false; };
   $("#againBtn").onclick = () => goLaunch();
   if (!$("#tTruth").checked) { $("#tTruth").checked = true; legend(); }
 }
@@ -1294,6 +1294,7 @@ $("#playBtn").onclick = () => api("/api/cmd", {op: frame && frame.paused ? "resu
 $("#stepBtn").onclick = () => api("/api/cmd", {op: "step", n: 1});
 $("#speed").onchange = (e) => api("/api/cmd", {op: "set", key: "speed", value: Math.pow(10, parseFloat(e.target.value))});
 $("#newRun").onclick = goLaunch;
+$("#showResult").onclick = () => { $("#endBanner").hidden = false; $("#showResult").hidden = true; };
 document.querySelectorAll(".theme-toggle").forEach((b) => b.onclick = toggleTheme);
 $("#tTruth").onchange = async () => {
   if ($("#tTruth").checked && !SECRET) SECRET = await api("/api/secret");
