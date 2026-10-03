@@ -704,10 +704,69 @@ function renderInference(f) {
   $("#errors").innerHTML = f.errors.map(esc).join("<br>");
 }
 
+// Plain-English names for ids in event text.
+function shortName(kind, id) {
+  if (!CASE || !id) return id || "?";
+  const b = CASE.brief;
+  if (kind === "culprit") return (b.suspects[id] || id).split(",")[0];
+  if (kind === "motive") return (b.motives[id] || id).split(":")[0].split(" for ")[0];
+  return (b.possible_hideouts[id] || id).split(" (")[0];
+}
+function cap(t) { return t ? t[0].toUpperCase() + t.slice(1) : t; }
+function triple(c, m, h) { return `${shortName("culprit", c)}, ${shortName("motive", m)}, hiding at ${shortName("hideout", h)}`; }
+const KNOB_NAMES = {comm_range: ["shouting range", (v) => `${(v / 100).toFixed(2)} km`], bandwidth: ["messages per tick", (v) => v],
+  forget_rate: ["forgetfulness", (v) => `${Math.round(v * 100)}%`], quorum_frac: ["votes needed", (v) => `${Math.round(v * 100)}%`],
+  speed: ["speed", (v) => v], sampling: ["Jev sampling", (v) => v]};
+function humanEvent(e, f) {
+  const d = e.detail || "";
+  const ids = "(S\\d+)/(M\\d+)/(H\\d+)";
+  let m;
+  switch (e.kind) {
+    case "case": return `<b>The case.</b> ${esc(d.replace(/ \(A\d+\)/g, ""))}.`;
+    case "start":
+      if (f.mode === "solo") return `The detective (${esc(polName(f.policy))}) sets out from 221B Baker Street.`;
+      if (f.hq) return `Holmes (${f.hq.holmes === "chat" ? "gpt-6-astra" : "counting heuristic"}) sends ${f.irregulars.length} street boys out from 221B${f.hq.wiggins ? ", with Wiggins in charge of them" : ""}.`;
+      return `${f.irregulars.length} Irregulars spread over London (${esc(polName(f.policy))}). ${f.need} matching votes will close the case.`;
+    case "lead": {
+      const where = e.address ? addrLabel(e.address) : "";
+      return e.visit ? `<b>Visit ${e.visit}, ${esc(where)}:</b> “${esc(d)}”` : `<b>At ${esc(where || "221B Baker Street")}:</b> “${esc(d)}”`;
+    }
+    case "hub":
+      if ((m = new RegExp(`^Holmes \\((\\d+) reports\\): ${ids}( - sure)?\\. (\\d+) assignments?, (\\d+) address(?:es)?\\.\\s*(.*)$`).exec(d)))
+        return (m[1] === "0" ? `<b>Holmes makes his first plan.</b> ` : `<b>Holmes reads ${m[1]} report${m[1] === "1" ? "" : "s"}.</b> ${m[5] ? "He names" : "Best guess so far:"} ${esc(triple(m[2], m[3], m[4]))}. `) +
+          (+m[6] ? `Sends the boys out with ${m[6]} assignment${m[6] === "1" ? "" : "s"} (${m[7]} address${m[7] === "1" ? "" : "es"}).` : "") + (m[8] ? ` <span class="muted">“${esc(m[8])}”</span>` : "");
+      if ((m = new RegExp(`^Holmes at the Yard \\((\\d+) leads\\): ${ids} - (sure|not sure yet)\\.\\s*(.*)$`).exec(d)))
+        return `<b>Holmes at Scotland Yard has ${m[1]} leads.</b> ${m[5] === "sure" ? "He names" : "Best guess so far:"} ${esc(triple(m[2], m[3], m[4]))}.` + (m[6] ? ` <span class="muted">“${esc(m[6])}”</span>` : "");
+      break;
+    case "tally":
+      if ((m = new RegExp(`^tick (\\d+): leading answer ${ids} with (\\d+) votes \\(quorum (\\d+)\\)`).exec(d)))
+        return `Most popular answer so far: ${esc(triple(m[2], m[3], m[4]))}, held by ${m[5]} boy${m[5] === "1" ? "" : "s"} (${m[6]} needed).`;
+      break;
+    case "accuse":
+      if ((m = new RegExp(`^Quorum: (\\d+) Irregulars agree on ${ids}: (.*)$`).exec(d)))
+        return `<b>Case closed:</b> ${m[1]} boys agree on ${esc(triple(m[2], m[3], m[4]))}. ${esc(cap(m[5]))}.`;
+      if ((m = new RegExp(`^(Holmes names|Out of time, Holmes names|Holmes announces) ${ids}: (.*)$`).exec(d)))
+        return `<b>${m[1].startsWith("Out") ? "Out of time, Holmes gives his best answer" : "Holmes names the answer"}:</b> ${esc(triple(m[2], m[3], m[4]))}. ${esc(cap(m[5]))}.`;
+      if ((m = /^(Accuses|Forced to accuse): (.*)$/.exec(d)))
+        return `<b>${m[1] === "Accuses" ? "The detective accuses" : "Out of visits or time, the detective accuses"}:</b> ${esc(m[2].replace(/motive (M\d+)/, (x, id) => "motive: " + shortName("motive", id)).replace(/hideout /, "hideout: "))}.`;
+      break;
+    case "timeout":
+      return `<b>The case went cold.</b> ${esc(d.replace(/^The case went cold after \d+ ticks: /, "").replace(/no quorum \(best (\d+) of (\d+) votes\)/, "the boys never agreed (best answer had $1 of the $2 votes needed)"))}.`;
+    case "intervention":
+      if ((m = /^set (\w+) = (.*)$/.exec(d))) { const k = KNOB_NAMES[m[1]]; return `You changed ${k ? k[0] : m[1]} to ${k ? k[1](parseFloat(m[2])) : m[2]}.`; }
+      break;
+    case "guess":
+      if ((m = new RegExp(`^you guess ${ids}$`).exec(d))) return `You guessed ${esc(triple(m[1], m[2], m[3]))}.`;
+      break;
+    case "budget": return `Spending cap reached: the heuristic takes over from the models.`;
+  }
+  return esc(d.replace(new RegExp(ids, "g"), (x, c, mo, h) => triple(c, mo, h)).replace(/ \(A\d+\)/g, ""));
+}
+
 function renderEvents(f) {
   const el = $("#events");
   const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
-  el.innerHTML = f.events.map((e) => `<div class="${e.kind}"><span class="t">${hhmm(e.t)}</span><span>${e.address ? `<span class="mono muted">${e.address}</span> ` : ""}${esc(e.detail)}</span></div>`).join("");
+  el.innerHTML = f.events.map((e) => `<div class="${e.kind}"><span class="t">${hhmm(e.t)}</span><span>${humanEvent(e, f)}</span></div>`).join("");
   if (atBottom) el.scrollTop = el.scrollHeight;
 }
 
@@ -1190,9 +1249,9 @@ function captionsFor(f) {
     if (CAPS_SEEN.size < 4 && (e.kind === "case" || e.kind === "start")) continue;
     if (e.kind === "lead" && e.visit) caption(`<b>Visit ${e.visit} · ${esc(addrLabel(e.address))}</b>${quote(e.detail)}`);
     else if (e.kind === "hub" && !f.hq) caption(`<b>Holmes at the Yard</b>${quote(e.detail.replace(/^Holmes[^:]*:\s*/, ""), 170)}`);
-    else if (e.kind === "tally") caption(`<b>The swarm is voting</b>${esc(e.detail.replace(/^tick \d+: /, ""))}`);
-    else if (e.kind === "accuse" || e.kind === "timeout") caption(`<b>${e.kind === "accuse" ? "Case closed" : "Out of time"}</b>${esc(e.detail)}`, "big");
-    else if (e.kind === "intervention" || e.kind === "guess" || e.kind === "budget") caption(esc(e.detail), "note");
+    else if (e.kind === "tally") caption(`<b>The swarm is voting</b>${humanEvent(e, f)}`);
+    else if (e.kind === "accuse" || e.kind === "timeout") caption(humanEvent(e, f), "big");
+    else if (e.kind === "intervention" || e.kind === "guess" || e.kind === "budget") caption(humanEvent(e, f), "note");
   }
   if (f.hq && f.hq.calls > LAST_PLAN) {
     LAST_PLAN = f.hq.calls;
