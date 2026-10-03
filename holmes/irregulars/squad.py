@@ -247,6 +247,11 @@ class SquadGame:
             return min(rest, key=lambda k: c.path_len(boy.at)[k[6:]])
         return "RUN_BACK"
 
+    def boy_random(self, boy, opts):
+        """Random local choice (a baseline for the boys' policy)."""
+        r = random.Random(f"boy-{self.cfg['seed']}-{boy.i}-{self.tick}")
+        return r.choice(sorted(opts))
+
     def max_checks(self):
         return 99 if self.cfg["pay"] == "shilling_guinea" else 2  # unpaid boys give up after two calls
 

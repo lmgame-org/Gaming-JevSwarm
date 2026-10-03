@@ -172,9 +172,16 @@ waits at Baker Street for them to report. `baker_street` follows that chain of c
 
 ### 2.6 The live viewer and tooling
 
-- **Launch screen:** presets grouped by family (Solo, Swarm, Hybrid, Baker Street) with a one-line description and the
-  measured cost per case, every knob in collapsible sections, a live preview of the seeded map with a solvability check,
-  model and key tests, and a cost estimate. Light and dark themes (follows the system, with a toggle).
+- **Launch screen, part A "Who investigates":** three tracks, each showing only its own controls. Solo detective
+  (model: gpt-6-astra, Jev, rule algorithm, random; visit budget). Baker Street (central agent Holmes: gpt-6-astra or
+  exact counting, Jev shown as not yet supported; swarm agents, the street boys: Jev, rule algorithm or random; squad
+  size, Wiggins, pay). Other baselines (Jev, rule and random swarms, hybrid, hybrid with a genius at the Yard; swarm
+  size, shouting range, quorum, liar defence). Each option shows its 20-case benchmark result and cost.
+- **Launch screen, part B "Case settings":** seed and case name, addresses, suspects, clock in case hours, red
+  herrings, and deception in plain language: witnesses who lie (all tracks), street boys who lie (bribed) and who are
+  mistaken (Baker Street boys and swarm Irregulars; greyed out for Solo), and under a fold, stubborn agents and noisy
+  memory (self-organising swarms only). A dropdown loads any of the 14 benchmark setups; every knob is still under
+  "All settings". Light and dark themes (follows the system, with a toggle).
 - **Live map:** districts, the Thames, the street graph, 221B, Scotland Yard, the scene, candidate hideouts and
   suspects' homes. Solo shows the cab route and lights up visited addresses; Swarm shows each Irregular as a dot
   coloured by its vote, with shouts rippling out to the shouting range. Baker Street shows Wiggins (W) and his post,

@@ -384,8 +384,11 @@ class Engine:
                 act, meta, lat = results[b.i]
                 self._account(meta, lat, "policy")
             else:
-                act = g.boy_rule(b, opts)
-                src = "liar" if b.liar else ("rule" if not self.policy else ("capped" if self.capped else "fallback"))
+                if self.cfg["boy_policy"] == "random" and not b.liar:
+                    act, src = g.boy_random(b, opts), "random"
+                else:
+                    act = g.boy_rule(b, opts)
+                    src = "liar" if b.liar else ("rule" if not self.policy else ("capped" if self.capped else "fallback"))
                 if src in ("fallback", "capped"):
                     self.stats["fallbacks"] += 1
                 self._account({}, 0, src)

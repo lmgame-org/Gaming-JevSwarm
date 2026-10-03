@@ -222,6 +222,12 @@ def test_baker_street_bribed_boys_report_fakes():
     assert rec["fake"]
 
 
+def test_baker_street_random_boys_run_offline():
+    e = _baker(boy_policy="random", seed=4)
+    s = e.run_all()
+    assert s["outcome"] is not None and set(s["inference"]["by_source"]) <= {"random", "liar"}
+
+
 def test_baker_street_rule_holmes_solves_most():
     solved = sum(_baker(seed=s).run_all()["solved"] for s in range(1, 11))
     assert solved >= 7, solved

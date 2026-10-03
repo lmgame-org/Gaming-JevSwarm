@@ -43,7 +43,7 @@ DEFAULTS = {
     "corroboration": "address",  # liar defence: each witness address counts once; contradicting first-hand -> distrust
     "skip_unchanged": True,      # an Irregular whose view is unchanged since it chose WAIT waits again, no call
     "holmes": "chat",            # baker_street: who Holmes is (chat = gpt-6-astra, rule = exact counting + rule planner)
-    "boy_policy": "jev",         # baker_street: the boys' small local choices (jev | rule)
+    "boy_policy": "jev",         # baker_street: the boys' small local choices (jev | rule | random)
     "wiggins": True,             # baker_street: Wiggins splits the boys and carries reports from a forward post
     "pay": "shilling_guinea",    # baker_street: shilling_guinea (eager boys, guinea for the key lead) | none
     "walk_m_per_min": 100.0,     # baker_street: a running boy's speed
@@ -155,7 +155,7 @@ SCHEMA = [
     ("Baker Street (scatter and gather)", [
         ("holmes", "Holmes", "choice", {"chat": "gpt-6-astra reads the reports and plans",
                                         "rule": "exact counting with a rule planner (free)"}),
-        ("boy_policy", "Boys' local choices", "choice", {"jev": "Jev", "rule": "rule (free)"}),
+        ("boy_policy", "Boys' local choices", "choice", {"jev": "Jev", "rule": "rule (free)", "random": "random (free)"}),
         ("wiggins", "Wiggins collects reports at a forward post", "bool", {}),
         ("pay", "Pay", "choice", {"shilling_guinea": "a shilling a day, a guinea for the key lead (eager boys)",
                                   "none": "unpaid (boys give up after two calls)"}),

@@ -16,34 +16,53 @@ const DISTRICT_HUES = {"Kensington": "#d1495b", "Marylebone": "#e9a03b", "Blooms
   "Covent Garden": "#2a9d8f", "Westminster": "#1f9fc4", "The City": "#3d6fd1", "Whitechapel": "#8e5bd0",
   "Southwark": "#d16ba5", "Limehouse": "#b5651d"};
 const KEY = new Set(["trait", "alibi", "motive", "hide_district", "hide_type", "hide_found"]);
-const FAMILIES = [
-  {id: "solo", name: "Solo detective", color: "--genius", desc: "One detective takes cabs around London and reads each lead first-hand. 20 visits, 12 hours.",
-    presets: ["classic", "genius", "rule", "liars", "small"]},
-  {id: "swarm", name: "Self-organising swarm", color: "--jev", desc: "100 Irregulars spread over the city, shout what they find and close the case by quorum.",
-    presets: ["swarm", "swarm_rule", "swarm_liars", "swarm_quiet"]},
-  {id: "hybrid", name: "Hybrid swarm", color: "--hybrid", desc: "Jev Irregulars choose where to go and what to share; exact counting sets their votes.",
-    presets: ["swarm_hybrid", "swarm_hybrid_genius"]},
-  {id: "baker", name: "Baker Street", color: "--baker", desc: "Holmes stays at 221B and directs Wiggins and a dozen boys, who run back to report.",
-    presets: ["baker_street", "baker_street_counting"]},
+// Measured on the 20-case benchmark (2 Oct 2026); hybrid + Yard genius from the 3-case pilot.
+const BENCH = [
+  {label: "Solo · gpt-6-astra", stat: "11/20 · $0.35", cfg: {mode: "solo", policy: "chat"}},
+  {label: "Solo · Jev", stat: "5/20 · $0.005", cfg: {mode: "solo", policy: "jev"}},
+  {label: "Solo · rule algorithm", stat: "9/20 · free", cfg: {mode: "solo", policy: "rule"}},
+  {label: "Solo · random", stat: "0/20 · free", cfg: {mode: "solo", policy: "random"}},
+  {label: "Baker Street · gpt-6-astra Holmes, Jev boys", stat: "19/20 · $0.62", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "chat", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Baker Street · counting Holmes, Jev boys", stat: "19/20 · $0.002", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "jev", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Baker Street · counting Holmes, rule boys", stat: "19/20 · free", cfg: {mode: "swarm", swarm_policy: "baker_street", holmes: "rule", boy_policy: "rule", n_irregulars: 12, swarm_ticks: 48}},
+  {label: "Swarm · Jev · 1 km", stat: "5/20 · $0.17", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm · Jev · 2 km", stat: "10/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "jev", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
+  {label: "Swarm · rule · 1 km", stat: "13/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Swarm · rule · 2 km", stat: "18/20 · free", cfg: {mode: "swarm", swarm_policy: "rule", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
+  {label: "Swarm · random · 1 km", stat: "0/20 · free", cfg: {mode: "swarm", swarm_policy: "random", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Hybrid · 1 km", stat: "10/20 · $0.21", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 100}},
+  {label: "Hybrid · 2 km", stat: "17/20 · $0.13", cfg: {mode: "swarm", swarm_policy: "hybrid", n_irregulars: 100, swarm_ticks: 32, comm_range: 200}},
 ];
-// Measured cost per case (20-case benchmark, 2 Oct 2026, or the pilot where marked ≈).
-const PRESET_COST = {classic: "$0.005", genius: "$0.35", rule: "free", liars: "≈$0.005", small: "≈$0.004", swarm: "$0.17",
-  swarm_rule: "free", swarm_liars: "≈$0.17", swarm_quiet: "≈$0.20", swarm_hybrid: "$0.21", swarm_hybrid_genius: "≈$0.41",
-  baker_street: "$0.62", baker_street_counting: "$0.002"};
-const PRESET_NAME = {classic: "Jev detective", genius: "gpt-6-astra detective", rule: "Rule detective", liars: "Many lying witnesses",
-  small: "Small case", swarm: "100 Jev Irregulars", swarm_rule: "Rule swarm", swarm_liars: "Swarm with 15% liars",
-  swarm_quiet: "Short shouting range", swarm_hybrid: "Hybrid swarm", swarm_hybrid_genius: "Hybrid + genius at the Yard",
-  baker_street: "Holmes: gpt-6-astra", baker_street_counting: "Holmes: exact counting"};
+const SOLO_OPTS = [
+  {v: "chat", label: "gpt-6-astra", sub: "Reads the whole notebook each step", stat: "11/20 · $0.35/case · 81 s"},
+  {v: "jev", label: "Jev", sub: "One typed call per step", stat: "5/20 · $0.005/case · 5 s"},
+  {v: "rule", label: "Rule algorithm", sub: "Follows pointers, counts corroboration", stat: "9/20 · free"},
+  {v: "random", label: "Random", sub: "Random visits and guess", stat: "0/20 · free"},
+];
+const HOLMES_OPTS = [
+  {v: "chat", label: "gpt-6-astra", sub: "Reads every report, plans in its own words", stat: "19/20 · $0.62/case"},
+  {v: "rule", label: "Exact counting algorithm", sub: "Tallies the facts, rule-based planning", stat: "19/20 · $0.002/case"},
+  {v: "jev", label: "Jev", sub: "Not supported yet: Jev can't plan assignments in this version", disabled: true},
+];
+const BOY_OPTS = [
+  {v: "jev", label: "Jev", sub: "Picks which door to try, whether to tail, when to run back"},
+  {v: "rule", label: "Rule algorithm", sub: "Works through the assignment, hurries back with key leads"},
+  {v: "random", label: "Random", sub: "Random local choices"},
+];
+const OTHER_OPTS = [
+  {v: "jev", label: "Jev swarm", sub: "Every Irregular decides and votes with Jev", stat: "1 km 5/20 · 2 km 10/20 · $0.13-0.17"},
+  {v: "rule", label: "Rule swarm", sub: "A shared reflex rule for every Irregular", stat: "1 km 13/20 · 2 km 18/20 · free"},
+  {v: "hybrid", label: "Hybrid", sub: "Jev moves and shares; exact counting votes", stat: "1 km 10/20 · 2 km 17/20 · $0.13-0.21"},
+  {v: "hybrid_genius", label: "Hybrid + genius at the Yard", sub: "Leads reaching Scotland Yard go to gpt-6-astra", stat: "pilot 2/3 · $0.41"},
+  {v: "random", label: "Random swarm", sub: "Random moves, shares and votes", stat: "0/20 · free"},
+];
+const TRACK_DEFAULTS = {
+  solo: {mode: "solo"},
+  baker: {mode: "swarm", swarm_policy: "baker_street", n_irregulars: 12, swarm_ticks: 48},
+  other: {mode: "swarm", n_irregulars: 100, swarm_ticks: 32},
+};
 
-const PRESET_DESC = {classic: "Jev picks each visit and its current suspicion.", genius: "gpt-6-astra reads the whole notebook each step.",
-  rule: "Follows pointers and counts corroborating leads.", liars: "Jev against twice as many lying witnesses.",
-  small: "40 addresses and 6 suspects: a quick case.", swarm: "Every Irregular decides and votes with Jev.",
-  swarm_rule: "A simple shared rule decides for every Irregular.", swarm_liars: "15 of the boys push Moriarty's story.",
-  swarm_quiet: "Shouts carry only 500 m.", swarm_hybrid: "Jev moves and shares; votes come from exact counting.",
-  swarm_hybrid_genius: "Leads reaching Scotland Yard go to gpt-6-astra.", baker_street: "gpt-6-astra reads every report and plans.",
-  baker_street_counting: "Exact counting reads the reports; Jev boys."};
-
-let SCHEMA = null, cfg = {}, preset = "classic", frame = null, CASE = null, SECRET = null, es = null, selected = -1,
+let SCHEMA = null, cfg = {}, PREVIEW_INFO = null, lastOther = "jev", frame = null, CASE = null, SECRET = null, es = null, selected = -1,
   seenNotes = 0, view = null, hover = null, pulses = [];
 
 /* ------------------------------------------------------------------ theme */
@@ -78,11 +97,16 @@ function seriesVar(c) {
 }
 
 /* ------------------------------------------------------------------ launch screen */
+function trackOf(c) { return c.mode === "solo" ? "solo" : c.swarm_policy === "baker_street" ? "baker" : "other"; }
+function squad() { return trackOf(cfg) === "solo" ? 0 : Math.max(1, cfg.n_irregulars | 0); }
+function clockHours() { return trackOf(cfg) === "solo" ? cfg.deadline_hours : cfg.swarm_ticks * cfg.tick_min / 60; }
+
 async function initLaunch() {
   SCHEMA = await api("/api/schema");
-  cfg = {...SCHEMA.defaults, ...SCHEMA.presets[preset].overrides};
-  renderFamilies();
-  renderForm();
+  if (!cfg.mode) cfg = {...SCHEMA.defaults};
+  const sel = $("#benchSel");
+  sel.innerHTML = `<option value="">Choose one of the 14 benchmark setups…</option>` +
+    BENCH.map((b, i) => `<option value="${i}">${esc(b.label)} (${esc(b.stat)})</option>`).join("");
   const kf = SCHEMA.key_files.filter((k) => k.exists).map((k) => k.path);
   $("#keyStatus").innerHTML = `<p>Key files found: ${kf.length ? kf.map((p) => `<code>${esc(p)}</code>`).join(", ") : "none"}.</p>
     <p class="muted">Keys are read when a call is made and are never logged or sent to the browser.</p>`;
@@ -90,62 +114,214 @@ async function initLaunch() {
     `<div>${esc(r.name)} · ${r.parts ?? "-"}/3${r.solved ? " solved" : ""}${r.cost ? ` · $${r.cost.toFixed(4)}` : ""}</div>`).join("")
     : "<span class='muted'>No runs yet.</span>";
   $("#rejoinBtn").hidden = !SCHEMA.running;
-  estimate(); preview();
+  refreshAll(true);
 }
 
-function renderFamilies() {
-  const el = $("#families");
-  el.innerHTML = "";
-  const known = new Set(FAMILIES.flatMap((f) => f.presets));
-  const extra = Object.keys(SCHEMA.presets).filter((k) => !known.has(k));
-  for (const fam of FAMILIES) {
-    const keys = fam.presets.filter((k) => SCHEMA.presets[k]).concat(fam.id === "solo" ? extra : []);
-    if (!keys.length) continue;
-    const box = document.createElement("div");
-    box.className = "family";
-    box.style.setProperty("--fam", `var(${fam.color})`);
-    box.innerHTML = `<h3>${fam.name}</h3><p>${esc(fam.desc)}</p>`;
-    for (const k of keys) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "fam-card" + (k === preset ? " on" : "");
-      b.dataset.k = k;
-      b.style.setProperty("--fam", `var(${seriesVar({...SCHEMA.defaults, ...SCHEMA.presets[k].overrides})})`);
-      b.innerHTML = `<b>${esc(PRESET_NAME[k] || k.replace(/_/g, " "))}</b><span class="cost">${PRESET_COST[k] || ""}</span>
-        <span class="desc">${esc(PRESET_DESC[k] || SCHEMA.presets[k].label)}</span>`;
-      b.onclick = () => setPreset(k);
-      box.appendChild(b);
-    }
-    el.appendChild(box);
+function refreshAll(withPreview = false) {
+  renderTracks(); renderCase(); renderForm(); estimate();
+  if (withPreview) preview();
+}
+
+function setCfg(patch, opts = {}) {
+  Object.assign(cfg, patch);
+  if (opts.render !== false) refreshAll(opts.preview);
+  else { estimate(); if (opts.preview) preview(); }
+}
+
+function loadBench(i) {
+  const b = BENCH[i]; if (!b) return;
+  const keep = {};
+  for (const x of ["seed", "speed", "jev_model", "jev_key", "chat_model", "chat_key", "concurrency"]) keep[x] = cfg[x];
+  cfg = {...SCHEMA.defaults, ...keep, ...b.cfg};
+  refreshAll(true);
+}
+
+function setTrack(t) {
+  const cur = trackOf(cfg);
+  if (cur === t) return;
+  if (cur === "other") lastOther = cfg.swarm_policy;
+  const patch = {...TRACK_DEFAULTS[t]};
+  if (t === "other") patch.swarm_policy = lastOther || "jev";
+  if (t === "other" && patch.swarm_policy === "hybrid_genius") patch.comm_range = 200;
+  setCfg(patch);
+}
+
+/* small control builders */
+function optGroup(title, note, opts, value, onPick, ser) {
+  const g = document.createElement("div"); g.className = "group";
+  g.innerHTML = `<h4>${esc(title)}</h4>${note ? `<p class="note">${esc(note)}</p>` : ""}`;
+  const row = document.createElement("div"); row.className = "opts"; row.setAttribute("role", "radiogroup"); row.setAttribute("aria-label", title);
+  for (const o of opts) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "opt"; b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(o.v === value));
+    if (o.disabled) b.disabled = true;
+    if (ser) b.style.setProperty("--ser", `var(${ser(o.v)})`);
+    b.innerHTML = `<b>${esc(o.label)}</b><span class="sub">${esc(o.sub || "")}</span>${o.stat ? `<span class="stat">${esc(o.stat)}</span>` : ""}`;
+    b.onclick = () => onPick(o.v);
+    row.appendChild(b);
+  }
+  g.appendChild(row);
+  return g;
+}
+
+function numCtl(label, value, {min, max, step = 1, hint = "", unit = ""}, onChange) {
+  const d = document.createElement("div"); d.className = "ctl";
+  const id = "c_" + label.replace(/\W+/g, "_").toLowerCase();
+  d.innerHTML = `<label for="${id}">${esc(label)}${unit ? ` <span class="val">${esc(unit)}</span>` : ""}</label>
+    <input id="${id}" type="number" min="${min}" max="${max}" step="${step}" value="${value}">${hint ? `<span class="hint">${hint}</span>` : ""}`;
+  d.querySelector("input").onchange = (e) => { const v = parseFloat(e.target.value); if (!Number.isNaN(v)) onChange(Math.min(max, Math.max(min, v))); };
+  return d;
+}
+
+function sliderCtl(label, value, {min, max, step, fmt, hint = "", off = false}, onChange) {
+  const d = document.createElement("div"); d.className = "ctl" + (off ? " off" : "");
+  const id = "s_" + label.replace(/\W+/g, "_").toLowerCase();
+  d.innerHTML = `<label for="${id}">${esc(label)} <span class="val">${fmt(value)}</span></label>
+    <input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}" ${off ? "disabled" : ""}>
+    ${hint ? `<span class="hint">${hint}</span>` : ""}`;
+  const r = d.querySelector("input"), val = d.querySelector(".val");
+  r.oninput = () => val.textContent = fmt(parseFloat(r.value));
+  r.onchange = () => onChange(parseFloat(r.value));
+  return d;
+}
+
+function toggleCtl(label, checked, hint, onChange) {
+  const d = document.createElement("div"); d.className = "ctl";
+  const id = "t_" + label.replace(/\W+/g, "_").toLowerCase();
+  d.innerHTML = `<label class="toggle" for="${id}"><input id="${id}" type="checkbox" ${checked ? "checked" : ""}><span class="track" aria-hidden="true"></span>${esc(label)}</label>
+    ${hint ? `<span class="hint">${esc(hint)}</span>` : ""}`;
+  d.querySelector("input").onchange = (e) => onChange(e.target.checked);
+  return d;
+}
+
+function ctlGrid(...items) { const d = document.createElement("div"); d.className = "ctls"; items.filter(Boolean).forEach((x) => d.appendChild(x)); return d; }
+
+function benchLine(match) {
+  const b = BENCH.find((x) => Object.entries(x.cfg).every(([k, v]) => ["n_irregulars", "swarm_ticks"].includes(k) || cfg[k] === v) &&
+    (!match || match(x)));
+  const d = document.createElement("div"); d.className = "bench-line";
+  d.innerHTML = b ? `Benchmark for this setup (20 cases, defaults): <b>${esc(b.stat)}</b>` : "No 20-case benchmark for exactly this setup yet.";
+  return d;
+}
+
+function renderTracks() {
+  const t = trackOf(cfg);
+  document.querySelectorAll("#tracks button").forEach((b) => {
+    b.setAttribute("aria-selected", String(b.dataset.track === t));
+    b.onclick = () => setTrack(b.dataset.track);
+  });
+  const p = $("#trackPanel"); p.innerHTML = "";
+  if (t === "solo") {
+    p.appendChild(optGroup("Detective model", "", SOLO_OPTS, cfg.policy, (v) => setCfg({policy: v}),
+      (v) => seriesVar({mode: "solo", policy: v})));
+    p.appendChild(ctlGrid(
+      numCtl("Visit budget", cfg.visit_budget, {min: 1, max: 200, unit: "visits"}, (v) => setCfg({visit_budget: v | 0})),
+      numCtl("Minutes per interview", cfg.interview_min, {min: 0, max: 240, unit: "min"}, (v) => setCfg({interview_min: v})),
+      cfg.policy === "jev" ? sliderCtl("Jev accuses when 'ready' reaches", cfg.jev_accuse_at, {min: 0.1, max: 0.9, step: 0.05, fmt: (x) => x.toFixed(2),
+        hint: "Jev's own yes/no answer to 'ready to accuse?'"}, (v) => setCfg({jev_accuse_at: v})) : null));
+    p.appendChild(benchLine());
+  } else if (t === "baker") {
+    p.appendChild(optGroup("Central agent: Holmes at 221B", "Decides: reads the reports, gives out assignments, names the answer.",
+      HOLMES_OPTS, cfg.holmes, (v) => setCfg({holmes: v}), (v) => v === "chat" ? "--genius" : "--baker"));
+    p.appendChild(optGroup("Swarm agents: the street boys", "Observe only: they never accuse anyone.",
+      BOY_OPTS, cfg.boy_policy, (v) => setCfg({boy_policy: v}), (v) => v === "jev" ? "--jev" : "--rule"));
+    p.appendChild(ctlGrid(
+      numCtl("Squad size", cfg.n_irregulars, {min: 1, max: 100, unit: "boys", hint: "About a dozen in the stories"}, (v) => {
+        const n = v | 0, bribed = Math.round(cfg.liar_frac * squad()), wrong = Math.round(cfg.misinformed_frac * squad());
+        setCfg({n_irregulars: n, liar_frac: Math.min(1, bribed / n), misinformed_frac: Math.min(1, wrong / n)});
+      }),
+      toggleCtl("Wiggins relays reports", cfg.wiggins, "He collects reports at a forward post and runs them to 221B", (v) => setCfg({wiggins: v})),
+      toggleCtl("Pay: a shilling a day, a guinea for the key lead", cfg.pay === "shilling_guinea", "Unpaid boys give up after two calls",
+        (v) => setCfg({pay: v ? "shilling_guinea" : "none"})),
+      numCtl("Holmes re-plans at most", cfg.hq_max_calls, {min: 1, max: 64, unit: "times"}, (v) => setCfg({hq_max_calls: v | 0}))));
+    p.appendChild(benchLine());
+  } else {
+    p.appendChild(optGroup("Baseline", "", OTHER_OPTS, cfg.swarm_policy, (v) => {
+      lastOther = v;
+      setCfg(v === "hybrid_genius" ? {swarm_policy: v, comm_range: Math.max(cfg.comm_range, 200)} : {swarm_policy: v});
+    }, (v) => seriesVar({mode: "swarm", swarm_policy: v})));
+    p.appendChild(ctlGrid(
+      numCtl("Swarm size", cfg.n_irregulars, {min: 3, max: 400, unit: "Irregulars"}, (v) => {
+        const n = v | 0, bribed = Math.round(cfg.liar_frac * squad()), wrong = Math.round(cfg.misinformed_frac * squad());
+        setCfg({n_irregulars: n, liar_frac: Math.min(1, bribed / n), misinformed_frac: Math.min(1, wrong / n)});
+      }),
+      sliderCtl("Shouting range", cfg.comm_range / 100, {min: 0.25, max: 4, step: 0.25, fmt: (x) => `${x.toFixed(2)} km`}, (v) => setCfg({comm_range: v * 100})),
+      sliderCtl("Quorum", cfg.quorum_frac, {min: 0.05, max: 1, step: 0.01, fmt: (x) => `${Math.round(x * 100)}% of the swarm (${Math.max(2, Math.round(x * cfg.n_irregulars))})`},
+        (v) => setCfg({quorum_frac: v})),
+      toggleCtl("Liar defence", cfg.corroboration === "address", "Each witness address counts once; caught liars are distrusted",
+        (v) => setCfg({corroboration: v ? "address" : "none"}))));
+    p.appendChild(benchLine((b) => b.cfg.comm_range === undefined || b.cfg.comm_range === cfg.comm_range));
   }
 }
 
-function setPreset(k) {
-  preset = k;
-  const keep = {};
-  for (const x of ["seed", "speed", "jev_model", "jev_key", "chat_model", "chat_key", "concurrency"]) keep[x] = cfg[x];
-  cfg = {...SCHEMA.defaults, ...keep, ...SCHEMA.presets[k].overrides};
-  document.querySelectorAll(".fam-card").forEach((c) => c.classList.toggle("on", c.dataset.k === k));
-  renderForm(true); estimate(); preview();
+function renderCase() {
+  const p = $("#casePanel"); p.innerHTML = "";
+  const t = trackOf(cfg), n = squad();
+  const info = PREVIEW_INFO;
+  const name = document.createElement("div");
+  name.className = "case-name";
+  name.innerHTML = info ? `${esc(info.title)} <span class="meta">${esc(info.sub)}</span>` : "&nbsp;";
+  p.appendChild(name);
+  const hrs = clockHours();
+  p.appendChild(ctlGrid(
+    numCtl("Case seed", cfg.seed, {min: 0, max: 99999, hint: "The same seed always gives the same case"}, (v) => setCfg({seed: v | 0}, {preview: true})),
+    numCtl("Addresses on the map", cfg.n_addresses, {min: 20, max: 300}, (v) => setCfg({n_addresses: v | 0}, {preview: true})),
+    numCtl("Suspects", cfg.n_suspects, {min: 3, max: 16}, (v) => setCfg({n_suspects: v | 0}, {preview: true})),
+    numCtl("Clock", +hrs.toFixed(2), {min: 1, max: 96, step: 0.25, unit: "case hours",
+      hint: t === "solo" ? "The detective must accuse by then" : t === "baker" ? "Holmes gives his best answer at the deadline" : "No quorum by then: the case goes cold"},
+    (v) => t === "solo" ? setCfg({deadline_hours: v}) : setCfg({swarm_ticks: Math.max(1, Math.round(v * 60 / cfg.tick_min))})),
+    sliderCtl("Red herrings", cfg.red_herring_rate, {min: 0, max: 1, step: 0.05, fmt: (x) => `${Math.round(x * 100)}% of filler addresses`},
+      (v) => setCfg({red_herring_rate: v}, {preview: true}))));
+  const dec = document.createElement("div"); dec.className = "group";
+  dec.innerHTML = `<h4>Deception</h4>`;
+  const lies = info ? info.lies : null;
+  const noBoys = t === "solo";
+  dec.appendChild(ctlGrid(
+    sliderCtl("Witnesses who lie", cfg.lie_rate, {min: 0, max: 0.5, step: 0.05,
+      fmt: (x) => `${Math.round(x * 100)}% of key leads`,
+      hint: lies != null ? `${lies} lying witness${lies === 1 ? "" : "es"} in this case, each contradicting a true fact. Affects every track.` : "Affects every track."},
+    (v) => setCfg({lie_rate: v}, {preview: true})),
+    sliderCtl("Street boys who lie (bribed)", noBoys ? 0 : Math.round(cfg.liar_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
+      fmt: (x) => noBoys ? "n/a" : `${x} of ${n}`,
+      hint: noBoys ? "No boys in Solo mode." : t === "baker" ? "They report made-up leads for the addresses they are sent to." : "They push one wrong answer with made-up leads and votes."},
+    (v) => setCfg({liar_frac: v / n})),
+    sliderCtl("Street boys who are mistaken", noBoys ? 0 : Math.round(cfg.misinformed_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: noBoys,
+      fmt: (x) => noBoys ? "n/a" : `${x} of ${n}`,
+      hint: noBoys ? "No boys in Solo mode." : t === "baker" ? "Each gets one report wrong." : "Each starts out holding one false lead."},
+    (v) => setCfg({misinformed_frac: v / n}))));
+  const adv = document.createElement("details");
+  const swarmOnly = t !== "other";
+  adv.innerHTML = `<summary>Advanced: stubborn agents and noisy memory</summary>`;
+  adv.appendChild(ctlGrid(
+    sliderCtl("Stubborn Irregulars", swarmOnly ? 0 : Math.round(cfg.stubborn_frac * n), {min: 0, max: Math.max(1, n), step: 1, off: swarmOnly,
+      fmt: (x) => swarmOnly ? "n/a" : `${x} of ${n}`,
+      hint: swarmOnly ? "Self-organising swarms only: Baker Street boys don't vote, and Solo has no boys." : "Never change their first firm vote."},
+    (v) => setCfg({stubborn_frac: v / n})),
+    sliderCtl("Noisy memory", swarmOnly ? 0 : cfg.forget_rate, {min: 0, max: 1, step: 0.05, off: swarmOnly,
+      fmt: (x) => swarmOnly ? "n/a" : `${Math.round(x * 100)}% chance per tick`,
+      hint: swarmOnly ? "Self-organising swarms only: Baker Street boys hand over everything they carry." : "Each tick an Irregular may forget one lead."},
+    (v) => setCfg({forget_rate: v}))));
+  dec.appendChild(adv);
+  p.appendChild(dec);
 }
 
 function groupOpen(group) {
-  if (group === "Run" || group === "Case") return true;
   if (group.startsWith("Solo")) return cfg.mode === "solo";
   if (group.startsWith("Swarm")) return cfg.mode === "swarm" && cfg.swarm_policy !== "baker_street";
   if (group.startsWith("Baker")) return cfg.mode === "swarm" && cfg.swarm_policy === "baker_street";
   return false;
 }
 
-function renderForm(reset = false) {
+function renderForm() {
   const form = $("#cfgForm");
   const wasOpen = {};
-  if (!reset) form.querySelectorAll("details").forEach((d) => wasOpen[d.dataset.g] = d.open);
+  form.querySelectorAll("details").forEach((d) => wasOpen[d.dataset.g] = d.open);
   form.innerHTML = "";
   for (const [group, fields] of SCHEMA.schema) {
     const d = document.createElement("details");
     d.dataset.g = group;
-    d.open = group in wasOpen ? wasOpen[group] || groupOpen(group) : groupOpen(group);
+    d.open = group in wasOpen ? wasOpen[group] : false;
     const irrelevant = (group.startsWith("Solo") && cfg.mode !== "solo") || (group.startsWith("Swarm") && cfg.mode !== "swarm") ||
       (group.startsWith("Baker") && !(cfg.mode === "swarm" && cfg.swarm_policy === "baker_street"));
     if (irrelevant) d.className = "dim";
@@ -173,10 +349,9 @@ function renderForm(reset = false) {
       }
       input.id = "f_" + key;
       input.onchange = () => {
-        cfg[key] = kind === "bool" ? input.checked : kind === "int" ? parseInt(input.value) : kind === "float" ? parseFloat(input.value) : input.value;
-        if (key === "mode" || key === "swarm_policy") renderForm();
-        estimate();
-        if (["seed", "n_addresses", "n_suspects", "n_motives", "n_hideouts", "redundancy", "lie_rate", "red_herring_rate", "pointer_rate"].includes(key)) preview();
+        const v = kind === "bool" ? input.checked : kind === "int" ? parseInt(input.value) : kind === "float" ? parseFloat(input.value) : input.value;
+        const pv = ["seed", "n_addresses", "n_suspects", "n_motives", "n_hideouts", "redundancy", "lie_rate", "red_herring_rate", "pointer_rate"].includes(key);
+        setCfg({[key]: v}, {preview: pv});
       };
       const lab = document.createElement("label"); lab.htmlFor = input.id; lab.textContent = label;
       row.append(lab, input);
@@ -204,29 +379,40 @@ function preview() {
     const k = r.kinds;
     const key = ["trait", "alibi", "motive", "hide_district", "hide_type"].reduce((s, x) => s + (k[x] || 0), 0);
     const t = caseTitle(r.brief, cfg.seed);
+    PREVIEW_INFO = {...t, lies: k.lie || 0};
     $("#pvTitle").textContent = t.title;
     $("#pvInfo").textContent = `${r.map.addresses.length} addresses · ${Object.keys(r.brief.suspects).length} suspects`;
     $("#pvKinds").innerHTML = `${esc(t.sub)}.<br>${key} key leads, ${k.lie || 0} lies, ${k.pointer || 0} pointers,
       ${k.herring || 0} red herrings, ${k.bland || 0} empty. Solvable by counting every lead:
       ${Object.values(r.solvable).every(Boolean) ? "yes" : "<span class='err'>no</span>"}.`;
+    renderCase();
   }, 150);
+}
+
+function setupName(c) {
+  const t = trackOf(c);
+  if (t === "solo") return `Solo · ${(SOLO_OPTS.find((o) => o.v === c.policy) || {}).label || c.policy}`;
+  if (t === "baker") return `Baker Street · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes · ${c.boy_policy === "jev" ? "Jev" : c.boy_policy} boys`;
+  return (OTHER_OPTS.find((o) => o.v === c.swarm_policy) || {}).label || c.swarm_policy;
 }
 
 function estimate() {
   let s;
   const chip = $("#familyChip");
   chip.style.setProperty("--chip", `var(${seriesVar(cfg)})`);
-  chip.textContent = PRESET_NAME[preset] || "Custom";
-  if (cfg.mode === "solo") {
+  chip.textContent = setupName(cfg);
+  const t = trackOf(cfg);
+  if (t === "solo") {
     const steps = Math.min(cfg.visit_budget, Math.round(cfg.deadline_hours * 60 / 38)) + 1;
     s = `<p>One detective, up to ${cfg.visit_budget} visits within ${cfg.deadline_hours} case hours (about ${steps} decisions).</p>`;
     if (cfg.policy === "jev") s += `<p>Jev: about <b>$${(steps * 0.00024).toFixed(3)}</b> per case, 0.2-0.3 s per decision.</p>`;
     else if (cfg.policy === "chat") s += `<p>gpt-6-astra: about <b>$${(steps * 0.018).toFixed(2)}</b> per case at list price, 4-5 s per decision.</p>`;
     else s += "<p>No model calls: free and instant.</p>";
-  } else if (cfg.swarm_policy === "baker_street") {
-    s = `<p>Holmes at 221B, ${cfg.wiggins ? "Wiggins and " : ""}${cfg.n_irregulars} boys, ${cfg.swarm_ticks} ticks of ${cfg.tick_min} minutes.</p>`;
-    s += cfg.holmes === "chat" ? `<p>gpt-6-astra Holmes: about <b>$0.62</b> per case (up to ${cfg.hq_max_calls} plans, ~13 s each).</p>`
-      : `<p>Exact-counting Holmes: about <b>$0.002</b> per case${cfg.boy_policy === "jev" ? " (the boys' Jev calls)" : ", free with rule boys"}.</p>`;
+  } else if (t === "baker") {
+    s = `<p>Holmes at 221B, ${cfg.wiggins ? "Wiggins and " : ""}${cfg.n_irregulars} boys, ${clockHours()} case hours.</p>`;
+    const boys = cfg.boy_policy === "jev" ? cfg.n_irregulars * 0.00016 : 0;
+    s += cfg.holmes === "chat" ? `<p>gpt-6-astra Holmes: about <b>$${(0.62 + boys).toFixed(2)}</b> per case (up to ${cfg.hq_max_calls} plans, ~13 s each).</p>`
+      : `<p>Exact-counting Holmes: ${boys ? `about <b>$${boys.toFixed(3)}</b> per case (the boys' Jev calls)` : "<b>free</b> and instant"}.</p>`;
   } else {
     const calls = cfg.n_irregulars * cfg.swarm_ticks;
     s = `<p>${cfg.n_irregulars} Irregulars × up to ${cfg.swarm_ticks} ticks: at most ${calls.toLocaleString()} decisions.</p>`;
@@ -886,6 +1072,7 @@ function onMapClick(ev) {
 
 /* ------------------------------------------------------------------ wiring */
 $("#launchBtn").onclick = launch;
+$("#benchSel").onchange = (e) => { if (e.target.value !== "") loadBench(+e.target.value); };
 $("#rejoinBtn").onclick = startDash;
 $("#testJev").onclick = () => testModel("jev");
 $("#testChat").onclick = () => testModel("chat");

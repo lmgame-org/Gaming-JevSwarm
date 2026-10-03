@@ -25,14 +25,33 @@
       <div class="intro">
         <h1>Who solves it better: one genius, or the Baker Street Irregulars?</h1>
         <p>A body has been found in London. Every address on the map holds one short lead: a witness, a receipt,
-          a footprint, a lie, or nothing at all. Pick how the case is investigated, adjust the settings, and watch it
-          unfold. The same seed always gives the same case.</p>
+          a footprint, a lie, or nothing at all. Choose who investigates, set up the case, and watch it unfold.
+          The same seed always gives the same case.</p>
+        <div class="bench-load">
+          <label for="benchSel">Load a benchmark setup</label>
+          <select id="benchSel"></select>
+        </div>
       </div>
 
-      <div id="families" class="families"></div>
+      <section class="part">
+        <div class="part-head"><span class="part-tag">A</span><h2>Who investigates</h2></div>
+        <div id="tracks" class="tracks" role="tablist" aria-label="Who investigates">
+          <button type="button" role="tab" data-track="solo"><b>Solo detective</b><span>One detective, first-hand, with the model you pick</span></button>
+          <button type="button" role="tab" data-track="baker"><b>Baker Street</b><span>Holmes directs a swarm of street boys</span></button>
+          <button type="button" role="tab" data-track="other"><b>Other baselines</b><span>Self-organising swarms and hybrids</span></button>
+        </div>
+        <div id="trackPanel" class="card track-panel" role="tabpanel"></div>
+      </section>
 
-      <h2 class="section-title">Settings</h2>
-      <form id="cfgForm" class="cfg"></form>
+      <section class="part">
+        <div class="part-head"><span class="part-tag">B</span><h2>Case settings</h2><span class="meta">shared by every track</span></div>
+        <div id="casePanel" class="card case-panel"></div>
+      </section>
+
+      <details class="all-settings">
+        <summary>All settings <span class="meta">every knob, including models, keys and prices</span></summary>
+        <form id="cfgForm" class="cfg"></form>
+      </details>
     </main>
 
     <aside class="launch-side">
