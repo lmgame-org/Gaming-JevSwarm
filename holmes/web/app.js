@@ -389,6 +389,8 @@ function preview() {
     const key = ["trait", "alibi", "motive", "hide_district", "hide_type"].reduce((s, x) => s + (k[x] || 0), 0);
     const t = caseTitle(r.brief, cfg.seed);
     PREVIEW_INFO = {...t, lies: k.lie || 0};
+    $("#pvKey").innerHTML = [["star", "221B Baker Street"], ["sq-solid", "Scotland Yard (police headquarters)"], ["cross", "crime scene"],
+      ["tri-hollow", "possible hideout"]].map(([k, l]) => `<span class="lg">${icon(k)}<span>${l}</span></span>`).join("");
     $("#pvTitle").textContent = t.title;
     $("#pvInfo").textContent = `${r.map.addresses.length} addresses · ${Object.keys(r.brief.suspects).length} suspects`;
     $("#pvKinds").innerHTML = `${esc(t.sub)}.<br>On the map: ${key} real clues, ${k.lie || 0} lie${(k.lie || 0) === 1 ? "" : "s"}, ${k.pointer || 0} "ask at..." tips,
@@ -1234,17 +1236,48 @@ function focusTruth() {
   camTo(Math.min(2.2, Math.max(1, Math.min(zx, zy))), cx, cy, 1600);
 }
 
+// Legend icons drawn exactly like the map markers.
+function icon(kind, color) {
+  const sv = (inner) => `<svg class="ico-svg" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">${inner}</svg>`;
+  const paper = "var(--map-paper)", ink = "var(--map-ink)";
+  switch (kind) {
+    case "star": return sv(`<polygon points="8,1 9.8,5.7 14.7,5.8 10.9,8.9 12.3,13.7 8,10.9 3.7,13.7 5.1,8.9 1.3,5.8 6.2,5.7" fill="var(--accent)"/>`);
+    case "sq-solid": return sv(`<rect x="3" y="3" width="10" height="10" fill="${color || "var(--info)"}"/>`);
+    case "sq-hollow": return sv(`<rect x="2.5" y="2.5" width="11" height="11" fill="none" stroke="var(--ink)" stroke-width="1.6"/>`);
+    case "tri-hollow": return sv(`<polygon points="8,2.5 13.5,13 2.5,13" fill="${paper}" stroke="${ink}" stroke-width="1.6"/>`);
+    case "tri-solid": return sv(`<polygon points="8,2.5 13.5,13 2.5,13" fill="var(--good)" stroke="var(--good)" stroke-width="1.6"/>`);
+    case "ring": return sv(`<circle cx="8" cy="8" r="5" fill="${paper}" stroke="${color || "var(--muted)"}" stroke-width="2"/>`);
+    case "ring-bold": return sv(`<circle cx="8" cy="8" r="5" fill="${paper}" stroke="var(--good)" stroke-width="3"/>`);
+    case "cross": return sv(`<path d="M3.5 3.5 L12.5 12.5 M12.5 3.5 L3.5 12.5" stroke="var(--bad)" stroke-width="2.5" stroke-linecap="round"/>`);
+    case "dot": return sv(`<circle cx="8" cy="8" r="6" fill="${paper}"/><circle cx="8" cy="8" r="4" fill="${color}"/>`);
+    case "dot-ringed": return sv(`<circle cx="8" cy="8" r="6" fill="var(--ink)"/><circle cx="8" cy="8" r="4" fill="${color}"/>`);
+    case "letter": return sv(`<circle cx="8" cy="8" r="7" fill="var(--ink)"/><text x="8" y="11.3" text-anchor="middle" font-size="9" font-weight="700" font-family="Georgia, serif" fill="${paper}">${color}</text>`);
+    case "line": return sv(`<path d="M1 8 H15" stroke="${color}" stroke-width="2" stroke-dasharray="3 2.5"/>`);
+    default: return "";
+  }
+}
+
 function legend() {
   const t = truthOn();
-  const item = (color, text, shape = "") => `<span><i style="background:${color};${shape}"></i>${text}</span>`;
-  let h = item("var(--accent)", "221B Baker Street") + item("var(--info)", "Scotland Yard", "border-radius:2px") +
-    item("var(--bad)", "scene") + item("transparent", "possible hideout (▲)", "border:1.5px solid var(--map-ink);border-radius:2px") +
-    item("transparent", "suspect's home", "border:2px solid var(--muted)");
-  if (frame && frame.mode === "solo") h += item("var(--accent)", "visited, with the cab route");
-  else if (frame && frame.hq) h += item("var(--ink)", "W = Wiggins (□ his post)") + item(DISTRICT_HUES.Soho, "street boy, coloured by the district he was sent to") +
-    item("var(--surface)", "boy running back to report", "border:2px solid var(--ink)");
-  else if (frame) h += item("var(--faint)", "street boy, coloured by the suspect he votes for (grey: undecided)");
-  if (t) h += item("var(--good)", "real clue") + item("var(--bad)", "lie") + item("var(--info)", "\"ask at...\" tip");
+  const it = (ic, text) => `<span class="lg">${ic}<span>${text}</span></span>`;
+  const group = (title, items) => `<div class="lg-group"><b>${title}</b>${items.join("")}</div>`;
+  const places = [
+    it(icon("star"), "221B Baker Street, Holmes's lodgings"),
+    it(icon("sq-solid"), "solid square: Scotland Yard (see note)"),
+    it(icon("cross"), "the crime scene"),
+    it(icon("tri-hollow"), "hollow triangle: a possible hideout"),
+    it(icon("ring", SUS_COLORS[0]), "ring: a suspect's home, in that suspect's colour"),
+  ];
+  const people = [];
+  if (frame && frame.mode === "solo") people.push(it(icon("letter", "H"), "the detective"), it(icon("line", "var(--accent)"), "cab route; gold dots are visited addresses"));
+  else if (frame && frame.hq) people.push(it(icon("letter", "W"), "Wiggins"), it(icon("sq-hollow"), "hollow square: Wiggins's post, where boys hand in reports"),
+    it(icon("dot", DISTRICT_HUES.Soho), "street boy, coloured by the district he was sent to"), it(icon("dot-ringed", DISTRICT_HUES.Soho), "dark ring: boy running back to report"));
+  else if (frame) people.push(it(icon("dot", SUS_COLORS[0]), "street boy, coloured by the suspect he votes for"), it(icon("dot", "var(--faint)"), "grey: undecided"));
+  let h = group("Places", places) + (people.length ? group("People", people) : "");
+  if (t) h += group("The truth (revealed)", [it(icon("tri-solid"), "solid green triangle: the real hideout"), it(icon("ring-bold"), "green ring: the culprit's home"),
+    it(icon("dot", "var(--good)"), "real clue"), it(icon("dot", "var(--bad)"), "lie"), it(icon("dot", "var(--info)"), "\"ask at...\" tip")]);
+  h += `<p class="lg-note"><b>Note: Scotland Yard</b> is the headquarters of London's Metropolitan Police, where Inspector Lestrade works.
+    In the game it is one address on the map. Its lead is Lestrade's tip about where to start asking. The police don't investigate; Holmes and the boys do.</p>`;
   $("#legend").innerHTML = h;
 }
 
