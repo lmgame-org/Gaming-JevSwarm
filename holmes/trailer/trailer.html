@@ -15,7 +15,7 @@
    the Baker Street Irregulars (a lead with many helpers on dedicated errands), and a leaderless swarm.
    render(t) draws the frame at t seconds and depends on nothing else, so render.py can screenshot frames one by
    one (open with #play to watch it live). Data: trailer_data.json, inlined by render.py as window.DATA. Map
-   footage comes from real runs of case 3; every number is from the 20-case benchmarks. System fonts only. */
+   footage is the real benchmark runs of one case; every number is from the 100-case benchmark. System fonts only. */
 const D = window.DATA;
 const cv = document.getElementById("c"), g = cv.getContext("2d");
 const W = 1920, H = 1080, DUR = 50;
@@ -102,7 +102,7 @@ function baseMap() {
   g.fillStyle = "rgba(70,50,30,0.6)"; for (const a of M.addresses) { const [x, y] = P(a); g.fillRect(x - 3, y - 3, 6, 6); }
   for (const d of M.districts) { const [x, y] = P([d.x, d.y]); text(d.name.toUpperCase(), x, y - 52, {size: 19, color: "rgba(80,60,35,0.6)", spacing: 3}); }
   const [bx, by] = A(M.baker); star(bx, by, 18, INK); text("221B", bx, by - 30, {size: 24, color: INK, style: "bold"});
-  text("map: real runs of case 3 (gpt-6-astra alone · gpt-6-astra with 12 Jev boys · 100 Jev boys)", MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
+  text(`map: the real benchmark runs of case ${D.seed} (gpt-6-astra alone \u00b7 gpt-6-astra with 12 Jev boys \u00b7 100 Jev boys)`, MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
   const [cx, cy] = A(M.scene); g.strokeStyle = RED; g.lineWidth = 6;
   g.beginPath(); g.moveTo(cx - 12, cy - 12); g.lineTo(cx + 12, cy + 12); g.moveTo(cx + 12, cy - 12); g.lineTo(cx - 12, cy + 12); g.stroke();
 }
@@ -284,51 +284,97 @@ function threeWays(t) {
   text(s, W / 2, 520, {size: 96, alpha: prog(t, 7.7, 8.2)});
   vignette();
 }
+function wrapLines(str, maxW, size, style = "") {
+  g.font = `${style} ${size}px ${SERIF}`; const out = []; let cur = "";
+  for (const w of str.split(" ")) { const tt = cur ? cur + " " + w : w; if (g.measureText(tt).width > maxW && cur) { out.push(cur); cur = w; } else cur = tt; }
+  if (cur) out.push(cur); return out;
+}
+function thought(label, str, alpha) {        // a model's own words, top left, once the chapter title has gone
+  if (!str || alpha <= 0) return;
+  const lines = wrapLines(str, 700, 27, "italic").slice(0, 4), h = 70 + lines.length * 36;
+  g.save(); g.globalAlpha = alpha * 0.9; g.fillStyle = "rgba(6,8,11,0.88)"; g.fillRect(70, 70, 780, h);
+  g.strokeStyle = "rgba(224,179,87,0.55)"; g.lineWidth = 2; g.strokeRect(70, 70, 780, h); g.restore();
+  text(label, 100, 104, {size: 24, color: GOLD, align: "left", alpha, spacing: 2});
+  lines.forEach((l, i) => text(l, 100, 146 + i * 36, {size: 27, color: CREAM, align: "left", style: "italic", alpha}));
+}
+function clueCard(str, x, y, alpha, rot = -0.03) {   // a clue just found, pinned near where it was found
+  if (alpha <= 0) return;
+  const lines = wrapLines(str, 380, 22, "italic").slice(0, 3), w = 420, h = 40 + lines.length * 28;
+  x = clamp(x, MX + 20, MX + 1440 - w - 20); y = clamp(y, MY + 20, MY + 1008 - h - 250);
+  g.save(); g.globalAlpha = alpha; g.translate(x, y); g.rotate(rot); paper(0, 0, w, h, 50);
+  g.fillStyle = RED; g.beginPath(); g.arc(w / 2, 6, 7, 0, 7); g.fill();
+  lines.forEach((l, i) => text(l, 20, 34 + i * 28, {size: 22, color: INK, align: "left", style: "italic"}));
+  g.restore();
+}
+const PARTS = ["culprit", "motive", "hideout"];
+function verdictLine(ok) {
+  const r = PARTS.filter((x) => ok && ok[x]), w = PARTS.filter((x) => !(ok && ok[x]));
+  return w.length ? `${r.length ? "right " + r.join(" and ") + ", " : ""}wrong ${w.join(" and ")}` : "culprit, motive and hideout all right";
+}
+function verdictNote(str, t, a, bad) {
+  const wa = prog(t, a, a + 0.3); if (wa <= 0) return;
+  g.save(); g.font = `italic 28px ${SERIF}`; const ww = g.measureText(str).width + 40; g.globalAlpha = wa * 0.85; g.fillStyle = "rgba(6,8,11,0.9)";
+  g.fillRect(W - 70 - ww, 672, ww, 50); g.restore(); text(str, W - 90, 697, {size: 28, color: bad ? "#f0b9a8" : CREAM, align: "right", style: "italic", alpha: wa});
+}
+const TB = D.table || {};
 function lone(t) {
   baseMap();
-  // gpt-6-astra's real route on case 3: each stop with the case minute it arrived
-  const st = D.solo.stops, total = D.solo.minutes, m = ease(prog(t, 9.0, 15.0)) * total;
-  let i0 = 0; while (i0 + 1 < st.length && st[i0 + 1][1] <= m) i0++;
-  const nxt = st[Math.min(st.length - 1, i0 + 1)], k = nxt[1] > st[i0][1] ? clamp((m - st[i0][1]) / (nxt[1] - st[i0][1])) : 0;
+  // gpt-6-astra's real route on this case: each stop at the case minute it arrived, with its own notes
+  const S = D.solo, st = S.stops, total = S.minutes, m = ease(prog(t, 9.0, 15.0)) * total;
+  let i0 = 0; while (i0 + 1 < st.length && st[i0 + 1].minute <= m) i0++;
+  const nxt = st[Math.min(st.length - 1, i0 + 1)], k = nxt.minute > st[i0].minute ? clamp((m - st[i0].minute) / (nxt.minute - st[i0].minute)) : 0;
   g.strokeStyle = RED; g.lineWidth = 5; g.setLineDash([14, 10]); g.beginPath();
-  st.slice(0, i0 + 1).forEach(([id], i) => { const [x, y] = A(id); i ? g.lineTo(x, y) : g.moveTo(x, y); });
-  const p = A(st[i0][0]), q = A(nxt[0]), cab = [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  st.slice(0, i0 + 1).forEach((s, i) => { const [x, y] = A(s.at); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  const p = A(st[i0].at), q = A(nxt.at), cab = [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
   g.lineTo(...cab); g.stroke(); g.setLineDash([]);
-  st.slice(1, i0 + 1).forEach(([id]) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
+  st.slice(1, i0 + 1).forEach((s) => { const [x, y] = A(s.at); g.strokeStyle = RED; g.lineWidth = s.key ? 5 : 2.5; g.beginPath(); g.arc(x, y, s.key ? 14 : 10, 0, 7); g.stroke(); });
   g.fillStyle = RED; g.beginPath(); g.arc(cab[0], cab[1], 14, 0, 7); g.fill();
+  // the latest real clue it found, pinned where it found it
+  let kc = -1; for (let i = 1; i <= i0; i++) if (st[i].key) kc = i;
+  if (kc > 0) { const [x, y] = A(st[kc].at); clueCard(st[kc].clue, x + 24, y - 30, clamp(1.6 - (i0 - kc) * 0.5)); }
   vignette(0.55);
-  hud(200); clock(m, 1, D.solo.wall * Math.min(1, (i0 + k) / (st.length - 1)));
-  note(`doors knocked on: ${t >= 15.0 ? D.solo.visits : i0} of 100 (${D.solo.visits} allowed)`);
-  verdictTag(`SOLVED \u00b7 ${hrs(total)} case time \u00b7 ${secs(D.solo.wall)} real`, t, 15.0, GOLD);
+  hud(200); clock(m, 1, (S.wall || 0) * Math.min(1, (i0 + k) / (st.length - 1)));
+  note(`doors knocked on: ${t >= 15.0 ? S.visits : i0} of 100 (${S.budget} allowed)`);
+  verdictTag(`${S.solved ? "SOLVED" : "UNSOLVED"} · ${hrs(total)} case time · ${secs(S.wall || 0)} real`, t, 15.0, S.solved ? GOLD : "#e4836f");
+  verdictNote(verdictLine(S.ok), t, 15.1, !S.solved);
   chapter("I.", "The Lone Genius", "gpt-6-astra, one big model, plays the detective", t, 8.6);
+  thought("GPT-6-ASTRA, THINKING", st[Math.max(0, i0)].note, fade(t, 11.2, 15.6, 0.3));
   caption(["One brilliant mind. One cab. One door at a time."], t, 11.0, 13.4);
-  caption(["It cracks this case, but only just: all twenty visits, eleven hours.", "Across twenty murders, it solves eleven."], t, 13.3, 15.6);
+  caption(S.solved ? ["It cracks this one, but only just."] : ["It reasons well about every clue it finds…", `but alone it runs out of doors. Across ${TB.n || 100} murders it solves ${(TB.rows || {}).solo ? TB.rows.solo.solved : "?"}.`], t, 13.3, 15.6);
 }
 function baker(t) {
   baseMap();
-  const f = ease(prog(t, 15.8, 22.8));
+  const B = D.baker, f = ease(prog(t, 15.8, 22.8));
   const [bx, by] = A(M.baker), pulse = 0.5 + 0.5 * Math.sin(t * 5);
   const gl = g.createRadialGradient(bx, by, 0, bx, by, 120); gl.addColorStop(0, `rgba(224,179,87,${0.35 + 0.2 * pulse})`); gl.addColorStop(1, "rgba(224,179,87,0)");
   g.fillStyle = gl; g.fillRect(bx - 120, by - 120, 240, 240);
-  const w = walkers(D.baker, f, BLUE, 9, 3);
+  const w = walkers(B.ticks, f, BLUE, 9, 3);
   if (w.a.w) { const q = w.b.w || w.a.w, pos = P([w.a.w[0] + (q[0] - w.a.w[0]) * w.k, w.a.w[1] + (q[1] - w.a.w[1]) * w.k]);
     g.fillStyle = GOLD; g.beginPath(); g.arc(pos[0], pos[1], 13, 0, 7); g.fill(); g.lineWidth = 3; g.strokeStyle = INK; g.stroke();
     text("Wiggins", pos[0] + 20, pos[1] - 22, {size: 22, color: INK, align: "left", style: "italic"}); }
   holmes(bx + 70, by + 120, 0.32, INK);
+  // the latest real report to reach Holmes, pinned by 221B
+  const T = B.ticks.length - 1, ti = Math.min(T, Math.floor(f * T));
+  let rep = null, age = 99; for (let i = ti; i >= 0 && !rep; i--) if (B.ticks[i].new.length) { rep = B.ticks[i].new[0]; age = ti - i; }
+  if (rep) clueCard(rep.text, bx + 120, by - 10, clamp(1.6 - age * 0.12), 0.03);
   vignette(0.55);
-  hud(200); clock(Math.min(D.baker_minute, f * (D.baker.length - 1) * 15), 1, w.a.wall + ((w.b.wall || w.a.wall) - w.a.wall) * w.k);
+  const minute = Math.min(B.minute, w.a.minute + ((w.b.minute || w.a.minute) - w.a.minute) * w.k);
+  hud(200); clock(minute, 1, w.a.wall + ((w.b.wall || w.a.wall) - w.a.wall) * w.k);
   note(`reports reaching 221B: ${w.a.reports}`);
-  verdictTag(`SOLVED \u00b7 ${hrs(D.baker_minute)} case time \u00b7 ${secs(D.baker_wall)} real`, t, 22.3, GOLD);
+  verdictTag(`${B.solved ? "SOLVED" : "UNSOLVED"} · ${hrs(B.minute)} case time · ${secs(B.wall)} real`, t, 22.3, B.solved ? GOLD : "#e4836f");
+  verdictNote(verdictLine(B.ok), t, 22.4, !B.solved);
   chapter("II.", "Holmes & the Irregulars", "Holmes: gpt-6-astra · 12 boys: Jev, quick simple choices", t, 15.6);
+  let order = null; for (const o of B.orders) if (o.minute <= minute) order = o;
+  thought("HOLMES (GPT-6-ASTRA), TO WIGGINS", order && order.text, fade(t, 18.2, 23.0, 0.3));
   caption(["Holmes (gpt-6-astra) never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
   caption(["Twelve boys, each a small, fast Jev model making simple choices,", "take a street each and run back with what they find."], t, 20.4, 23.0);
 }
 const AGREE = ["#7d4a3a", "#c0603c", "#e39a3c", "#f5cf5a"];   // a boy's colour: how many of the three answers he shares with the final verdict
 function swarm(t) {
   baseMap();
-  const f = ease(prog(t, 23.2, 29.6)), run = D.swarm, T = run.length - 1, ft = f * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
+  const SW = D.swarm, run = SW.ticks, f = ease(prog(t, 23.2, 29.6)), T = run.length - 1, ft = f * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
   const A0 = run[i0], A1 = run[i1];
-  g.strokeStyle = "rgba(163,57,46,0.18)"; g.lineWidth = 2;
+  g.strokeStyle = "rgba(163,57,46,0.22)"; g.lineWidth = 2;
   for (const s of (A0.shares || []).slice(0, 25)) { const [x, y] = P(s); g.beginPath(); g.arc(x, y, 200 * MS * (0.25 + 0.75 * k), 0, 7); g.stroke(); }
   const closing = prog(t, 28.6, 29.4);
   A0.boys.forEach((p, j) => {
@@ -339,8 +385,7 @@ function swarm(t) {
     g.fillStyle = AGREE[parts]; g.beginPath(); g.arc(pos[0], pos[1], r, 0, 7); g.fill();
   });
   vignette(0.55);
-  hud(500); clock(f * T * 15, 1, A0.wall + (A1.wall - A0.wall) * k);
-  // the agreement meter: boys holding the final answer (3 of 3) and nearly (2 of 3), against the 30 needed
+  hud(500); clock(A0.minute + (A1.minute - A0.minute) * k, 1, A0.wall + (A1.wall - A0.wall) * k);
   const lerp = (key) => { const c = (x) => x.parts.filter((v) => v >= key).length; return Math.round(c(A0) + (c(A1) - c(A0)) * k); };
   const full = lerp(3), near = lerp(2), mx = W - 360, my = 262, mw = 300;
   text("the swarm's verdict forming", W - 60, my, {size: 24, color: CREAM, align: "right", style: "italic"});
@@ -353,38 +398,35 @@ function swarm(t) {
   [["agrees on all three", 3], ["on two", 2], ["on one", 1]].forEach(([l, c], i) => {
     g.fillStyle = AGREE[c]; g.beginPath(); g.arc(W - 330, my + 150 + i * 32, 8, 0, 7); g.fill();
     text(l, W - 310, my + 150 + i * 32, {size: 20, color: CREAM, align: "left", style: "italic"}); });
-  verdictTag(`CONVERGED \u00b7 ${hrs(D.swarm_minute)} case time \u00b7 ${secs(D.swarm_wall)} real`, t, 28.6, GOLD);
-  const ok = D.swarm_ok || {}, right = ["culprit", "motive", "hideout"].filter((x) => ok[x]), wrong = ["culprit", "motive", "hideout"].filter((x) => !ok[x]);
-  const why = D.swarm_result ? "the right answer" : `this time the verdict was wrong: ${right.length ? "right " + right.join(" and ") + ", " : ""}wrong ${wrong.join(" and ")}`;
-  const wa = prog(t, 28.9, 29.2);
-  if (wa > 0) { g.save(); g.font = `italic 28px ${SERIF}`; const ww = g.measureText(why).width + 40; g.globalAlpha = wa * 0.85; g.fillStyle = "rgba(6,8,11,0.9)";
-    g.fillRect(W - 70 - ww, 672, ww, 50); g.restore(); text(why, W - 90, 697, {size: 28, color: "#f0b9a8", align: "right", style: "italic", alpha: wa}); }
+  verdictTag(`${SW.quorum ? "CONVERGED" : "NO AGREEMENT"} · ${hrs(SW.minute)} case time · ${secs(SW.wall)} real`, t, 28.6, SW.solved ? GOLD : "#e4836f");
+  verdictNote(SW.solved ? "the right answer" : `converged, but wrong: ${verdictLine(SW.ok)}`, t, 28.9, !SW.solved);
   chapter("III.", "The Swarm", "100 Jev boys, no one in charge", t, 23.0);
   caption(["No one in charge. Each boy, a small Jev model, keeps his own guess", "and swaps clues and votes with the boys near him."], t, 25.4, 27.8);
   caption(["We only count the votes: once thirty boys name the same", "culprit, motive and hideout, the case is closed."], t, 27.7, 30.0);
 }
 function casebook(t) {
   fog(t, 0.5, false);
-  const al = prog(t, 37.6, 38.0);
+  const al = prog(t, 37.6, 38.0), n = TB.n || 100;
   g.save(); g.globalAlpha = al; paper(360, 90, 1200, 760, 31); g.restore();
   text("From the casebook", W / 2, 165, {size: 58, color: INK, style: "italic", alpha: al});
-  text("murders fully solved (culprit, motive and hideout all right), out of 20 \u00b7 twelve hours each", W / 2, 225, {size: 24, color: "rgba(42,29,18,0.7)", alpha: al});
+  text(`murders fully solved (culprit, motive and hideout all right), out of ${n} · twelve hours each`, W / 2, 225, {size: 24, color: "rgba(42,29,18,0.7)", alpha: al});
   const cols = [1110, 1290, 1450];
   [["solved", INK], ["case time", "rgba(42,29,18,0.7)"], ["real time", "rgba(42,29,18,0.7)"]].forEach(([h, c], i) => text(h, cols[i], 300, {size: 30, color: c, style: "italic", alpha: al}));
   text("median per case", (cols[1] + cols[2]) / 2, 334, {size: 20, color: "rgba(42,29,18,0.55)", style: "italic", alpha: al});
-  const rows = [["The Lone Genius", "gpt-6-astra alone", 11, "10.9 h", "81 s"], ["Holmes & the Irregulars", "gpt-6-astra leads, twelve Jev boys run errands", 19, "11.2 h", "102 s"],
-    ["The Swarm", "a hundred Jev boys, no leader", 11, "2.0 h", "8 s"]];
-  rows.forEach(([who, how, n, sim, wall], i) => {
+  const R = TB.rows || {}, row = (key) => R[key] || {solved: "?", sim: "?", wall: "?"};
+  const rows = [["The Lone Genius", "gpt-6-astra alone", row("solo")], ["Holmes & the Irregulars", "gpt-6-astra leads, twelve Jev boys run errands", row("baker")],
+    ["The Swarm", "a hundred Jev boys, no leader", row("swarm")]];
+  rows.forEach(([who, how, v], i) => {
     const r = prog(t, 38.1 + i * 0.45, 38.5 + i * 0.45), y = 430 + i * 145;
     text(who, 400, y - 14, {size: 48, color: INK, align: "left", alpha: r});
     text(how, 400, y + 32, {size: 24, color: "rgba(42,29,18,0.65)", align: "left", style: "italic", alpha: r});
-    text(String(n), cols[0], y, {size: 76, color: i === 1 ? RED : INK, alpha: r});
-    text(sim, cols[1], y, {size: 40, color: INK, alpha: r});
-    text(wall, cols[2], y, {size: 40, color: INK, alpha: r});
+    text(String(v.solved), cols[0], y, {size: 76, color: i === 1 ? RED : INK, alpha: r});
+    text(v.sim, cols[1], y, {size: 40, color: INK, alpha: r});
+    text(v.wall, cols[2], y, {size: 40, color: INK, alpha: r});
   });
   const c = ease(prog(t, 40.0, 40.8));   // a red-ink ring around the winner
   if (c > 0) { g.save(); g.strokeStyle = RED; g.lineWidth = 6; g.beginPath(); g.ellipse(960, 575, 600, 76, -0.01, -Math.PI / 2, -Math.PI / 2 + c * Math.PI * 2.05); g.stroke(); g.restore(); }
-  text("The same 100 boys run by a simple counting rule solved 18.", W / 2, 810, {size: 26, color: "rgba(42,29,18,0.7)", style: "italic", alpha: prog(t, 39.6, 40.0)});
+  if (TB.footnote) text(TB.footnote, W / 2, 810, {size: 26, color: "rgba(42,29,18,0.7)", style: "italic", alpha: prog(t, 39.6, 40.0)});
   text("The genius thinks. The Irregulars look. Together, they solve it.", W / 2, 965, {size: 50, style: "italic", alpha: prog(t, 41.0, 41.5)});
   vignette(0.5);
 }

@@ -1,95 +1,124 @@
-"""Collect everything the trailer shows from real (free) runs and real case files: python3 trailer/make_data.py"""
+"""Collect what the trailer shows from the real benchmark runs of one case:
+python3 trailer/make_data.py --seed 17 --batches runs/batch_A runs/batch_B ...
+
+The footage is the actual runs from the 100-case benchmark: gpt-6-astra alone (its route and its own notes), gpt-6-astra
+as Holmes with twelve Jev boys (positions, the reports reaching 221B, Holmes's orders), and the 100-boy Jev swarm
+(positions, shouts, votes). The casebook numbers come from the same batches (--table)."""
+import argparse
+import glob
 import json
 import os
-import sys
-import time
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import irregulars  # noqa: E402,F401
-from irregulars.case import Case  # noqa: E402
-from irregulars.config import coerce  # noqa: E402
-from irregulars.engine import Engine  # noqa: E402
-
-GENIUS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runs",
-                      "batch_20261002-154711_solo_62084")
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trailer_data.json")
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "trailer_data.json")
+KEY = {"trait", "alibi", "motive", "hide_district", "hide_type", "hide_found"}
 
 
-def track(cfg):
-    e = Engine(cfg, realtime=False, log=False)
-    ticks, t0 = [], time.time()
-    f = e.frame(full=True)
-    m = f["case"]["map"]
-    while True:
-        f = e.frame()
-        t = {"boys": [[round(b[1]), round(b[2])] for b in f["irregulars"]], "wall": round(time.time() - t0, 2)}
-        if e.squad:
-            w = f["hq"]["wiggins"]
-            t["w"] = [round(w["x"]), round(w["y"])] if w else None
-            t["reports"] = f["hq"]["reports"]
-        else:
-            t["votes"] = [[b[3], b[4], b[5]] for b in f["irregulars"]]
-            t["shares"] = [[round(x), round(y)] for _, x, y in f["shares"]][:60]
-        ticks.append(t)
-        if e.ended:
-            break
-        e.step()
-    e.pool.shutdown(wait=False)
-    if not e.squad:  # how many of the three answers each boy shares with the swarm's own final verdict (right or wrong)
-        o, truth = e.game.outcome, e.case.truth_ids()
-        want = [o["culprit"], o["motive"], o["hideout"]] if o and o.get("culprit") else [truth[k] for k in ("culprit", "motive", "hideout")]
-        for t in ticks:
-            votes = t.pop("votes")
-            t["parts"] = [sum(int(v == w) for v, w in zip(vt, want)) for vt in votes]
-            t["truth_votes"] = sum(1 for p in t["parts"] if p == 3)
-        print("swarm verdict", want, "truth", truth)
-    i = e.summary["inference"]
-    print(cfg.get("swarm_policy"), "solved", e.summary["solved"], "ticks", len(ticks) - 1, "cost", round(i["cost"], 3),
-          "fallbacks", i["by_source"].get("fallback", 0), "of", sum(i["by_source"].values()))
-    return m, ticks, e.summary
+def find(batches, pattern):
+    hits = [d for b in batches for d in glob.glob(os.path.join(b, pattern))]
+    if not hits:
+        raise SystemExit(f"no run matches {pattern}")
+    return hits[0]
+
+
+def jsonl(path):
+    with open(path) as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+def wall_of(run_dir):
+    """Real seconds the run took, from its batch's episodes.json."""
+    path = os.path.join(os.path.dirname(run_dir), "episodes.json")
+    if not os.path.exists(path):  # batch still running
+        return None
+    eps = json.load(open(path))
+    cfg = json.load(open(os.path.join(run_dir, "config.json")))["cfg"]
+    pol = cfg.get("policy") if cfg["mode"] == "solo" else cfg["swarm_policy"]
+    for e in eps:
+        c = e["cfg"]
+        if c["seed"] == cfg["seed"] and (c.get("policy") if c["mode"] == "solo" else c.get("swarm_policy")) == pol:
+            return e["summary"]["wall_s"]
+    return None
+
+
+def short(s, n=96):
+    return s if len(s) <= n else s[: n - 1].rsplit(" ", 1)[0] + "…"
+
+
+def solo(run_dir, leads):
+    steps = jsonl(os.path.join(run_dir, "decisions.jsonl"))
+    summ = json.load(open(os.path.join(run_dir, "summary.json")))
+    case = json.load(open(os.path.join(run_dir, "case.json")))
+    stops = [{"at": case["map"]["baker"], "minute": 0.0, "note": short(steps[0].get("note") or "", 150)}]
+    for a, b in zip(steps, steps[1:] + [None]):
+        if a["action"].startswith("VISIT_"):
+            addr = a["action"][6:]
+            lead = leads[addr]
+            stops.append({"at": addr, "minute": b["minute"] if b else summ["minutes"],
+                          "note": short((b or {}).get("note") or "", 150), "clue": short(lead["text"]),
+                          "key": lead["fact"][0] in KEY and not lead["lie"]})
+    o = summ["outcome"] or {}
+    return {"stops": stops, "minutes": summ["minutes"], "solved": summ["solved"], "ok": o.get("ok"),
+            "visits": summ["visits"], "budget": json.load(open(os.path.join(run_dir, "config.json")))["cfg"]["visit_budget"],
+            "wall": wall_of(run_dir)}
+
+
+def baker(run_dir):
+    track = jsonl(os.path.join(run_dir, "track.jsonl"))
+    summ = json.load(open(os.path.join(run_dir, "summary.json")))
+    orders = []
+    for e in jsonl(os.path.join(run_dir, "events.jsonl")):
+        if e["kind"] == "hub":
+            note = e["detail"].split(". ", 2)[-1] if e["detail"].count(". ") >= 2 else e["detail"]
+            orders.append({"minute": e["t"], "text": short(note, 170)})
+    ticks = [{"boys": [b[:2] for b in t["boys"]], "w": t["w"], "reports": t["reports"], "wall": t["wall"],
+              "minute": t["minute"],
+              "new": [{"text": short(r["text"]), "at": r["address"]} for r in t["new"] if r["kind"] in KEY][:3]}
+             for t in track]
+    o = summ["outcome"]
+    return {"ticks": ticks, "orders": orders, "solved": summ["solved"], "ok": o["ok"], "minute": o["minute"],
+            "wall": wall_of(run_dir) or track[-1]["wall"]}
+
+
+def swarm(run_dir):
+    track = jsonl(os.path.join(run_dir, "track.jsonl"))
+    summ = json.load(open(os.path.join(run_dir, "summary.json")))
+    o = summ["outcome"]
+    want = [o["culprit"], o["motive"], o["hideout"]]
+    ticks = []
+    for t in track:
+        parts = [sum(int(v == w) for v, w in zip(vt, want)) for vt in t["votes"]]
+        ticks.append({"boys": t["boys"], "parts": parts, "shares": t["shares"], "wall": t["wall"], "minute": t["minute"],
+                      "truth_votes": sum(1 for p in parts if p == 3)})
+    return {"ticks": ticks, "solved": summ["solved"], "ok": o["ok"], "quorum": o["quorum"], "minute": o["minute"],
+            "wall": wall_of(run_dir) or track[-1]["wall"]}
 
 
 def main():
-    # real model runs on case 3: gpt-6-astra as Holmes with Jev boys, and a 100-boy Jev swarm (about $1)
-    m, baker, s1 = track({"mode": "swarm", "swarm_policy": "baker_street", "holmes": "chat", "boy_policy": "jev",
-                          "n_irregulars": 12, "seed": 3, "request_timeout_s": 30})
-    _, swarm, s2 = track({"mode": "swarm", "swarm_policy": "jev", "comm_range": 200, "seed": 3, "request_timeout_s": 30})
-    # the lone genius: gpt-6-astra's actual route on case 3 in the 2 October benchmark (it solved it)
-    run = [d for d in os.listdir(GENIUS) if d.endswith("_chat_s3")][0]
-    steps = [json.loads(line) for line in open(os.path.join(GENIUS, run, "decisions.jsonl"))]
-    summ = json.load(open(os.path.join(GENIUS, run, "summary.json")))
-    case_map = json.load(open(os.path.join(GENIUS, run, "case.json")))["map"]
-    stops = [[case_map["baker"], 0.0]]
-    for a, b in zip(steps, steps[1:] + [None]):
-        if a["action"].startswith("VISIT_"):
-            stops.append([a["action"][6:], b["minute"] if b else summ["minutes"]])
-    wall = [e["summary"]["wall_s"] for e in json.load(open(os.path.join(GENIUS, "episodes.json")))
-            if e["cfg"]["seed"] == 3 and e["cfg"]["policy"] == "chat"][0]
-    solo = {"stops": stops, "minutes": summ["minutes"], "solved": summ["solved"], "visits": summ["visits"], "wall": wall}
-    c = Case(coerce({"seed": 1, "difficulty": "holmesian"}))
-    frame = [c.leads[a]["text"] for a in c.frame_addrs]
-    bribe = [l["text"] for l in c.leads.values() if l["fact"][0] == "bribe"]
-    planted = c.leads[c.scene]["text"]
-    culprit, framed = c.suspect(c.truth["culprit"]), c.suspect(c.framed)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seed", type=int, required=True)
+    ap.add_argument("--batches", nargs="+", required=True)
+    ap.add_argument("--table", default="", help="json with the casebook numbers")
+    a = ap.parse_args()
+    s = a.seed
+    solo_dir = find(a.batches, f"*_solo_chat_s{s}")
+    baker_dir = find(a.batches, f"*_swarm_baker_street_chat_s{s}")
+    swarm_dir = find(a.batches, f"*_swarm_jev_s{s}")
+    case = json.load(open(os.path.join(baker_dir, "case.json")))
+    m = case["map"]
     data = {
-        "map": {"addresses": [[a["x"], a["y"]] for a in m["addresses"]],
-                "ids": [a["id"] for a in m["addresses"]],
-                "edges": m["edges"], "districts": m["districts"], "thames": m["thames"],
-                "baker": m["baker"], "scene": m["scene"], "hideouts": list(m["hideouts"].values())},
-        "baker": baker, "swarm": swarm, "solo": solo,
-        "baker_result": s1["solved"], "swarm_result": s2["solved"], "baker_minute": s1["outcome"]["minute"],
-        "swarm_minute": s2["outcome"]["minute"], "swarm_quorum": s2["outcome"]["quorum"],
-        "swarm_ok": s2["outcome"]["ok"], "baker_wall": baker[-1]["wall"], "swarm_wall": swarm[-1]["wall"],
-        "holmesian": {"culprit": culprit["name"], "framed": framed["name"], "frame": frame, "bribe": bribe,
-                      "planted": planted,
-                      # gpt-6-astra as Holmes, Holmesian case 1, 3 October run 2 (runs/batch_20261003-163912_swarm_92155)
-                      "holmes": "Wiggins, Pargeter's servants supply both his alibi and evidence against Leopold; "
-                                "the dry snuff-box suggests planting. Pargeter merits suspicion, not accusation."},
+        "seed": s,
+        "map": {"addresses": [[x["x"], x["y"]] for x in m["addresses"]], "ids": [x["id"] for x in m["addresses"]],
+                "edges": m["edges"], "districts": m["districts"], "thames": m["thames"], "baker": m["baker"],
+                "scene": m["scene"], "hideouts": list(m["hideouts"].values())},
+        "truth": case["secret"]["truth_names"],
+        "solo": solo(solo_dir, case["leads"]), "baker": baker(baker_dir), "swarm": swarm(swarm_dir),
+        "table": json.load(open(a.table)) if a.table else None,
     }
     with open(OUT, "w") as f:
         json.dump(data, f, separators=(",", ":"))
-    print(OUT, len(baker), "baker ticks", len(swarm), "swarm ticks", "solved", s1["solved"], s2["solved"])
-    print(json.dumps(data["holmesian"], indent=1))
+    print(OUT, "solo solved", data["solo"]["solved"], "baker solved", data["baker"]["solved"],
+          "swarm quorum", data["swarm"]["quorum"], "solved", data["swarm"]["solved"])
 
 
 if __name__ == "__main__":

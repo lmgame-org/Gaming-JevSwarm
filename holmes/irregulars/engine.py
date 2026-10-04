@@ -82,8 +82,10 @@ class Engine:
             with open(os.path.join(self.run_dir, "case.json"), "w") as f:
                 json.dump({"brief": self.case.brief(), "map": self.case.public_map(), "secret": self.case.secret(),
                            "leads": self.case.leads}, f, indent=1)
-            for k in ("decisions", "events"):
+            for k in ("decisions", "events") + (("track",) if self.mode == "swarm" else ()):
                 self._files[k] = open(os.path.join(self.run_dir, f"{k}.jsonl"), "w", buffering=1)
+        self.t_start = time.time()
+        self._seen_reports = 0
         brief = self.case.brief()
         self._event("case", brief["victim"])
         if self.mode == "solo":
@@ -179,6 +181,8 @@ class Engine:
             self._squad_step()
         else:
             self._swarm_step()
+        if self.mode == "swarm":
+            self._track()
         if self.game.ended:
             self._finish()
 
@@ -419,6 +423,27 @@ class Engine:
             self._event("accuse", f"{'Holmes names' if not o['forced'] else 'Out of time, Holmes names'} "
                                   f"{o['culprit']}/{o['motive']}/{o['hideout']}: " +
                         ", ".join(f"{k} {'right' if v else 'wrong'}" for k, v in o["ok"].items()))
+
+    def _track(self):
+        """Per-tick positions (and votes or reports), so any run can be replayed later, e.g. for the trailer."""
+        if "track" not in self._files:
+            return
+        g = self.game
+        rec = {"tick": g.tick, "minute": g.minute, "wall": round(time.time() - self.t_start, 2)}
+        if self.squad:
+            rec["boys"] = [[round(c) for c in b.pos(g.tick)] + [b.state] for b in g.boys]
+            w = g.wiggins
+            rec["w"] = [round(c) for c in w.pos(g.tick)] if w else None
+            new = g.notebook[self._seen_reports:]
+            self._seen_reports = len(g.notebook)
+            rec["reports"] = len(g.notebook)
+            rec["new"] = [{"address": r["address"], "text": r["text"], "kind": r["fact"][0], "fake": r.get("fake", False)}
+                          for r in new]
+        else:
+            rec["boys"] = [[round(c) for c in g.pos(a)] for a in g.irr]
+            rec["votes"] = [[a.vote["culprit"], a.vote["motive"], a.vote["hideout"]] for a in g.irr]
+            rec["shares"] = [[round(x), round(y)] for _, x, y in g.shares][:60]
+        self._write("track", rec)
 
     # ------------------------------------------------------------------ commands
     def command(self, cmd):
