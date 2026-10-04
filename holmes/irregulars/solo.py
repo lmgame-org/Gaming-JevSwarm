@@ -219,6 +219,8 @@ class Jev:
 
     def decide(self, g, final=False):
         cands = {} if final else g.candidates()
+        if len(cands) > 255:  # System One accepts at most 255 choices: offer the nearest addresses (sorted by cab time)
+            cands = {**dict(list((k, v) for k, v in cands.items() if k != "ACCUSE")[:254]), "ACCUSE": cands["ACCUSE"]}
         state = json.dumps(g.observation(), separators=(",", ":"))
         answers, meta = self.client.ask(state, self.questions(g, cands), retries=1)
         belief, pick = {}, {}

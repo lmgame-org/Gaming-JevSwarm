@@ -263,14 +263,39 @@ function renderTracks() {
   }
 }
 
+let CHALLENGE = null, BEFORE_CHALLENGE = null;
+function pickChallenge(id) {
+  const ch = SCHEMA.challenges.find((c) => c.id === id); if (!ch) return;
+  if (!CHALLENGE) BEFORE_CHALLENGE = {...cfg};
+  CHALLENGE = id;
+  const base = {}; for (const k of Object.keys(SCHEMA.challenges.reduce((o, c) => Object.assign(o, c.cfg), {}))) base[k] = SCHEMA.defaults[k];
+  setCfg({...base, ...ch.cfg, swarm_ticks: Math.max(1, Math.round((ch.cfg.deadline_hours || SCHEMA.defaults.deadline_hours) * 60 / cfg.tick_min))}, {preview: true});
+}
+function clearChallenge() {
+  if (!CHALLENGE) return;
+  CHALLENGE = null;
+  const keep = {mode: cfg.mode, policy: cfg.policy, swarm_policy: cfg.swarm_policy, holmes: cfg.holmes, boy_policy: cfg.boy_policy, n_irregulars: cfg.n_irregulars};
+  cfg = {...(BEFORE_CHALLENGE || SCHEMA.defaults), ...keep};
+}
 function renderCase() {
   const p = $("#casePanel"); p.innerHTML = "";
   const t = trackOf(cfg), n = squad();
   const hard = cfg.difficulty === "holmesian";
+  const kind = CHALLENGE ? "challenge" : (cfg.difficulty || "standard");
   document.querySelectorAll("#caseKinds button").forEach((b) => {
-    b.setAttribute("aria-selected", String(b.dataset.kind === (cfg.difficulty || "standard")));
-    b.onclick = () => setCfg({difficulty: b.dataset.kind}, {preview: true});
+    b.setAttribute("aria-selected", String(b.dataset.kind === kind));
+    b.onclick = () => b.dataset.kind === "challenge" ? pickChallenge(CHALLENGE || SCHEMA.challenges[0].id)
+      : (clearChallenge(), setCfg({difficulty: b.dataset.kind}, {preview: true}));
   });
+  if (CHALLENGE) {
+    const ch = SCHEMA.challenges.find((c) => c.id === CHALLENGE);
+    p.appendChild(optGroup("Pick a case", "Each is a fixed case with its own rules. Every approach gets exactly the same one.",
+      SCHEMA.challenges.map((c) => ({v: c.id, label: c.title, sub: c.tests})), CHALLENGE, (v) => pickChallenge(v)));
+    const how = document.createElement("p"); how.className = "how";
+    how.innerHTML = `<b>${esc(ch.title)}.</b> ${esc(ch.blurb)} <span class="muted">Tests: ${esc(ch.tests)}. Case no. ${ch.cfg.seed}.</span>`;
+    p.appendChild(how);
+    return;
+  }
   const info = PREVIEW_INFO;
   const name = document.createElement("div");
   name.className = "case-name";

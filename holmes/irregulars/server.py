@@ -10,12 +10,16 @@ from swarmcore.llm import JevClient, LLMClient
 from swarmcore.web import BaseHandler, redact, serve as _serve
 
 from .case import Case
+from .challenges import public as challenge_list
 from .config import DEFAULTS, POLICIES, PRESETS, SCHEMA, SWARM_POLICIES, coerce
 from .engine import RUNS, Engine
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE = {"engine": None, "thread": None}
 LOCK = threading.Lock()
+
+
+CHALLENGE_LIST = challenge_list()
 
 
 def list_runs():
@@ -44,7 +48,8 @@ class Handler(BaseHandler):
             return self.send_json({
                 "schema": [[g, [list(f) for f in fields]] for g, fields in SCHEMA], "defaults": DEFAULTS,
                 "presets": {k: v for k, v in PRESETS.items()}, "policies": POLICIES, "swarm_policies": SWARM_POLICIES,
-                "key_files": key_files(), "runs": list_runs(), "running": bool(eng and not eng.ended)})
+                "key_files": key_files(), "runs": list_runs(), "running": bool(eng and not eng.ended),
+                "challenges": CHALLENGE_LIST})
         if path == "/api/preview":
             q = {k: v[0] for k, v in parse_qs(url.query).items()}
             c = Case(coerce(q))
