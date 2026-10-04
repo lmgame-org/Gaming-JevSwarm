@@ -27,3 +27,5 @@ are never logged, written to run logs or sent to the browser.
 Each sub-project also runs on its own, for example `cd fish && python3 -m jevswarm` or
 `cd honeybee && python3 -m beeswarm`. To add another study, create a folder with its own package, `web/` and
 `tests/`, import shared code from `swarmcore`, and register it in `run.py`.
+
+Project history (all sub-projects, decisions, results, open work): [docs/project_history.md](docs/project_history.md).
