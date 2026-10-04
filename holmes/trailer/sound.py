@@ -8,7 +8,7 @@ import struct
 import sys
 import wave
 
-SR, DUR = 44100, 80.0
+SR, DUR = 44100, 94.5
 N = int(SR * DUR)
 buf = [0.0] * N
 rnd = random.Random(1)
@@ -91,10 +91,10 @@ def heartbeat(t, g=0.6):
 
 
 pad(0.0, 16.0, [55, 82.4, 110, 130.8], 0.09)
-pad(16.0, 23.5, [61.7, 92.5, 123.5, 146.8], 0.07)
-pad(23.5, 67.0, [65.4, 98, 130.8, 155.6], 0.06)
-pad(67.0, 80.0, [65.4, 98, 130.8, 164.8, 196], 0.07)
-for a, b in ((0.3, 5.0), (26.1, 34.9), (40.6, 49.4), (55.1, 63.9), (67.0, 75.5)):
+pad(16.0, 25.0, [61.7, 92.5, 123.5, 146.8], 0.07)
+pad(25.0, 77.0, [65.4, 98, 130.8, 155.6], 0.06)
+pad(77.0, 94.5, [65.4, 98, 130.8, 164.8, 196], 0.07)
+for a, b in ((0.3, 5.0), (27.6, 38.8), (45.6, 56.8), (63.6, 73.4), (77.0, 90.5)):
     t = a
     while t < b:
         tick(t, 0.16 if int(round((t - a) * 2)) % 2 == 0 else 0.1)
@@ -106,12 +106,13 @@ while t < 10.5:  # running footsteps under the Irregulars
 bell(10.5, 293.7, 0.2)
 bell(14.0, 196.0, 0.22)
 bell(16.0, 246.9, 0.2)
-for t in (23.5, 38.0, 52.5):
+for t in (25.0, 43.0, 61.0):
     bell(t)
-for t in (34.9, 49.4, 63.9):  # each verdict lands
+for t in (38.8, 56.8, 73.4):  # each verdict lands
     bell(t, 523.3, 0.16)
-bell(75.5, 130.8, 0.45)
-add(75.5, tone(65.4, 2.5, decay=0.9), 0.25)
+bell(84.0, 349.2, 0.18)
+bell(90.5, 130.8, 0.45)
+add(90.5, tone(65.4, 2.5, decay=0.9), 0.25)
 
 peak = max(1e-9, max(abs(v) for v in buf))
 with wave.open(sys.argv[1] if len(sys.argv) > 1 else "sound.wav", "w") as w:

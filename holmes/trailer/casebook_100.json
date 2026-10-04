@@ -18,5 +18,14 @@
   }
  },
  "footnote": "The same 100 boys run by a simple counting rule solved 95; it reads clues exactly, but only on these easy cases.",
- "swarm_agreed": 91
+ "swarm_agreed": 91,
+ "counting": {
+  "solved": 95,
+  "sim": "7.8 h",
+  "wall": "5 s",
+  "d_solved": "\u22121 case",
+  "d_sim": "\u22123.2 h (\u221229%)",
+  "d_wall": "\u221292 s (\u221295%)",
+  "caveat": "But on planned murders, where servants are bribed to lie, counting solves 0 of 20; gpt-6-astra solves 17."
+ }
 }

@@ -12,6 +12,8 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "trailer_data.json")
 KEY = {"trait", "alibi", "motive", "hide_district", "hide_type", "hide_found"}
+PART = {"trait": "culprit", "alibi": "culprit", "motive": "motive", "hide_district": "hideout", "hide_type": "hideout",
+        "hide_found": "hideout"}
 
 
 def find(batches, pattern):
@@ -56,7 +58,8 @@ def solo(run_dir, leads):
             lead = leads[addr]
             stops.append({"at": addr, "minute": b["minute"] if b else summ["minutes"],
                           "note": short((b or {}).get("note") or "", 150), "clue": short(lead["text"]),
-                          "key": lead["fact"][0] in KEY and not lead["lie"]})
+                          "key": lead["fact"][0] in KEY and not lead["lie"],
+                          "part": PART.get(lead["fact"][0]) if not lead["lie"] else None})
     o = summ["outcome"] or {}
     return {"stops": stops, "minutes": summ["minutes"], "solved": summ["solved"], "ok": o.get("ok"),
             "visits": summ["visits"], "budget": json.load(open(os.path.join(run_dir, "config.json")))["cfg"]["visit_budget"],
@@ -73,7 +76,8 @@ def baker(run_dir):
             orders.append({"minute": e["t"], "text": short(note, 170)})
     ticks = [{"boys": [b[:2] for b in t["boys"]], "w": t["w"], "reports": t["reports"], "wall": t["wall"],
               "minute": t["minute"],
-              "new": [{"text": short(r["text"]), "at": r["address"]} for r in t["new"] if r["kind"] in KEY][:3]}
+              "new": [{"text": short(r["text"]), "at": r["address"], "part": PART[r["kind"]]} for r in t["new"]
+                      if r["kind"] in KEY and not r.get("fake")][:3]}
              for t in track]
     o = summ["outcome"]
     return {"ticks": ticks, "orders": orders, "solved": summ["solved"], "ok": o["ok"], "minute": o["minute"],
@@ -89,7 +93,8 @@ def swarm(run_dir):
     for t in track:
         parts = [sum(int(v == w) for v, w in zip(vt, want)) for vt in t["votes"]]
         ticks.append({"boys": t["boys"], "parts": parts, "shares": t["shares"], "wall": t["wall"], "minute": t["minute"],
-                      "truth_votes": sum(1 for p in parts if p == 3)})
+                      "truth_votes": sum(1 for p in parts if p == 3),
+                      "per": [sum(1 for vt in t["votes"] if vt[k] == want[k]) for k in range(3)]})
     return {"ticks": ticks, "solved": summ["solved"], "ok": o["ok"], "quorum": o["quorum"], "minute": o["minute"],
             "wall": wall_of(run_dir) or track[-1]["wall"]}
 
