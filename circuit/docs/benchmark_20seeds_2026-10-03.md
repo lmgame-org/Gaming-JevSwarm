@@ -61,14 +61,19 @@ Holmes detective game: one debugger, Holmes directing street boys, and a leaderl
 | Swarm · hybrid · 2 wires | 5/20 (0.11-0.47) | 5 / 5 / 5 / 5 | 6.0 h / 6.0 h | 12 | 273.6 s / 730.6 s | 100 | $0.0046 | 3 |
 | Swarm · rule · 4 wires | 3/20 (0.05-0.36) | 3 / 3 / 3 / 3 | 6.0 h / 6.0 h | 15 | 0.4 s / 0.4 s | 0 | free | 2 |
 
-### Baker Street, every combination (added on 3 October, evening)
+### Solo vs Baker Street, every combination (added on 3 October, evening)
 
-Holmes × boys × Wiggins on the same 20 seeds. Two rows were added after the first run:
+The solo debuggers (one investigator, 10 probes, no boys) and Holmes × boys × Wiggins on the same 20 seeds. Two Baker
+Street rows were added after the first run:
 - gpt-6-astra Holmes with rule boys;
 - counting Holmes with Jev boys and no Wiggins.
 
-| Holmes | Boys | Wiggins | Solved (95% CI) | Block / signal / type / fix | Case time p50 / p90 | Ran to deadline | Calls / case | Cost / case |
+| Decider (Holmes or solo) | Boys | Wiggins | Solved (95% CI) | Block / signal / type / fix | Case time p50 / p90 | Ran to deadline | Calls / case | Cost / case |
 |---|---|---|---|---|---|---|---|---|
+| solo gpt-6-astra | none (10 probes) | - | 14/20 (0.48-0.85) | 18 / 18 / 18 / 14 | 1.2 h / 2.5 h | 3 | 5 | $0.171 |
+| solo Jev | none (10 probes) | - | 3/20 (0.05-0.36) | 3 / 3 / 3 / 3 | 2.8 h / 3.5 h | 15 | 9 | $0.0004 |
+| solo rule | none (10 probes) | - | 3/20 (0.05-0.36) | 3 / 3 / 3 / 3 | 2.8 h / 3.2 h | 17 | 0 | free |
+| solo random | none (10 probes) | - | 2/20 (0.03-0.30) | 2 / 2 / 2 / 2 | 3.5 h / 3.8 h | 20 | 0 | free |
 | gpt-6-astra | Jev | on | 11/20 (0.34-0.74) | 17 / 17 / 17 / 11 | 6.0 h / 6.0 h | 20 | 155 | $0.143 |
 | gpt-6-astra | rule | on | 12/20 (0.39-0.78) | 18 / 18 / 18 / 12 | 6.0 h / 6.0 h | 19 | 6 | $0.137 |
 | counting | Jev | on | 11/20 (0.34-0.74) | 14 / 14 / 13 / 11 | 4.5 h / 6.0 h | 7 | 102 | $0.0027 |
@@ -77,6 +82,10 @@ Holmes × boys × Wiggins on the same 20 seeds. Two rows were added after the fi
 | counting | rule | off | 12/20 (0.39-0.78) | 14 / 14 / 13 / 12 | 3.8 h / 6.0 h | 3 | 0 | free |
 | counting | random | on | 9/20 (0.26-0.66) | 10 / 10 / 10 / 9 | 6.0 h / 6.0 h | 10 | 0 | free |
 
+- **Solo vs leader.** Solo gpt-6-astra (14/20, $0.17) beats every Baker Street row. As Holmes, the same model gets
+  11-12/20 for about the same money: Holmes gets more evidence but plans in rounds and waits too long. Solo Jev and
+  the solo rule (3/20) are far below a counting Holmes with any boys (8-13/20). Without a model, the squad is what
+  makes the difference.
 - **Holmes decides the location; the counting rule is better at naming the fix.**
   - Both gpt-6-astra rows find the block in 17-18/20 against 9-15/20 for the counting Holmes. But they run to the
     deadline in 19-20 of 20 cases and solve only 11-12/20.
