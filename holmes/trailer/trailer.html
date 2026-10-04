@@ -137,6 +137,7 @@ function chapter(num, title, sub, t, a) {
   text(title, 110, 186, {size: 58, align: "left", alpha: al});
   text(sub, 110, 240, {size: 28, color: DIM, align: "left", style: "italic", alpha: al});
 }
+function hud(h) { g.save(); g.fillStyle = "rgba(6,8,11,0.82)"; g.fillRect(W - 440, 40, 410, h); g.strokeStyle = "rgba(224,179,87,0.5)"; g.lineWidth = 2; g.strokeRect(W - 440, 40, 410, h); g.restore(); }
 function clock(minutes, alpha = 1) {
   // time since the case began, against the 12-hour limit every approach gets
   const m = Math.min(720, minutes), hh = Math.floor(m / 60), mm = Math.floor(m % 60);
@@ -149,7 +150,7 @@ const hrs = (m) => `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart
 function verdictTag(s, t, a, col) {
   if (t < a) return;
   g.save(); g.font = `bold 32px ${SERIF}`; g.letterSpacing = "2px"; const w = g.measureText(s).width + 60; g.restore();
-  const p = prog(t, a, a + 0.3); g.save(); g.globalAlpha = p; g.translate(W - 70 - w / 2, 300); g.rotate(-0.05);
+  const p = prog(t, a, a + 0.3); g.save(); g.globalAlpha = p; g.translate(W - 70 - w / 2, 580); g.rotate(-0.05);
   g.fillStyle = "rgba(6,8,11,0.85)"; g.fillRect(-w / 2, -40, w, 80); g.strokeStyle = col; g.lineWidth = 5; g.strokeRect(-w / 2, -40, w, 80);
   text(s, 0, 2, {size: 32, color: col, style: "bold", spacing: 2}); g.restore();
 }
@@ -218,7 +219,7 @@ function lone(t) {
   path.slice(1, i0 + 1).forEach((id) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
   g.fillStyle = RED; g.beginPath(); g.arc(cab[0], cab[1], 14, 0, 7); g.fill();
   vignette(0.55);
-  clock(f * D.solo.minutes);
+  hud(200); clock(f * D.solo.minutes);
   note(`doors knocked on: ${i0} of 100`);
   verdictTag(`UNSOLVED \u00b7 out of visits`, t, 15.0, "#e4836f");
   chapter("I.", "The Lone Genius", "one brilliant model plays the detective", t, 8.6);
@@ -237,26 +238,47 @@ function baker(t) {
     text("Wiggins", pos[0] + 20, pos[1] - 22, {size: 22, color: INK, align: "left", style: "italic"}); }
   holmes(bx + 70, by + 120, 0.32, INK);
   vignette(0.55);
-  clock(f * (D.baker.length - 1) * 15);
+  hud(200); clock(f * (D.baker.length - 1) * 15);
   note(`reports reaching 221B: ${w.a.reports}`);
   verdictTag(`SOLVED \u00b7 ${hrs((D.baker.length - 1) * 15)}`, t, 22.3, GOLD);
   chapter("II.", "Holmes & the Irregulars", "a lead mind, helpers on dedicated errands", t, 15.6);
   caption(["Holmes never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
   caption(["Wiggins and twelve street boys each take a street,", "and run back with what they find."], t, 20.4, 23.0);
 }
+const AGREE = ["#7d4a3a", "#c0603c", "#e39a3c", "#f5cf5a"];   // a boy's colour: how many of the three answers he shares with the final verdict
 function swarm(t) {
   baseMap();
-  const f = ease(prog(t, 23.2, 29.6)), w = walkers(D.swarm, f, SWARM, 6);
-  g.strokeStyle = "rgba(163,57,46,0.25)"; g.lineWidth = 2;
-  for (const s of (w.a.shares || []).slice(0, 30)) { const [x, y] = P(s); g.beginPath(); g.arc(x, y, 200 * MS * (0.25 + 0.75 * w.k), 0, 7); g.stroke(); }
-  const v = Math.round(w.a.truth_votes + ((w.b.truth_votes || 0) - w.a.truth_votes) * w.k);
+  const f = ease(prog(t, 23.2, 29.6)), run = D.swarm, T = run.length - 1, ft = f * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
+  const A0 = run[i0], A1 = run[i1];
+  g.strokeStyle = "rgba(163,57,46,0.18)"; g.lineWidth = 2;
+  for (const s of (A0.shares || []).slice(0, 25)) { const [x, y] = P(s); g.beginPath(); g.arc(x, y, 200 * MS * (0.25 + 0.75 * k), 0, 7); g.stroke(); }
+  const closing = prog(t, 28.6, 29.4);
+  A0.boys.forEach((p, j) => {
+    const q = A1.boys[j] || p, pos = P([p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k]);
+    const parts = k < 0.5 ? A0.parts[j] : A1.parts[j], r = parts === 3 ? 9 : 6;
+    if (parts === 3) { const gl = g.createRadialGradient(pos[0], pos[1], 0, pos[0], pos[1], 30 + 20 * closing);
+      gl.addColorStop(0, "rgba(245,207,90,0.55)"); gl.addColorStop(1, "rgba(245,207,90,0)"); g.fillStyle = gl; g.fillRect(pos[0] - 50, pos[1] - 50, 100, 100); }
+    g.fillStyle = AGREE[parts]; g.beginPath(); g.arc(pos[0], pos[1], r, 0, 7); g.fill();
+  });
   vignette(0.55);
-  clock(f * (D.swarm.length - 1) * 15);
-  note(`boys agreeing on one answer: ${v} (30 close the case)`);
-  verdictTag(`CASE CLOSED \u00b7 ${hrs((D.swarm.length - 1) * 15)}`, t, 28.6, GOLD);  // 30 agree at the last tick
+  hud(470); clock(f * T * 15);
+  // the agreement meter: boys holding the final answer (3 of 3) and nearly (2 of 3), against the 30 needed
+  const lerp = (key) => { const c = (x) => x.parts.filter((v) => v >= key).length; return Math.round(c(A0) + (c(A1) - c(A0)) * k); };
+  const full = lerp(3), near = lerp(2), mx = W - 360, my = 212, mw = 300;
+  text("the swarm's verdict forming", W - 60, my, {size: 24, color: CREAM, align: "right", style: "italic"});
+  g.fillStyle = "rgba(239,230,207,0.15)"; g.fillRect(mx, my + 24, mw, 18);
+  g.fillStyle = AGREE[2]; g.fillRect(mx, my + 24, mw * near / 100, 18);
+  g.fillStyle = AGREE[3]; g.fillRect(mx, my + 24, mw * full / 100, 18);
+  g.fillStyle = CREAM; g.fillRect(mx + mw * 0.3 - 1, my + 16, 3, 34);
+  text("30 close it", mx + mw * 0.3, my + 66, {size: 18, color: CREAM, style: "italic"});
+  text(`${full} agree on all three · ${near} on two`, W - 60, my + 100, {size: 22, color: DIM, align: "right", style: "italic"});
+  [["agrees on all three", 3], ["on two", 2], ["on one", 1]].forEach(([l, c], i) => {
+    g.fillStyle = AGREE[c]; g.beginPath(); g.arc(W - 330, my + 150 + i * 32, 8, 0, 7); g.fill();
+    text(l, W - 310, my + 150 + i * 32, {size: 20, color: CREAM, align: "left", style: "italic"}); });
+  verdictTag(`CONVERGED \u00b7 CASE CLOSED \u00b7 ${hrs(T * 15)}`, t, 28.6, GOLD);
   chapter("III.", "The Swarm", "a hundred boys, and no one in charge", t, 23.0);
-  caption(["No one in charge. Every boy shouts what he has heard…"], t, 25.4, 27.8);
-  caption(["…and the case closes when thirty agree."], t, 27.7, 30.0);
+  caption(["No one in charge. Every boy shouts what he has heard\u2026"], t, 25.4, 27.8);
+  caption(["\u2026and the city slowly agrees, until thirty share one verdict."], t, 27.7, 30.0);
 }
 function twist(t) {
   fog(t, 0.7);
@@ -299,7 +321,7 @@ function casebook(t) {
   text("ordinary", cols[0], 300, {size: 32, color: INK, style: "italic", alpha: al});
   text("planned", cols[1], 300, {size: 32, color: RED, style: "italic", alpha: al});
   const rows = [["The Lone Genius", "gpt-6-astra alone", 11, 11], ["Holmes & the Irregulars", "gpt-6-astra leads, Jev boys run errands", 19, 17],
-    ["The Swarm", "a hundred Jev boys, no leader", 11, 9]];
+    ["The Swarm", "a hundred Jev boys, no leader: agrees within ~2 hours, sometimes on the wrong man", 11, 9]];
   rows.forEach(([who, how, a, b], i) => {
     const r = prog(t, 38.1 + i * 0.45, 38.5 + i * 0.45), y = 410 + i * 150;
     text(who, 340, y - 14, {size: 46, color: INK, align: "left", alpha: r});

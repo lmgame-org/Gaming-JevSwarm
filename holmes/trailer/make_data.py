@@ -26,8 +26,9 @@ def track(cfg):
             t["reports"] = f["hq"]["reports"]
         else:
             truth = e.case.truth_ids()
-            t["truth_votes"] = sum(1 for b in f["irregulars"] if (b[3], b[4], b[5]) ==
-                                   (truth["culprit"], truth["motive"], truth["hideout"]))
+            want = (truth["culprit"], truth["motive"], truth["hideout"])
+            t["truth_votes"] = sum(1 for b in f["irregulars"] if (b[3], b[4], b[5]) == want)
+            t["parts"] = [sum(int(v == w) for v, w in zip((b[3], b[4], b[5]), want)) for b in f["irregulars"]]
             t["shares"] = [[round(x), round(y)] for _, x, y in f["shares"]][:60]
         ticks.append(t)
         if e.ended:
