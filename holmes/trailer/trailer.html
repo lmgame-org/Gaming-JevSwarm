@@ -102,7 +102,7 @@ function baseMap() {
   g.fillStyle = "rgba(70,50,30,0.6)"; for (const a of M.addresses) { const [x, y] = P(a); g.fillRect(x - 3, y - 3, 6, 6); }
   for (const d of M.districts) { const [x, y] = P([d.x, d.y]); text(d.name.toUpperCase(), x, y - 52, {size: 19, color: "rgba(80,60,35,0.6)", spacing: 3}); }
   const [bx, by] = A(M.baker); star(bx, by, 18, INK); text("221B", bx, by - 30, {size: 24, color: INK, style: "bold"});
-  text("map: a real run of case 3", MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
+  text("map: real runs of case 3 (the lone genius: gpt-6-astra; the boys: free heuristics)", MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
   const [cx, cy] = A(M.scene); g.strokeStyle = RED; g.lineWidth = 6;
   g.beginPath(); g.moveTo(cx - 12, cy - 12); g.lineTo(cx + 12, cy + 12); g.moveTo(cx + 12, cy - 12); g.lineTo(cx - 12, cy + 12); g.stroke();
 }
@@ -229,20 +229,23 @@ function threeWays(t) {
 }
 function lone(t) {
   baseMap();
-  const path = D.solo.path, f = ease(prog(t, 9.0, 15.0)), n = path.length - 1, ft = f * n, i0 = Math.floor(ft), k = ft - i0;
+  // gpt-6-astra's real route on case 3: each stop with the case minute it arrived
+  const st = D.solo.stops, total = D.solo.minutes, m = ease(prog(t, 9.0, 15.0)) * total;
+  let i0 = 0; while (i0 + 1 < st.length && st[i0 + 1][1] <= m) i0++;
+  const nxt = st[Math.min(st.length - 1, i0 + 1)], k = nxt[1] > st[i0][1] ? clamp((m - st[i0][1]) / (nxt[1] - st[i0][1])) : 0;
   g.strokeStyle = RED; g.lineWidth = 5; g.setLineDash([14, 10]); g.beginPath();
-  path.slice(0, i0 + 1).forEach((id, i) => { const [x, y] = A(id); i ? g.lineTo(x, y) : g.moveTo(x, y); });
-  const p = A(path[i0]), q = A(path[Math.min(n, i0 + 1)]), cab = [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  st.slice(0, i0 + 1).forEach(([id], i) => { const [x, y] = A(id); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  const p = A(st[i0][0]), q = A(nxt[0]), cab = [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
   g.lineTo(...cab); g.stroke(); g.setLineDash([]);
-  path.slice(1, i0 + 1).forEach((id) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
+  st.slice(1, i0 + 1).forEach(([id]) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
   g.fillStyle = RED; g.beginPath(); g.arc(cab[0], cab[1], 14, 0, 7); g.fill();
   vignette(0.55);
-  hud(200); clock(f * D.solo.minutes);
-  note(`doors knocked on: ${i0} of 100`);
-  verdictTag(`UNSOLVED \u00b7 out of visits`, t, 15.0, "#e4836f");
+  hud(200); clock(m);
+  note(`doors knocked on: ${t >= 15.0 ? D.solo.visits : i0} of 100 (${D.solo.visits} allowed)`);
+  verdictTag(`SOLVED \u00b7 ${hrs(total)} \u00b7 all ${D.solo.visits} visits`, t, 15.0, GOLD);
   chapter("I.", "The Lone Genius", "one brilliant model plays the detective", t, 8.6);
   caption(["One brilliant mind. One cab. One door at a time."], t, 11.0, 13.4);
-  caption(["Sharp enough to see through any lie…", "but a hundred doors, and only twelve hours."], t, 13.3, 15.6);
+  caption(["It cracks this case, but only just: all twenty visits, eleven hours.", "Across twenty murders, it solves eleven."], t, 13.3, 15.6);
 }
 function baker(t) {
   baseMap();

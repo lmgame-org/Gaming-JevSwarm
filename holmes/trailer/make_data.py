@@ -9,6 +9,8 @@ from irregulars.case import Case  # noqa: E402
 from irregulars.config import coerce  # noqa: E402
 from irregulars.engine import Engine  # noqa: E402
 
+GENIUS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "runs",
+                      "batch_20261002-154711_solo_62084")
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trailer_data.json")
 
 
@@ -42,9 +44,16 @@ def main():
     m, baker, s1 = track({"mode": "swarm", "swarm_policy": "baker_street", "holmes": "rule", "boy_policy": "rule",
                           "n_irregulars": 12, "seed": 3})
     _, swarm, s2 = track({"mode": "swarm", "swarm_policy": "rule", "comm_range": 200, "seed": 3})
-    e = Engine({"mode": "solo", "policy": "rule", "seed": 3}, realtime=False, log=False)
-    e.run_all()
-    solo = {"path": list(e.game.path), "minutes": e.game.minute, "solved": e.summary["solved"]}
+    # the lone genius: gpt-6-astra's actual route on case 3 in the 2 October benchmark (it solved it)
+    run = [d for d in os.listdir(GENIUS) if d.endswith("_chat_s3")][0]
+    steps = [json.loads(line) for line in open(os.path.join(GENIUS, run, "decisions.jsonl"))]
+    summ = json.load(open(os.path.join(GENIUS, run, "summary.json")))
+    case_map = json.load(open(os.path.join(GENIUS, run, "case.json")))["map"]
+    stops = [[case_map["baker"], 0.0]]
+    for a, b in zip(steps, steps[1:] + [None]):
+        if a["action"].startswith("VISIT_"):
+            stops.append([a["action"][6:], b["minute"] if b else summ["minutes"]])
+    solo = {"stops": stops, "minutes": summ["minutes"], "solved": summ["solved"], "visits": summ["visits"]}
     c = Case(coerce({"seed": 1, "difficulty": "holmesian"}))
     frame = [c.leads[a]["text"] for a in c.frame_addrs]
     bribe = [l["text"] for l in c.leads.values() if l["fact"][0] == "bribe"]
