@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Table 1</title>
+<style>
+  html, body { margin: 0; background: #fff; }
+  body { width: 1800px; padding: 60px 70px; box-sizing: border-box; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #111; }
+  .cap { font-size: 26px; line-height: 1.45; margin-bottom: 26px; }
+  .cap b { font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; font-size: 25px; }
+  th, td { padding: 13px 16px; text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  thead th { border-top: 2.5px solid #111; border-bottom: 1.5px solid #111; font-weight: 600; vertical-align: bottom; }
+  tbody tr:last-child td { border-bottom: 2.5px solid #111; }
+  tr.group td { padding-top: 18px; font-style: italic; color: #444; border-bottom: 1px solid #ccc; text-align: left; }
+  td.best { font-weight: 700; }
+  .ci { color: #555; font-size: 21px; }
+  .note { font-size: 21px; color: #333; margin-top: 18px; line-height: 1.5; }
+</style></head><body>
+<div class="cap"><b>Table 2.</b> Effect of a coordinated lie. Solved cases on standard cases versus frame-up ("Holmesian") cases, in which the
+murderer's servants are paid to give matching false descriptions of an innocent suspect and a planted clue backs them up.
+A case is solved only if the culprit, motive and hideout are all correct; 12 case hours allowed.</div>
+<table>
+<thead><tr><th>Method</th><th>Decision makers</th><th>Standard<br><span class="ci">solved / 100</span></th>
+<th>Frame-up<br><span class="ci">solved</span></th><th>Frame-up<br><span class="ci">culprit correct</span></th></tr></thead>
+<tbody>
+<tr class="group"><td colspan="5">Single detective</td></tr>
+<tr><td>Solo detective</td><td>gpt-6-astra</td><td>57</td><td>11 / 20</td><td class="best">20 / 20</td></tr>
+<tr><td>Solo detective</td><td>Jev</td><td>25</td><td>3 / 20</td><td>7 / 20</td></tr>
+<tr><td>Solo detective</td><td>counting heuristic</td><td>61</td><td>4 / 100</td><td>6 / 100</td></tr>
+<tr class="group"><td colspan="5">Lead with 12 helpers (Holmes &amp; the Irregulars)</td></tr>
+<tr><td>Holmes + boys</td><td>gpt-6-astra + Jev</td><td>96</td><td class="best">17 / 20</td><td>19 / 20</td></tr>
+<tr><td>Holmes + boys</td><td>counting + Jev</td><td>95</td><td>0 / 20</td><td>0 / 20</td></tr>
+<tr><td>Holmes + boys</td><td>counting + heuristic</td><td class="best">97</td><td>1 / 100</td><td>1 / 100</td></tr>
+<tr class="group"><td colspan="5">Leaderless swarm (100 boys, 2 km range, closes at 30 identical votes)</td></tr>
+<tr><td>Swarm</td><td>Jev</td><td>38</td><td>9 / 20</td><td>9 / 20</td></tr>
+<tr><td>Swarm</td><td>hybrid (Jev moves, counting votes)</td><td>&ndash;</td><td>0 / 20</td><td>0 / 20</td></tr>
+<tr><td>Swarm</td><td>counting heuristic</td><td>95</td><td>1 / 100</td><td>1 / 100</td></tr>
+</tbody></table>
+<div class="note">Standard cases: seeds 1&ndash;100. Frame-up cases: seeds 1&ndash;20 for model-driven settings (30 s per model call, 0 heuristic fallbacks);
+seeds 1&ndash;100 for the free counting settings. In standard cases lone lies (about 10% of key leads) do not mislead counting, because every
+true fact appears twice; a coordinated lie outnumbers the truth. The hybrid swarm was not run on the 100 standard cases.</div>
+</body></html>
