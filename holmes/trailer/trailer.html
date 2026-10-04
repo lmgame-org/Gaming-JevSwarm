@@ -137,12 +137,23 @@ function chapter(num, title, sub, t, a) {
   text(title, 110, 186, {size: 58, align: "left", alpha: al});
   text(sub, 110, 240, {size: 28, color: DIM, align: "left", style: "italic", alpha: al});
 }
-function clock(minutes, alpha) {
-  const hh = Math.floor(8 + minutes / 60), mm = Math.floor(minutes % 60);
-  text(`${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`, W - 130, 110, {size: 52, color: CREAM, alpha, style: "bold"});
-  text("case time", W - 130, 154, {size: 22, color: DIM, alpha, style: "italic"});
+function clock(minutes, alpha = 1) {
+  // time since the case began, against the 12-hour limit every approach gets
+  const m = Math.min(720, minutes), hh = Math.floor(m / 60), mm = Math.floor(m % 60);
+  text(`${hh}h ${String(mm).padStart(2, "0")}m`, W - 60, 104, {size: 52, align: "right", alpha, style: "bold"});
+  text("of the 12 hours allowed", W - 60, 150, {size: 22, color: DIM, align: "right", alpha, style: "italic"});
+  g.fillStyle = "rgba(239,230,207,0.2)"; g.fillRect(W - 360, 170, 300, 8);
+  g.fillStyle = GOLD; g.fillRect(W - 360, 170, 300 * m / 720, 8);
 }
-function note(s, alpha = 1) { text(s, W - 60, 205, {size: 26, color: CREAM, align: "right", style: "italic", alpha}); }
+const hrs = (m) => `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, "0")}m`;
+function verdictTag(s, t, a, col) {
+  if (t < a) return;
+  g.save(); g.font = `bold 32px ${SERIF}`; g.letterSpacing = "2px"; const w = g.measureText(s).width + 60; g.restore();
+  const p = prog(t, a, a + 0.3); g.save(); g.globalAlpha = p; g.translate(W - 70 - w / 2, 300); g.rotate(-0.05);
+  g.fillStyle = "rgba(6,8,11,0.85)"; g.fillRect(-w / 2, -40, w, 80); g.strokeStyle = col; g.lineWidth = 5; g.strokeRect(-w / 2, -40, w, 80);
+  text(s, 0, 2, {size: 32, color: col, style: "bold", spacing: 2}); g.restore();
+}
+function note(s, alpha = 1) { text(s, W - 60, 212, {size: 26, color: CREAM, align: "right", style: "italic", alpha}); }
 
 /* ================================================================ scenes */
 const SCENES = [[0, 5.6, telegram], [5.6, 8.6, threeWays], [8.6, 15.6, lone], [15.6, 23.0, baker], [23.0, 30.0, swarm],
@@ -207,8 +218,9 @@ function lone(t) {
   path.slice(1, i0 + 1).forEach((id) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
   g.fillStyle = RED; g.beginPath(); g.arc(cab[0], cab[1], 14, 0, 7); g.fill();
   vignette(0.55);
-  clock(f * 720, 1);
+  clock(f * D.solo.minutes);
   note(`doors knocked on: ${i0} of 100`);
+  verdictTag(`UNSOLVED \u00b7 out of visits`, t, 15.0, "#e4836f");
   chapter("I.", "The Lone Genius", "one brilliant model plays the detective", t, 8.6);
   caption(["One brilliant mind. One cab. One door at a time."], t, 11.0, 13.4);
   caption(["Sharp enough to see through any lie…", "but a hundred doors, and only twelve hours."], t, 13.3, 15.6);
@@ -225,8 +237,9 @@ function baker(t) {
     text("Wiggins", pos[0] + 20, pos[1] - 22, {size: 22, color: INK, align: "left", style: "italic"}); }
   holmes(bx + 70, by + 120, 0.32, INK);
   vignette(0.55);
-  clock(f * (D.baker.length - 1) * 15, 1);
+  clock(f * (D.baker.length - 1) * 15);
   note(`reports reaching 221B: ${w.a.reports}`);
+  verdictTag(`SOLVED \u00b7 ${hrs((D.baker.length - 1) * 15)}`, t, 22.3, GOLD);
   chapter("II.", "Holmes & the Irregulars", "a lead mind, helpers on dedicated errands", t, 15.6);
   caption(["Holmes never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
   caption(["Wiggins and twelve street boys each take a street,", "and run back with what they find."], t, 20.4, 23.0);
@@ -238,8 +251,9 @@ function swarm(t) {
   for (const s of (w.a.shares || []).slice(0, 30)) { const [x, y] = P(s); g.beginPath(); g.arc(x, y, 200 * MS * (0.25 + 0.75 * w.k), 0, 7); g.stroke(); }
   const v = Math.round(w.a.truth_votes + ((w.b.truth_votes || 0) - w.a.truth_votes) * w.k);
   vignette(0.55);
-  clock(f * (D.swarm.length - 1) * 15, 1);
+  clock(f * (D.swarm.length - 1) * 15);
   note(`boys agreeing on one answer: ${v} (30 close the case)`);
+  verdictTag(`CASE CLOSED \u00b7 ${hrs((D.swarm.length - 1) * 15)}`, t, 28.6, GOLD);  // 30 agree at the last tick
   chapter("III.", "The Swarm", "a hundred boys, and no one in charge", t, 23.0);
   caption(["No one in charge. Every boy shouts what he has heard…"], t, 25.4, 27.8);
   caption(["…and the case closes when thirty agree."], t, 27.7, 30.0);
