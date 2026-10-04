@@ -367,7 +367,7 @@ function baker(t) {
   let order = null; for (const o of B.orders) if (o.minute <= minute) order = o;
   thought("HOLMES (GPT-6-ASTRA), TO WIGGINS", order && order.text, fade(t, 18.2, 23.0, 0.3));
   caption(["Holmes (gpt-6-astra) never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
-  caption(["Twelve boys, each a small, fast Jev model making simple choices,", "take a street each and run back with what they find."], t, 20.4, 23.0);
+  caption(["Twelve boys, each a small, fast Jev model, run the errands and report back.", `Across ${TB.n || 100} murders, Holmes and his boys solve ${(TB.rows || {}).baker ? TB.rows.baker.solved : "?"}.`], t, 20.4, 23.0);
 }
 const AGREE = ["#7d4a3a", "#c0603c", "#e39a3c", "#f5cf5a"];   // a boy's colour: how many of the three answers he shares with the final verdict
 function swarm(t) {
@@ -402,7 +402,7 @@ function swarm(t) {
   verdictNote(SW.solved ? "the right answer" : `converged, but wrong: ${verdictLine(SW.ok)}`, t, 28.9, !SW.solved);
   chapter("III.", "The Swarm", "100 Jev boys, no one in charge", t, 23.0);
   caption(["No one in charge. Each boy, a small Jev model, keeps his own guess", "and swaps clues and votes with the boys near him."], t, 25.4, 27.8);
-  caption(["We only count the votes: once thirty boys name the same", "culprit, motive and hideout, the case is closed."], t, 27.7, 30.0);
+  caption(["We only count the votes: thirty alike, and the case is closed.", `Across ${TB.n || 100} murders it agrees ${TB.swarm_agreed || "?"} times, but only ${(TB.rows || {}).swarm ? TB.rows.swarm.solved : "?"} are right.`], t, 27.7, 30.0);
 }
 function casebook(t) {
   fog(t, 0.5, false);

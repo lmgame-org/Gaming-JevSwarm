@@ -1,5 +1,22 @@
-{"n": 100,
- "rows": {"solo": {"solved": 57, "sim": "10.5 h", "wall": "82 s"},
-          "baker": {"solved": 96, "sim": "11.0 h", "wall": "97 s"},
-          "swarm": {"solved": 38, "sim": "2.2 h", "wall": "9 s"}},
- "footnote": "The same 100 boys run by a simple counting rule solved 95; it reads clues exactly, but only on these easy cases."}
+{
+ "n": 100,
+ "rows": {
+  "solo": {
+   "solved": 57,
+   "sim": "10.5 h",
+   "wall": "82 s"
+  },
+  "baker": {
+   "solved": 96,
+   "sim": "11.0 h",
+   "wall": "97 s"
+  },
+  "swarm": {
+   "solved": 38,
+   "sim": "2.2 h",
+   "wall": "9 s"
+  }
+ },
+ "footnote": "The same 100 boys run by a simple counting rule solved 95; it reads clues exactly, but only on these easy cases.",
+ "swarm_agreed": 91
+}
