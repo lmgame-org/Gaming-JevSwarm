@@ -277,38 +277,51 @@ function swarm(t) {
     text(l, W - 310, my + 150 + i * 32, {size: 20, color: CREAM, align: "left", style: "italic"}); });
   verdictTag(`CONVERGED \u00b7 CASE CLOSED \u00b7 ${hrs(T * 15)}`, t, 28.6, GOLD);
   chapter("III.", "The Swarm", "a hundred boys, and no one in charge", t, 23.0);
-  caption(["No one in charge. Every boy shouts what he has heard\u2026"], t, 25.4, 27.8);
-  caption(["\u2026and the city slowly agrees, until thirty share one verdict."], t, 27.7, 30.0);
+  caption(["No one in charge. Each boy keeps his own guess,", "and swaps clues and votes with the boys near him."], t, 25.4, 27.8);
+  caption(["We only count the votes: once thirty boys name the same", "culprit, motive and hideout, the case is closed."], t, 27.7, 30.0);
 }
 function twist(t) {
   fog(t, 0.7);
-  text("Then the murderer planned it.", W / 2, 150, {size: 70, alpha: fade(t, 30.0, 37.6, 0.4)});
-  const notes = [["The coachman", "“The man took snuff, sir.”"], ["The valet", "“Grey-haired. I'd swear to it.”"],
-    ["The housekeeper", "“My master never went out.”"]];
+  const top = fade(t, 30.0, 34.3, 0.4);
+  text("Then the murderer planned it.", W / 2, 140, {size: 70, alpha: top});
+  text("He paid his own servants to point at an innocent man.", W / 2, 215, {size: 40, color: DIM, style: "italic", alpha: top});
+  const notes = [["The coachman", "\u201cThe man took snuff, sir.\u201d"], ["The valet", "\u201cGrey-haired. I'd swear to it.\u201d"],
+    ["The housekeeper", "\u201cMy master never went out.\u201d"]];
   notes.forEach(([who, say], i) => {
-    const a = 30.5 + i * 0.35, al = prog(t, a, a + 0.3); if (al <= 0) return;
-    g.save(); g.globalAlpha = al; g.translate(330 + i * 630, 470); g.rotate((i - 1) * 0.04);
+    const a = 30.5 + i * 0.35, al = Math.min(prog(t, a, a + 0.3), 1 - prog(t, 34.0, 34.3)); if (al <= 0) return;
+    g.save(); g.globalAlpha = al; g.translate(330 + i * 630, 520); g.rotate((i - 1) * 0.04);
     paper(-270, -150, 540, 300, 20 + i);
     text(who, 0, -80, {size: 34, color: RED, style: "italic"});
     text(say, 0, 10, {size: 34, color: INK, style: "italic"});
-    text("all three serve Henry Pargeter", 0, 90, {size: 22, color: "rgba(42,29,18,0.6)", style: "italic"});
+    text("all three serve the real murderer", 0, 90, {size: 22, color: "rgba(42,29,18,0.6)", style: "italic"});
     g.restore();
   });
-  // the lens slides across: under the glass, each statement shows what lies behind it
-  if (t > 32.0 && t < 35.4) {
-    const cx = 330 + 1260 * ease(prog(t, 32.0, 35.0)), cy = 480;
+  if (t > 32.0 && t < 34.2) {           // under the glass: what lies behind each statement
+    const cx = 330 + 1260 * ease(prog(t, 32.0, 34.0)), cy = 530;
     lens(cx, cy, 175, () => { g.fillStyle = "#1a120b"; g.fillRect(0, 0, W, H);
-      for (let i = 0; i < 3; i++) { text("paid one sovereign", 330 + i * 630, 450, {size: 38, color: GOLD, style: "italic"});
-        text("“tell it the same way”", 330 + i * 630, 505, {size: 34, color: CREAM, style: "italic"}); } });
+      for (let i = 0; i < 3; i++) { text("paid one sovereign", 330 + i * 630, 500, {size: 38, color: GOLD, style: "italic"});
+        text("\u201ctell it the same way\u201d", 330 + i * 630, 555, {size: 34, color: CREAM, style: "italic"}); } });
   }
-  const res = [["The Lone Genius", "sees through it", true], ["Holmes & the Irregulars", "sees through it", true], ["The Swarm", "split, often fooled", false]];
-  res.forEach(([who, what, ok], i) => {
-    const a = 35.4 + i * 0.4, al = fade(t, a, 37.6, 0.25); if (al <= 0) return;
-    text(`${who}: ${what}`, 330 + i * 630, 760, {size: 36, color: ok ? CREAM : "#e4836f", alpha: al});
-    text(ok ? "✓" : "✗", 330 + i * 630, 830, {size: 64, color: ok ? GOLD : "#e4836f", alpha: al});
-  });
-  text("“Pargeter's servants supply both his alibi and evidence against Leopold.”  gpt-6-astra as Holmes",
-    W / 2, 960, {size: 30, color: DIM, style: "italic", alpha: fade(t, 35.8, 37.6, 0.3)});
+  // who got what right on these planned (frame-up) cases, out of 20
+  if (t >= 34.2) {
+    const al = prog(t, 34.2, 34.5);
+    text("On 20 planned murders, how many each got right", W / 2, 140, {size: 54, alpha: al});
+    const cols = [1010, 1220, 1430, 1650], heads = ["culprit", "motive", "hideout", "all three"];
+    heads.forEach((h, i) => text(h, cols[i], 270, {size: 34, color: i === 0 ? GOLD : (i === 3 ? CREAM : DIM), style: "italic", alpha: al}));
+    text("\u2190 the trap", cols[0], 315, {size: 22, color: GOLD, style: "italic", alpha: al});
+    const rows = [["The Lone Genius", [20, 11, 20, 11], "sees through the lie, runs out of time for the motive"],
+      ["Holmes & the Irregulars", [19, 18, 20, 17], "sees through the lie, and the boys find the rest"],
+      ["The Swarm", [9, 16, 18, 9], "often agrees on the framed man"]];
+    rows.forEach(([who, v, why], i) => {
+      const r = prog(t, 34.5 + i * 0.35, 34.8 + i * 0.35), y = 420 + i * 170;
+      text(who, 230, y - 14, {size: 48, align: "left", alpha: r});
+      text(why, 230, y + 34, {size: 26, color: DIM, align: "left", style: "italic", alpha: r});
+      v.forEach((n, j) => text(String(n), cols[j], y, {size: 64, color: j === 0 ? (n >= 15 ? GOLD : "#e4836f") : (j === 3 ? CREAM : DIM),
+        style: j === 3 ? "bold" : "", alpha: r}));
+    });
+    text("gpt-6-astra as Holmes: \u201cPargeter's servants supply both his alibi and evidence against Leopold.\u201d",
+      W / 2, 975, {size: 28, color: DIM, style: "italic", alpha: prog(t, 35.8, 36.2)});
+  }
   vignette(0.6);
 }
 function casebook(t) {
@@ -316,12 +329,14 @@ function casebook(t) {
   const al = prog(t, 37.6, 38.0);
   g.save(); g.globalAlpha = al; paper(260, 90, 1400, 780, 31); g.restore();
   text("From the casebook", W / 2, 160, {size: 54, color: INK, style: "italic", alpha: al});
-  text("murders solved out of 20 · the same cases · twelve hours each", W / 2, 216, {size: 26, color: "rgba(42,29,18,0.7)", alpha: al});
+  text("fully solved (culprit, motive and hideout all right), out of 20 \u00b7 twelve hours each", W / 2, 216, {size: 26, color: "rgba(42,29,18,0.7)", alpha: al});
   const cols = [1180, 1460];
-  text("ordinary", cols[0], 300, {size: 32, color: INK, style: "italic", alpha: al});
-  text("planned", cols[1], 300, {size: 32, color: RED, style: "italic", alpha: al});
+  text("standard", cols[0], 290, {size: 32, color: INK, style: "italic", alpha: al});
+  text("planned", cols[1], 290, {size: 32, color: RED, style: "italic", alpha: al});
+  text("true clues repeat", cols[0], 324, {size: 20, color: "rgba(42,29,18,0.6)", style: "italic", alpha: al});
+  text("servants bribed", cols[1], 324, {size: 20, color: "rgba(163,23,29,0.7)", style: "italic", alpha: al});
   const rows = [["The Lone Genius", "gpt-6-astra alone", 11, 11], ["Holmes & the Irregulars", "gpt-6-astra leads, Jev boys run errands", 19, 17],
-    ["The Swarm", "a hundred Jev boys, no leader: agrees within ~2 hours, sometimes on the wrong man", 11, 9]];
+    ["The Swarm", "a hundred Jev boys, no leader: agrees within ~2 hours, often on the wrong man", 11, 9]];
   rows.forEach(([who, how, a, b], i) => {
     const r = prog(t, 38.1 + i * 0.45, 38.5 + i * 0.45), y = 410 + i * 150;
     text(who, 340, y - 14, {size: 46, color: INK, align: "left", alpha: r});
@@ -331,7 +346,7 @@ function casebook(t) {
   });
   const c = ease(prog(t, 40.0, 40.8));   // a red-ink ring around the winner
   if (c > 0) { g.save(); g.strokeStyle = RED; g.lineWidth = 6; g.beginPath(); g.ellipse(960, 560, 690, 74, -0.01, -Math.PI / 2, -Math.PI / 2 + c * Math.PI * 2.05); g.stroke(); g.restore(); }
-  text("A swarm run by a simple counting rule: 18 on ordinary cases, 0 on planned ones.", W / 2, 820, {size: 26, color: "rgba(42,29,18,0.7)", style: "italic", alpha: prog(t, 39.6, 40.0)});
+  text("A swarm run by a simple counting rule: 18 on standard cases, 0 on planned ones.", W / 2, 820, {size: 26, color: "rgba(42,29,18,0.7)", style: "italic", alpha: prog(t, 39.6, 40.0)});
   text("The genius thinks. The Irregulars look. Together, they solve it.", W / 2, 965, {size: 50, style: "italic", alpha: prog(t, 41.0, 41.5)});
   vignette(0.5);
 }
