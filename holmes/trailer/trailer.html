@@ -18,7 +18,7 @@
    footage comes from real runs of case 3; every number is from the 20-case benchmarks. System fonts only. */
 const D = window.DATA;
 const cv = document.getElementById("c"), g = cv.getContext("2d");
-const W = 1920, H = 1080, DUR = 45;
+const W = 1920, H = 1080, DUR = 50;
 const SERIF = "Baskerville, 'Libre Baskerville', Georgia, serif";
 const INK = "#2a1d12", CREAM = "#efe6cf", DIM = "#9c937e", RED = "#a3171d", GOLD = "#e0b357", PAPER = "#efe2c2";
 const BLUE = "#2f5f8f", SWARM = "#a3392e";
@@ -137,14 +137,17 @@ function chapter(num, title, sub, t, a) {
   text(title, 110, 186, {size: 58, align: "left", alpha: al});
   text(sub, 110, 240, {size: 28, color: DIM, align: "left", style: "italic", alpha: al});
 }
-function hud(h) { g.save(); g.fillStyle = "rgba(6,8,11,0.82)"; g.fillRect(W - 440, 40, 410, h); g.strokeStyle = "rgba(224,179,87,0.5)"; g.lineWidth = 2; g.strokeRect(W - 440, 40, 410, h); g.restore(); }
-function clock(minutes, alpha = 1) {
+function hud(h) { h += 24; g.save(); g.fillStyle = "rgba(6,8,11,0.82)"; g.fillRect(W - 440, 40, 410, h); g.strokeStyle = "rgba(224,179,87,0.5)"; g.lineWidth = 2; g.strokeRect(W - 440, 40, 410, h); g.restore(); }
+const secs = (w) => w < 60 ? `${Math.round(w)} s` : `${Math.floor(w / 60)} min ${String(Math.round(w % 60)).padStart(2, "0")} s`;
+function clock(minutes, alpha = 1, wall = null) {
   // time since the case began, against the 12-hour limit every approach gets
   const m = Math.min(720, minutes), hh = Math.floor(m / 60), mm = Math.floor(m % 60);
   text(`${hh}h ${String(mm).padStart(2, "0")}m`, W - 60, 104, {size: 52, align: "right", alpha, style: "bold"});
   text("of the 12 hours allowed", W - 60, 150, {size: 22, color: DIM, align: "right", alpha, style: "italic"});
   g.fillStyle = "rgba(239,230,207,0.2)"; g.fillRect(W - 360, 170, 300, 8);
   g.fillStyle = GOLD; g.fillRect(W - 360, 170, 300 * m / 720, 8);
+  if (wall !== null) text(`real time: ${wall < 60 ? Math.round(wall) + " s" : Math.floor(wall / 60) + " min " + String(Math.round(wall % 60)).padStart(2, "0") + " s"}`,
+    W - 60, 196, {size: 22, color: CREAM, align: "right", alpha, style: "italic"});
 }
 const hrs = (m) => `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, "0")}m`;
 function verdictTag(s, t, a, col) {
@@ -154,14 +157,16 @@ function verdictTag(s, t, a, col) {
   g.fillStyle = "rgba(6,8,11,0.85)"; g.fillRect(-w / 2, -40, w, 80); g.strokeStyle = col; g.lineWidth = 5; g.strokeRect(-w / 2, -40, w, 80);
   text(s, 0, 2, {size: 32, color: col, style: "bold", spacing: 2}); g.restore();
 }
-function note(s, alpha = 1) { text(s, W - 60, 212, {size: 26, color: CREAM, align: "right", style: "italic", alpha}); }
+function note(s, alpha = 1) { text(s, W - 60, 228, {size: 26, color: CREAM, align: "right", style: "italic", alpha}); }
 
 /* ================================================================ scenes */
 // each scene is written in its own original timing; shift() moves it to its slot in this cut
+// hold(): play a scene's own timeline up to `until`, then freeze there, so each verdict stays on screen a moment
 const shift = (fn, d) => (t) => fn(t + d);
+const hold = (fn, d, until) => (t) => fn(Math.min(t + d, until));
 const SCENES = [[0, 4.6, night], [4.6, 9.0, irregularsQuote], [9.0, 13.0, minskyQuote], [13.0, 16.0, shift(threeWays, -7.4)],
-  [16.0, 23.0, shift(lone, -7.4)], [23.0, 30.4, shift(baker, -7.4)], [30.4, 37.4, shift(swarm, -7.4)],
-  [37.4, 42.8, shift(casebook, 0.2)], [42.8, 45.01, shift(endCard, 0.2)]];
+  [16.0, 24.0, hold(lone, -7.4, 15.35)], [24.0, 32.4, hold(baker, -8.4, 22.75)], [32.4, 40.4, hold(swarm, -9.4, 29.75)],
+  [40.4, 46.8, hold(casebook, -2.8, 42.9)], [46.8, 50.01, shift(endCard, -3.8)]];
 
 function skyline(y, col, seed) {   // London rooftops: chimneys, a dome and a clock tower
   const r = rng(seed); g.fillStyle = col; g.beginPath(); g.moveTo(0, H);
@@ -292,9 +297,9 @@ function lone(t) {
   st.slice(1, i0 + 1).forEach(([id]) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
   g.fillStyle = RED; g.beginPath(); g.arc(cab[0], cab[1], 14, 0, 7); g.fill();
   vignette(0.55);
-  hud(200); clock(m);
+  hud(200); clock(m, 1, D.solo.wall * Math.min(1, (i0 + k) / (st.length - 1)));
   note(`doors knocked on: ${t >= 15.0 ? D.solo.visits : i0} of 100 (${D.solo.visits} allowed)`);
-  verdictTag(`SOLVED \u00b7 ${hrs(total)} \u00b7 all ${D.solo.visits} visits`, t, 15.0, GOLD);
+  verdictTag(`SOLVED \u00b7 ${hrs(total)} case time \u00b7 ${secs(D.solo.wall)} real`, t, 15.0, GOLD);
   chapter("I.", "The Lone Genius", "gpt-6-astra, one big model, plays the detective", t, 8.6);
   caption(["One brilliant mind. One cab. One door at a time."], t, 11.0, 13.4);
   caption(["It cracks this case, but only just: all twenty visits, eleven hours.", "Across twenty murders, it solves eleven."], t, 13.3, 15.6);
@@ -311,9 +316,9 @@ function baker(t) {
     text("Wiggins", pos[0] + 20, pos[1] - 22, {size: 22, color: INK, align: "left", style: "italic"}); }
   holmes(bx + 70, by + 120, 0.32, INK);
   vignette(0.55);
-  hud(200); clock(f * (D.baker.length - 1) * 15);
+  hud(200); clock(Math.min(D.baker_minute, f * (D.baker.length - 1) * 15), 1, w.a.wall + ((w.b.wall || w.a.wall) - w.a.wall) * w.k);
   note(`reports reaching 221B: ${w.a.reports}`);
-  verdictTag(`SOLVED \u00b7 ${hrs((D.baker.length - 1) * 15)}`, t, 22.3, GOLD);
+  verdictTag(`SOLVED \u00b7 ${hrs(D.baker_minute)} case time \u00b7 ${secs(D.baker_wall)} real`, t, 22.3, GOLD);
   chapter("II.", "Holmes & the Irregulars", "Holmes: gpt-6-astra · 12 boys: Jev, quick simple choices", t, 15.6);
   caption(["Holmes (gpt-6-astra) never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
   caption(["Twelve boys, each a small, fast Jev model making simple choices,", "take a street each and run back with what they find."], t, 20.4, 23.0);
@@ -334,10 +339,10 @@ function swarm(t) {
     g.fillStyle = AGREE[parts]; g.beginPath(); g.arc(pos[0], pos[1], r, 0, 7); g.fill();
   });
   vignette(0.55);
-  hud(470); clock(f * T * 15);
+  hud(500); clock(f * T * 15, 1, A0.wall + (A1.wall - A0.wall) * k);
   // the agreement meter: boys holding the final answer (3 of 3) and nearly (2 of 3), against the 30 needed
   const lerp = (key) => { const c = (x) => x.parts.filter((v) => v >= key).length; return Math.round(c(A0) + (c(A1) - c(A0)) * k); };
-  const full = lerp(3), near = lerp(2), mx = W - 360, my = 212, mw = 300;
+  const full = lerp(3), near = lerp(2), mx = W - 360, my = 262, mw = 300;
   text("the swarm's verdict forming", W - 60, my, {size: 24, color: CREAM, align: "right", style: "italic"});
   g.fillStyle = "rgba(239,230,207,0.15)"; g.fillRect(mx, my + 24, mw, 18);
   g.fillStyle = AGREE[2]; g.fillRect(mx, my + 24, mw * near / 100, 18);
@@ -348,9 +353,12 @@ function swarm(t) {
   [["agrees on all three", 3], ["on two", 2], ["on one", 1]].forEach(([l, c], i) => {
     g.fillStyle = AGREE[c]; g.beginPath(); g.arc(W - 330, my + 150 + i * 32, 8, 0, 7); g.fill();
     text(l, W - 310, my + 150 + i * 32, {size: 20, color: CREAM, align: "left", style: "italic"}); });
-  verdictTag(`CONVERGED \u00b7 CASE CLOSED \u00b7 ${hrs(T * 15)}`, t, 28.6, GOLD);
-  text(D.swarm_result ? "the right answer" : "this time: right culprit and hideout, wrong motive", W - 70, 650,
-    {size: 26, color: CREAM, align: "right", style: "italic", alpha: prog(t, 28.9, 29.2)});
+  verdictTag(`CONVERGED \u00b7 ${hrs(D.swarm_minute)} case time \u00b7 ${secs(D.swarm_wall)} real`, t, 28.6, GOLD);
+  const ok = D.swarm_ok || {}, right = ["culprit", "motive", "hideout"].filter((x) => ok[x]), wrong = ["culprit", "motive", "hideout"].filter((x) => !ok[x]);
+  const why = D.swarm_result ? "the right answer" : `this time the verdict was wrong: ${right.length ? "right " + right.join(" and ") + ", " : ""}wrong ${wrong.join(" and ")}`;
+  const wa = prog(t, 28.9, 29.2);
+  if (wa > 0) { g.save(); g.font = `italic 28px ${SERIF}`; const ww = g.measureText(why).width + 40; g.globalAlpha = wa * 0.85; g.fillStyle = "rgba(6,8,11,0.9)";
+    g.fillRect(W - 70 - ww, 672, ww, 50); g.restore(); text(why, W - 90, 697, {size: 28, color: "#f0b9a8", align: "right", style: "italic", alpha: wa}); }
   chapter("III.", "The Swarm", "100 Jev boys, no one in charge", t, 23.0);
   caption(["No one in charge. Each boy, a small Jev model, keeps his own guess", "and swaps clues and votes with the boys near him."], t, 25.4, 27.8);
   caption(["We only count the votes: once thirty boys name the same", "culprit, motive and hideout, the case is closed."], t, 27.7, 30.0);
@@ -361,18 +369,21 @@ function casebook(t) {
   g.save(); g.globalAlpha = al; paper(360, 90, 1200, 760, 31); g.restore();
   text("From the casebook", W / 2, 165, {size: 58, color: INK, style: "italic", alpha: al});
   text("murders fully solved (culprit, motive and hideout all right), out of 20 \u00b7 twelve hours each", W / 2, 225, {size: 24, color: "rgba(42,29,18,0.7)", alpha: al});
-  const col = 1380;
-  text("solved", col, 300, {size: 32, color: INK, style: "italic", alpha: al});
-  const rows = [["The Lone Genius", "gpt-6-astra alone", 11], ["Holmes & the Irregulars", "gpt-6-astra leads, twelve Jev boys run errands", 19],
-    ["The Swarm", "a hundred Jev boys, no leader", 11]];
-  rows.forEach(([who, how, n], i) => {
-    const r = prog(t, 38.1 + i * 0.45, 38.5 + i * 0.45), y = 410 + i * 150;
-    text(who, 440, y - 14, {size: 50, color: INK, align: "left", alpha: r});
-    text(how, 440, y + 34, {size: 26, color: "rgba(42,29,18,0.65)", align: "left", style: "italic", alpha: r});
-    text(String(n), col, y, {size: 80, color: i === 1 ? RED : INK, alpha: r});
+  const cols = [1110, 1290, 1450];
+  [["solved", INK], ["case time", "rgba(42,29,18,0.7)"], ["real time", "rgba(42,29,18,0.7)"]].forEach(([h, c], i) => text(h, cols[i], 300, {size: 30, color: c, style: "italic", alpha: al}));
+  text("median per case", (cols[1] + cols[2]) / 2, 334, {size: 20, color: "rgba(42,29,18,0.55)", style: "italic", alpha: al});
+  const rows = [["The Lone Genius", "gpt-6-astra alone", 11, "10.9 h", "81 s"], ["Holmes & the Irregulars", "gpt-6-astra leads, twelve Jev boys run errands", 19, "11.2 h", "102 s"],
+    ["The Swarm", "a hundred Jev boys, no leader", 11, "2.0 h", "8 s"]];
+  rows.forEach(([who, how, n, sim, wall], i) => {
+    const r = prog(t, 38.1 + i * 0.45, 38.5 + i * 0.45), y = 430 + i * 145;
+    text(who, 400, y - 14, {size: 48, color: INK, align: "left", alpha: r});
+    text(how, 400, y + 32, {size: 24, color: "rgba(42,29,18,0.65)", align: "left", style: "italic", alpha: r});
+    text(String(n), cols[0], y, {size: 76, color: i === 1 ? RED : INK, alpha: r});
+    text(sim, cols[1], y, {size: 40, color: INK, alpha: r});
+    text(wall, cols[2], y, {size: 40, color: INK, alpha: r});
   });
   const c = ease(prog(t, 40.0, 40.8));   // a red-ink ring around the winner
-  if (c > 0) { g.save(); g.strokeStyle = RED; g.lineWidth = 6; g.beginPath(); g.ellipse(960, 560, 600, 78, -0.01, -Math.PI / 2, -Math.PI / 2 + c * Math.PI * 2.05); g.stroke(); g.restore(); }
+  if (c > 0) { g.save(); g.strokeStyle = RED; g.lineWidth = 6; g.beginPath(); g.ellipse(960, 575, 600, 76, -0.01, -Math.PI / 2, -Math.PI / 2 + c * Math.PI * 2.05); g.stroke(); g.restore(); }
   text("The same 100 boys run by a simple counting rule solved 18.", W / 2, 810, {size: 26, color: "rgba(42,29,18,0.7)", style: "italic", alpha: prog(t, 39.6, 40.0)});
   text("The genius thinks. The Irregulars look. Together, they solve it.", W / 2, 965, {size: 50, style: "italic", alpha: prog(t, 41.0, 41.5)});
   vignette(0.5);

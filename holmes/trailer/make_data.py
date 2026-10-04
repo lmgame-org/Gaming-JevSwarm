@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import irregulars  # noqa: E402,F401
@@ -16,12 +17,12 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trailer_data.jso
 
 def track(cfg):
     e = Engine(cfg, realtime=False, log=False)
-    ticks = []
+    ticks, t0 = [], time.time()
     f = e.frame(full=True)
     m = f["case"]["map"]
     while True:
         f = e.frame()
-        t = {"boys": [[round(b[1]), round(b[2])] for b in f["irregulars"]]}
+        t = {"boys": [[round(b[1]), round(b[2])] for b in f["irregulars"]], "wall": round(time.time() - t0, 2)}
         if e.squad:
             w = f["hq"]["wiggins"]
             t["w"] = [round(w["x"]), round(w["y"])] if w else None
@@ -62,7 +63,9 @@ def main():
     for a, b in zip(steps, steps[1:] + [None]):
         if a["action"].startswith("VISIT_"):
             stops.append([a["action"][6:], b["minute"] if b else summ["minutes"]])
-    solo = {"stops": stops, "minutes": summ["minutes"], "solved": summ["solved"], "visits": summ["visits"]}
+    wall = [e["summary"]["wall_s"] for e in json.load(open(os.path.join(GENIUS, "episodes.json")))
+            if e["cfg"]["seed"] == 3 and e["cfg"]["policy"] == "chat"][0]
+    solo = {"stops": stops, "minutes": summ["minutes"], "solved": summ["solved"], "visits": summ["visits"], "wall": wall}
     c = Case(coerce({"seed": 1, "difficulty": "holmesian"}))
     frame = [c.leads[a]["text"] for a in c.frame_addrs]
     bribe = [l["text"] for l in c.leads.values() if l["fact"][0] == "bribe"]
@@ -76,6 +79,7 @@ def main():
         "baker": baker, "swarm": swarm, "solo": solo,
         "baker_result": s1["solved"], "swarm_result": s2["solved"], "baker_minute": s1["outcome"]["minute"],
         "swarm_minute": s2["outcome"]["minute"], "swarm_quorum": s2["outcome"]["quorum"],
+        "swarm_ok": s2["outcome"]["ok"], "baker_wall": baker[-1]["wall"], "swarm_wall": swarm[-1]["wall"],
         "holmesian": {"culprit": culprit["name"], "framed": framed["name"], "frame": frame, "bribe": bribe,
                       "planted": planted,
                       # gpt-6-astra as Holmes, Holmesian case 1, 3 October run 2 (runs/batch_20261003-163912_swarm_92155)
