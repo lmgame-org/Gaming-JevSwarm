@@ -130,7 +130,7 @@ class Engine:
     def _late(self, fu):
         """A call that missed its tick still costs money: count it."""
         if not fu.cancelled() and fu.exception() is None:
-            meta = fu.result()[2]
+            meta = fu.result()[-1] or {}  # swarm calls return (action, vote, meta), Baker Street boys (action, meta)
             with self._lock:
                 self.stats["cost"] += meta.get("cost", 0.0)
                 self.stats["in"] += meta.get("in", 0)

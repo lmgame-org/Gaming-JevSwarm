@@ -14,6 +14,7 @@ import math
 import os
 import time
 
+from .config import DEFAULTS, coerce
 from .engine import RUNS, Engine
 
 
@@ -57,6 +58,10 @@ def main():
     ap.add_argument("--fair-to", default="", help="solo batch folder: cap each swarm run at the genius's spend")
     a = ap.parse_args()
     fixed = {k: parse_val(v) for k, v in (s.split("=", 1) for s in a.set)}
+    checked = coerce(fixed)
+    for k, v in fixed.items():  # refuse silently ignored settings (e.g. "difficulty=holmesian x=1" passed as one word)
+        if k not in DEFAULTS or (isinstance(DEFAULTS[k], str) and checked[k] != str(v)):
+            ap.error(f"--set {k}={v!r} is not a valid setting")
     sweeps = [(k, [parse_val(x) for x in v.split(",")]) for k, v in (s.split("=", 1) for s in a.vary)]
     keys = [k for k, _ in sweeps]
     combos = list(itertools.product(*[vals for _, vals in sweeps])) or [()]

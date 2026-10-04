@@ -15,6 +15,11 @@ from .batch import wilson
 
 
 def label(cfg, summary):
+    name = _label(cfg)
+    return name + " · Holmesian" if cfg.get("difficulty") == "holmesian" else name
+
+
+def _label(cfg):
     mode = cfg.get("mode", "solo")
     names = {"chat": "gpt-6-astra", "jev": "Jev", "rule": "heuristic", "random": "random"}
     if mode == "solo":
@@ -50,6 +55,7 @@ def rows_from(folder):
                     "hideout": int(answered and bool(ok.get("hideout"))), "sim_hours": round(sim, 2),
                     "ran_to_deadline": int(deadline), "real_seconds": s.get("wall_s"), "model_calls": i["calls"],
                     "tokens_in": i["tokens_in"], "tokens_out": i["tokens_out"], "cost_usd": round(i["cost"], 5),
+                    "decisions": sum(i["by_source"].values()), "fallbacks": i["by_source"].get("fallback", 0),
                     "concurrency": c.get("concurrency", 32), "batch": os.path.basename(folder)})
     return out
 
@@ -76,6 +82,7 @@ def summarise(rows):
                       "real_p90": pct([r["real_seconds"] for r in rs], 0.9),
                       "calls": sum(r["model_calls"] for r in rs) / n,
                       "tokens": sum(r["tokens_in"] + r["tokens_out"] for r in rs) / n,
+                      "fallback_pct": 100 * sum(r["fallbacks"] for r in rs) / max(1, sum(r["decisions"] for r in rs)),
                       "cost_case": sum(r["cost_usd"] for r in rs) / n, "cost_total": sum(r["cost_usd"] for r in rs),
                       "seeds": sorted(r["seed"] for r in rs)})
     return table
@@ -83,15 +90,15 @@ def summarise(rows):
 
 def markdown(table):
     lines = ["| Setting | Solved (95% CI) | Culprit / motive / hideout | Sim time p50 / p90 | Ran to deadline | "
-             "Real time p50 / p90 | Calls / case | Cost / case |",
-             "|---|---|---|---|---|---|---|---|"]
+             "Real time p50 / p90 | Calls / case | Cost / case | Heuristic fallbacks |",
+             "|---|---|---|---|---|---|---|---|---|"]
     for t in table:
         lo, hi = t["ci"]
         p = t["parts"]
         lines.append(f"| {t['setting']} | {t['solved']}/{t['n']} ({lo:.2f}-{hi:.2f}) | {p['culprit']} / {p['motive']} / "
                      f"{p['hideout']} | {t['sim_p50']:.1f} h / {t['sim_p90']:.1f} h | {t['deadline']} | "
                      f"{t['real_p50']:.1f} s / {t['real_p90']:.1f} s | {t['calls']:.0f} | "
-                     f"{'free' if t['cost_case'] == 0 else '$%.3f' % t['cost_case']} |")
+                     f"{'free' if t['cost_case'] == 0 else '$%.3f' % t['cost_case']} | {t['fallback_pct']:.2f}% |")
     return "\n".join(lines)
 
 

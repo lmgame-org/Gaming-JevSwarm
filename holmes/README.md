@@ -43,7 +43,9 @@ Every Holmesian case is generated so that a careful reader who discounts the bri
 reaches the truth. The counting heuristics read timed alibis and traces correctly (that is just arithmetic and a
 lookup), but they don't judge who is speaking, so they fall for the frame-up. Free first results on seeds 1-20:
 solo heuristic 0/20, Baker Street counting Holmes with heuristic boys 0/20, heuristic swarm 0/20 at 1 km and 2 km
-(motive and hideout are mostly right; the culprit is the framed suspect).
+(motive and hideout are mostly right; the culprit is the framed suspect). Model results on the same 20 cases:
+[docs/benchmark_holmesian_20seeds_2026-10-04.md](docs/benchmark_holmesian_20seeds_2026-10-04.md): Baker Street with
+gpt-6-astra Holmes 17/20, solo gpt-6-astra 11/20, leaderless Jev swarm 9/20, every counting approach 0/20.
 
 All lead text is original; the only borrowed names are public-domain characters (Holmes, Mrs Hudson, Lestrade,
 Wiggins's Irregulars, the Professor).
