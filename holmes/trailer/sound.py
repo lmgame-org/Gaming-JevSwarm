@@ -1,7 +1,7 @@
 """Synthesise the trailer's soundtrack (original, no samples): python3 trailer/sound.py out.wav
 
-A low pulse that builds through the acts, typewriter clicks while text types, hits on the splashes, thuds for the
-stamps, a gavel for the verdict and a rising sweep before "Objection!". Times match trailer.html."""
+A low string-like drone, a clock that ticks through each chapter, telegraph clicks while the telegram types, a bell
+toll for each of the three chapters, a heartbeat under the twist and a closing chord. Times match trailer.html."""
 import math
 import random
 import struct
@@ -75,32 +75,42 @@ def pad(a, b, freqs, g=0.06):  # a soft chord bed
     add(a, out, g)
 
 
-# the beds: minor, darker for the Holmesian case, major lift for the verdict
-pad(0.0, 4.0, [55, 82.4, 110], 0.10)
-pad(5.2, 21.0, [65.4, 98, 130.8, 155.6], 0.05)
-pad(22.0, 35.7, [61.7, 92.5, 123.5, 146.8], 0.06)
-pad(37.0, 45.0, [65.4, 98, 130.8, 164.8], 0.06)
-# pulse: sparse, then steady, then driving through the cross-examination
-for a, b, step in ((5.2, 15.5, 0.75), (15.5, 21.0, 0.5), (24.0, 34.2, 0.375), (37.0, 42.2, 0.5)):
+def bell(t, f=196.0, g=0.35):  # inharmonic partials, long decay
+    for mult, amp, dec in ((1, 1.0, 1.2), (2.0, 0.5, 1.8), (2.76, 0.35, 2.4), (5.4, 0.2, 3.5)):
+        add(t, tone(f * mult, 3.5, decay=dec), g * amp)
+
+
+def tick(t, g=0.16):
+    add(t, noise(0.012, decay=500, lp=0.05), g)
+    add(t, tone(2400, 0.02, decay=200), g * 0.4)
+
+
+def heartbeat(t, g=0.6):
+    add(t, tone(58, 0.25, decay=14, f_end=40), g)
+    add(t + 0.16, tone(52, 0.25, decay=16, f_end=38), g * 0.7)
+
+
+pad(0.0, 8.6, [55, 82.4, 110, 130.8], 0.09)
+pad(8.6, 30.0, [65.4, 98, 130.8, 155.6], 0.06)
+pad(30.0, 37.6, [61.7, 92.5, 123.5, 146.8], 0.08)
+pad(37.6, 45.0, [65.4, 98, 130.8, 164.8, 196], 0.07)
+for a, b in ((0.3, 5.6), (8.6, 30.0), (37.6, 43.0)):
     t = a
     while t < b:
-        kick(t, 0.55)
-        t += step
-# typing
-typing(0.3, 2.6, 30)
-for a in (25.8, 26.95, 28.1):
-    typing(a, a + 0.9, 22)
-typing(29.4, 30.2, 22)
-typing(31.3, 34.0, 26)
-# splashes, stamps, gavel, sweep
-for t in (4.0, 21.0, 35.7):
-    hit(t)
-add(34.6, tone(200, 1.1, decay=0.5, f_end=1400), 0.08)
-thud(30.25)
-thud(42.2)
-for k in range(3):
-    thud(37.0 + k * 0.18, 0.8)
-add(43.1, tone(65.4, 1.9, decay=1.2), 0.25)
+        tick(t, 0.16 if int(round((t - a) * 2)) % 2 == 0 else 0.1)
+        t += 0.5
+typing(2.6, 3.8, 18)
+typing(3.9, 5.0, 18)
+for t in (8.6, 15.6, 23.0):
+    bell(t)
+t = 30.0
+while t < 35.4:
+    heartbeat(t, 0.45 + 0.1 * (t - 30.0) / 5.4)
+    t += 0.85 - 0.05 * (t - 30.0) / 5.4
+add(32.0, noise(3.0, decay=0.6, lp=0.97), 0.05)
+bell(35.4, 261.6, 0.25)
+bell(43.0, 130.8, 0.45)
+add(43.0, tone(65.4, 2.0, decay=1.0), 0.25)
 
 peak = max(1e-9, max(abs(v) for v in buf))
 with wave.open(sys.argv[1] if len(sys.argv) > 1 else "sound.wav", "w") as w:

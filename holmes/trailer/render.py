@@ -33,7 +33,7 @@ def shot(page, t, path, profile):
     cmd = [CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--mute-audio",
            f"--user-data-dir={profile}", "--window-size=1920,1080", "--force-device-scale-factor=1",
            "--virtual-time-budget=1500", f"--screenshot={path}", f"file://{page}?t={t:.4f}"]
-    for _ in range(3):  # Chrome writes the screenshot but often does not exit: wait for the file, then stop it
+    for _ in range(6):  # Chrome writes the screenshot but often does not exit: wait for the file, then stop it
         if os.path.exists(path):
             os.remove(path)
         pr = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

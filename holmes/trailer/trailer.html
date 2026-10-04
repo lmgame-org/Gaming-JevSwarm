@@ -11,370 +11,309 @@
 <body>
 <canvas id="c" width="1920" height="1080"></canvas>
 <script>
-/* The Irregulars: a 45-second trailer. render(t) draws the frame at t seconds; nothing depends on wall time, so
-   frames can be rendered one by one (render.py) or played live (open with #play). Data: trailer_data.json, inlined
-   by render.py as window.DATA. Fonts are macOS system fonts, so nothing is fetched. */
+/* The Irregulars: a 45-second trailer comparing three ways to solve a murder: one genius detective, Holmes with
+   the Baker Street Irregulars (a lead with many helpers on dedicated errands), and a leaderless swarm.
+   render(t) draws the frame at t seconds and depends on nothing else, so render.py can screenshot frames one by
+   one (open with #play to watch it live). Data: trailer_data.json, inlined by render.py as window.DATA. Map
+   footage comes from real runs of case 3; every number is from the 20-case benchmarks. System fonts only. */
 const D = window.DATA;
 const cv = document.getElementById("c"), g = cv.getContext("2d");
 const W = 1920, H = 1080, DUR = 45;
-const HAND = "'Chalkboard SE', 'Comic Sans MS', cursive";
 const SERIF = "Baskerville, 'Libre Baskerville', Georgia, serif";
-const GREY = "#d9d9d9", INK = "#1b1b1b", RED = "#c8102e", TEAL = "#a8f0dc", LILAC = "#c9a2f2";
+const INK = "#2a1d12", CREAM = "#efe6cf", DIM = "#9c937e", RED = "#a3171d", GOLD = "#e0b357", PAPER = "#efe2c2";
+const BLUE = "#2f5f8f", SWARM = "#a3392e";
 
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const prog = (t, a, b) => clamp((t - a) / (b - a));
 const ease = (x) => 1 - Math.pow(1 - x, 3);
-const pop = (x) => x < 0.6 ? ease(x / 0.6) * 1.12 : 1.12 - 0.12 * ease((x - 0.6) / 0.4);
+const fade = (t, a, b, f = 0.4) => Math.min(prog(t, a, a + f), 1 - prog(t, b - f, b));
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 
-function text(s, x, y, {size = 64, font = HAND, color = INK, align = "center", weight = "bold", alpha = 1, base = "middle"} = {}) {
-  g.save(); g.globalAlpha *= alpha; g.fillStyle = color; g.textAlign = align; g.textBaseline = base;
-  g.font = `${weight} ${size}px ${font}`; g.fillText(s, x, y); g.restore();
+function text(s, x, y, {size = 60, color = CREAM, align = "center", style = "", alpha = 1, font = SERIF, spacing = 0} = {}) {
+  if (alpha <= 0) return;
+  g.save(); g.globalAlpha *= alpha; g.fillStyle = color; g.textAlign = align; g.textBaseline = "middle";
+  g.font = `${style} ${size}px ${font}`; if (spacing) g.letterSpacing = `${spacing}px`; g.fillText(s, x, y); g.restore();
 }
-function wrap(s, maxW, size, font = HAND, weight = "bold") {
-  g.font = `${weight} ${size}px ${font}`;
-  const words = s.split(" "), lines = []; let cur = "";
-  for (const w of words) { const t = cur ? cur + " " + w : w; if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
-  if (cur) lines.push(cur);
-  return lines;
-}
-function para(s, x, y, maxW, opt = {}) {
-  const size = opt.size || 56, lh = opt.lh || size * 1.3;
-  const lines = wrap(s, maxW, size, opt.font || HAND, opt.weight || "bold");
-  const y0 = opt.top ? y : y - (lines.length - 1) * lh / 2;
-  lines.forEach((l, i) => text(l, x, y0 + i * lh, opt));
-  return lines.length * lh;
-}
-const typed = (s, t, a, cps = 38) => s.slice(0, Math.max(0, Math.floor((t - a) * cps)));
+const typed = (s, t, a, cps = 30) => s.slice(0, Math.max(0, Math.floor((t - a) * cps)));
 
-/* ---------------------------------------------------------------- backgrounds */
-function greyCard() { g.fillStyle = GREY; g.fillRect(0, 0, W, H); }
-function fog(t, alpha = 1) {
-  g.fillStyle = "#07090c"; g.fillRect(0, 0, W, H);
+/* ---------------------------------------------------------------- atmosphere */
+function fog(t, alpha = 1, lamp = true) {
+  g.fillStyle = "#06080b"; g.fillRect(0, 0, W, H);
   const r = rng(7);
-  for (let i = 0; i < 14; i++) {
-    const x = (r() * W + t * (20 + r() * 40)) % (W + 600) - 300, y = r() * H, rad = 260 + r() * 340;
+  for (let i = 0; i < 16; i++) {
+    const x = (r() * W + t * (18 + r() * 36)) % (W + 700) - 350, y = r() * H, rad = 280 + r() * 360;
     const gr = g.createRadialGradient(x, y, 0, x, y, rad);
-    gr.addColorStop(0, `rgba(160,170,180,${0.08 * alpha})`); gr.addColorStop(1, "rgba(160,170,180,0)");
+    gr.addColorStop(0, `rgba(150,160,170,${0.09 * alpha})`); gr.addColorStop(1, "rgba(150,160,170,0)");
     g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
   }
-  // a gas lamp glow
-  const gl = g.createRadialGradient(1640, 260, 0, 1640, 260, 420);
-  gl.addColorStop(0, `rgba(255,190,90,${0.22 * alpha})`); gl.addColorStop(1, "rgba(255,190,90,0)");
-  g.fillStyle = gl; g.fillRect(1200, 0, 720, 720);
+  if (lamp) { const fl = 0.2 + 0.03 * Math.sin(t * 13) * Math.sin(t * 7);
+    const gl = g.createRadialGradient(1660, 230, 0, 1660, 230, 460);
+    gl.addColorStop(0, `rgba(255,185,90,${fl * alpha})`); gl.addColorStop(1, "rgba(255,185,90,0)");
+    g.fillStyle = gl; g.fillRect(1100, 0, 820, 760); }
+}
+function vignette(a = 0.75) {
+  const gr = g.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95);
+  gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, `rgba(0,0,0,${a})`); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+function paper(x, y, w, h, seed = 2) {
+  g.save(); g.fillStyle = PAPER; g.shadowColor = "rgba(0,0,0,0.55)"; g.shadowBlur = 40; g.fillRect(x, y, w, h); g.restore();
+  const r = rng(seed); g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+  for (let i = 0; i < 40; i++) { const px = x + r() * w, py = y + r() * h, rr = 40 + r() * 160;
+    const gr = g.createRadialGradient(px, py, 0, px, py, rr); gr.addColorStop(0, "rgba(150,110,60,0.07)"); gr.addColorStop(1, "rgba(150,110,60,0)");
+    g.fillStyle = gr; g.fillRect(px - rr, py - rr, rr * 2, rr * 2); }
+  const e = g.createLinearGradient(x, y, x, y + h); e.addColorStop(0, "rgba(120,80,30,0.15)"); e.addColorStop(0.5, "rgba(0,0,0,0)"); e.addColorStop(1, "rgba(120,80,30,0.2)");
+  g.fillStyle = e; g.fillRect(x, y, w, h); g.restore();
 }
 
-/* ---------------------------------------------------------------- splash ("HOLD IT!" style, our own lettering) */
-function burst(cx, cy, R, seed, spikes = 22) {
-  const r = rng(seed); g.beginPath();
-  for (let i = 0; i <= spikes * 2; i++) {
-    const a = (i / (spikes * 2)) * Math.PI * 2, rr = i % 2 ? R * (0.55 + r() * 0.15) : R * (0.95 + r() * 0.35);
-    const x = cx + Math.cos(a) * rr * 1.45, y = cy + Math.sin(a) * rr;
-    i ? g.lineTo(x, y) : g.moveTo(x, y);
-  }
-  g.closePath();
-}
-function splash(t, a, b, word, {size = 210, bg = GREY, seed = 3, tilt = -0.08} = {}) {
-  const x = prog(t, a, a + 0.28), out = prog(t, b - 0.12, b);
-  const s = pop(x) * (1 - out * 0.15), shake = t - a < 0.35 ? Math.sin((t - a) * 90) * 14 * (1 - x) : 0;
-  g.fillStyle = bg; g.fillRect(0, 0, W, H);
-  g.save(); g.globalAlpha = 1 - out; g.translate(W / 2 + shake, H / 2); g.scale(s, s); g.rotate(tilt);
-  burst(0, 0, 330, seed); g.fillStyle = "#fff"; g.fill(); g.lineWidth = 10; g.strokeStyle = "#111"; g.stroke();
-  g.font = `bold ${size}px ${HAND}`; g.textAlign = "center"; g.textBaseline = "middle";
-  g.lineJoin = "round"; g.lineWidth = 34; g.strokeStyle = "#fff"; g.strokeText(word, 0, 10);
-  g.lineWidth = 14; g.strokeStyle = "#5a0010"; g.strokeText(word, 0, 10);
-  g.fillStyle = RED; g.fillText(word, 0, 10);
-  g.restore();
-}
-function stamp(t, a, word, x, y, {color = RED, size = 120, rot = -0.18} = {}) {
-  if (t < a) return;
-  const p = prog(t, a, a + 0.22), s = 1.8 - 0.8 * ease(p);
-  g.save(); g.globalAlpha = clamp(p * 1.5); g.translate(x, y); g.rotate(rot); g.scale(s, s);
-  g.font = `bold ${size}px ${HAND}`; const w = g.measureText(word).width + 70;
-  g.lineWidth = 12; g.strokeStyle = color; g.strokeRect(-w / 2, -size * 0.72, w, size * 1.44);
-  g.fillStyle = color; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(word, 0, 6);
+/* ---------------------------------------------------------------- magnifying glass: reveals `draw` inside the lens */
+function lens(cx, cy, R, draw) {
+  g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.clip(); draw();
+  const sh = g.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R); sh.addColorStop(0, "rgba(255,255,255,0.12)"); sh.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = sh; g.fillRect(cx - R, cy - R, R * 2, R * 2); g.restore();
+  g.save(); g.lineWidth = 16; g.strokeStyle = "#7a5a2a"; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.stroke();
+  g.lineWidth = 4; g.strokeStyle = GOLD; g.beginPath(); g.arc(cx, cy, R - 7, 0, 7); g.stroke();
+  g.translate(cx, cy); g.rotate(0.75); g.fillStyle = "#3b2414"; g.fillRect(R + 4, -15, 190, 30); g.fillStyle = GOLD; g.fillRect(R - 4, -19, 22, 38);
   g.restore();
 }
 
-/* ---------------------------------------------------------------- speech bubble ("Thinking process") */
-function bubble(x, y, w, label, who, body, t, a, cps = 55) {
-  const p = prog(t, a, a + 0.25);
-  g.save(); g.globalAlpha = p; g.translate(0, (1 - ease(p)) * 30);
-  const lines = wrap(body, w - 70, 40, HAND, "bold");
-  const h = Math.max(150, 70 + lines.length * 52);
-  g.fillStyle = LILAC; round(x + 12, y + 12, w, h, 60); g.fill();
-  g.fillStyle = TEAL; round(x, y, w, h, 60); g.fill();
-  g.beginPath(); g.moveTo(x + 90, y + h - 4); g.lineTo(x + 40, y + h + 60); g.lineTo(x + 170, y + h - 4); g.closePath(); g.fill();
-  text(label, x + 40, y - 26, {size: 34, align: "left"});
-  const shown = typed(body, t, a + 0.2, cps);
-  let n = 0;
-  lines.forEach((l, i) => { const k = Math.max(0, Math.min(l.length, shown.length - n)); n += l.length + 1;
-    text(l.slice(0, k), x + 36, y + 58 + i * 52, {size: 40, align: "left"}); });
-  robot(x - 120, y + h + 40, who);
-  g.restore();
-  return h;
-}
-function round(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
-  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-function robot(x, y, who) {
-  g.save(); g.fillStyle = INK;
-  round(x + 20, y - 36, 80, 64, 24); g.fill();
-  g.fillStyle = GREY; g.beginPath(); g.arc(x + 46, y - 6, 9, 0, 7); g.arc(x + 74, y - 6, 9, 0, 7); g.fill();
-  g.fillStyle = INK; g.fillRect(x + 56, y - 60, 8, 24); g.beginPath(); g.arc(x + 60, y - 62, 9, 0, 7); g.fill();
-  text(who, x + 60, y + 62, {size: 30});
-  g.restore();
-}
-
-/* ---------------------------------------------------------------- portraits (simple silhouettes) */
-function holmes(x, y, s, col = INK) {   // deerstalker and pipe
+/* ---------------------------------------------------------------- silhouette: deerstalker and pipe */
+function holmes(x, y, s, col) {
   g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = col;
-  g.beginPath(); g.ellipse(0, -40, 62, 74, 0, 0, 7); g.fill();                         // head
-  g.beginPath(); g.moveTo(-80, -70); g.quadraticCurveTo(0, -190, 80, -70); g.lineTo(96, -60); g.lineTo(-96, -60); g.fill(); // cap
-  g.beginPath(); g.moveTo(-150, 200); g.quadraticCurveTo(-140, 40, 0, 30); g.quadraticCurveTo(140, 40, 150, 200); g.fill(); // cape
-  g.lineWidth = 12; g.strokeStyle = col; g.beginPath(); g.moveTo(40, 0); g.quadraticCurveTo(80, 20, 96, 6); g.stroke();
-  g.fillRect(88, -18, 22, 28);
-  g.restore();
-}
-function detective(x, y, s, col = INK) { // top hat and magnifying glass
-  g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = col;
-  g.beginPath(); g.ellipse(0, -40, 60, 72, 0, 0, 7); g.fill();
-  g.fillRect(-56, -190, 112, 110); g.fillRect(-92, -92, 184, 18);
-  g.beginPath(); g.moveTo(-140, 200); g.quadraticCurveTo(-130, 40, 0, 30); g.quadraticCurveTo(130, 40, 140, 200); g.fill();
-  g.lineWidth = 14; g.strokeStyle = col; g.beginPath(); g.arc(150, -10, 46, 0, 7); g.stroke();
-  g.beginPath(); g.moveTo(118, 24); g.lineTo(70, 90); g.stroke();
-  g.restore();
-}
-function boy(x, y, s, col = INK) {       // flat cap
-  g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = col;
-  g.beginPath(); g.ellipse(0, -30, 40, 46, 0, 0, 7); g.fill();
-  g.beginPath(); g.ellipse(6, -66, 54, 20, -0.15, 0, 7); g.fill();
-  g.beginPath(); g.moveTo(-80, 110); g.quadraticCurveTo(-70, 20, 0, 14); g.quadraticCurveTo(70, 20, 80, 110); g.fill();
-  g.restore();
-}
-function plate(x, y, label, sub, p) {
-  g.save(); g.globalAlpha = p;
-  text(label, x, y, {size: 46}); para(sub, x, y + 60, 460, {size: 28, weight: "normal", color: "#333", top: true, lh: 36});
+  g.beginPath(); g.ellipse(0, -40, 62, 74, 0, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(-80, -70); g.quadraticCurveTo(0, -190, 80, -70); g.lineTo(96, -60); g.lineTo(-96, -60); g.fill();
+  g.beginPath(); g.moveTo(-150, 200); g.quadraticCurveTo(-140, 40, 0, 30); g.quadraticCurveTo(140, 40, 150, 200); g.fill();
+  g.lineWidth = 12; g.strokeStyle = col; g.beginPath(); g.moveTo(40, 0); g.quadraticCurveTo(80, 20, 96, 6); g.stroke(); g.fillRect(88, -18, 22, 28);
   g.restore();
 }
 
-/* ---------------------------------------------------------------- evidence icons */
-function icon(kind, x, y, s = 1) {
-  g.save(); g.translate(x, y); g.scale(s, s); g.lineWidth = 6; g.strokeStyle = INK;
-  if (kind === "boot") { g.fillStyle = "#6b4a2b"; g.beginPath(); g.ellipse(0, 10, 26, 46, 0.2, 0, 7); g.fill(); g.beginPath(); g.ellipse(14, -50, 18, 20, 0.2, 0, 7); g.fill(); }
-  if (kind === "cigar") { g.fillStyle = "#8a5a2b"; g.save(); g.rotate(-0.5); round(-60, -12, 120, 24, 12); g.fill(); g.fillStyle = "#e33"; g.fillRect(52, -12, 10, 24); g.fillStyle = "#c9a227"; g.fillRect(-24, -13, 16, 26); g.restore(); }
-  if (kind === "will") { g.fillStyle = "#f3e7c3"; g.fillRect(-38, -50, 76, 100); g.strokeRect(-38, -50, 76, 100); for (let i = 0; i < 5; i++) g.fillStyle = INK, g.fillRect(-26, -32 + i * 16, 52 - (i % 2) * 14, 4); g.fillStyle = RED; g.beginPath(); g.arc(20, 34, 12, 0, 7); g.fill(); }
-  if (kind === "book") { g.fillStyle = "#2f4f7f"; g.fillRect(-44, -50, 88, 100); g.fillStyle = "#c9a227"; g.fillRect(-30, -20, 60, 8); g.fillRect(-30, 0, 60, 8); }
-  if (kind === "brick") { g.fillStyle = "#b5462e"; g.beginPath(); g.moveTo(-50, 10); g.lineTo(-20, -30); g.lineTo(40, -24); g.lineTo(56, 20); g.lineTo(10, 40); g.closePath(); g.fill(); }
-  if (kind === "coin") { g.fillStyle = "#e1b530"; g.beginPath(); g.arc(0, 0, 52, 0, 7); g.fill(); g.stroke(); text("£", 0, 4, {size: 60, font: SERIF, color: "#7a5a0a"}); }
-  g.restore();
-}
-
-/* ---------------------------------------------------------------- the map footage (real runs, case 3) */
-function mapPanel(x, y, w, h, run, frac, opts) {
-  const m = D.map, sx = w / 1000, sy = h / 700, P = ([ax, ay]) => [x + ax * sx, y + ay * sy];
-  g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
-  g.fillStyle = "#f4efe3"; g.fillRect(x, y, w, h);
-  g.strokeStyle = "#8fb3cf"; g.lineWidth = 14 * sx; g.beginPath();
-  m.thames.forEach((p, i) => { const [px, py] = P(p); i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.stroke();
-  g.strokeStyle = "#cfc5ad"; g.lineWidth = 1.5;
-  const idx = Object.fromEntries(m.ids.map((id, i) => [id, i]));
-  g.beginPath();
-  for (const [a, b] of m.edges) { const [ax, ay] = P(m.addresses[idx[a]]), [bx, by] = P(m.addresses[idx[b]]); g.moveTo(ax, ay); g.lineTo(bx, by); }
+/* ---------------------------------------------------------------- the map (real runs, case 3) */
+const M = D.map, IDX = Object.fromEntries(M.ids.map((id, i) => [id, i]));
+const MX = (W - 1440) / 2, MY = 30, MS = 1.44;            // map 1000x700 -> 1440x1008
+const P = ([x, y]) => [MX + x * MS, MY + y * MS];
+const A = (id) => P(M.addresses[IDX[id]]);
+function baseMap() {
+  g.fillStyle = "#0b0d10"; g.fillRect(0, 0, W, H);
+  paper(MX, MY, 1440, 1008, 9);
+  g.strokeStyle = "rgba(70,110,150,0.55)"; g.lineWidth = 22; g.lineCap = "round"; g.beginPath();
+  M.thames.forEach((p, i) => { const [x, y] = P(p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  g.strokeStyle = "rgba(90,65,35,0.35)"; g.lineWidth = 1.6; g.beginPath();
+  for (const [a, b] of M.edges) { const [ax, ay] = A(a), [bx, by] = A(b); g.moveTo(ax, ay); g.lineTo(bx, by); }
   g.stroke();
-  g.fillStyle = "#9a8f78";
-  for (const a of m.addresses) { const [px, py] = P(a); g.fillRect(px - 2.5, py - 2.5, 5, 5); }
-  for (const d of m.districts) { const [px, py] = P([d.x, d.y]); text(d.name.toUpperCase(), px, py - 40 * sy, {size: 15, font: SERIF, color: "#a39a85", weight: "normal"}); }
-  const [bx, by] = P(m.addresses[idx[m.baker]]);
-  star(bx, by, 16, INK); text("221B", bx, by - 26, {size: 20, font: SERIF});
-  const [cx, cy] = P(m.addresses[idx[m.scene]]);
-  g.strokeStyle = RED; g.lineWidth = 5; g.beginPath(); g.moveTo(cx - 10, cy - 10); g.lineTo(cx + 10, cy + 10); g.moveTo(cx + 10, cy - 10); g.lineTo(cx - 10, cy + 10); g.stroke();
-  // walkers, interpolated between ticks
-  const T = run.length - 1, ft = frac * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
-  const A = run[i0], B = run[i1];
-  if (opts.swarm && A.shares) {
-    g.strokeStyle = "rgba(200,16,46,0.18)"; g.lineWidth = 2;
-    for (const s of A.shares.slice(0, 25)) { const [px, py] = P(s); g.beginPath(); g.arc(px, py, (200 * sx) * (0.3 + 0.7 * k), 0, 7); g.stroke(); }
-  }
-  g.fillStyle = opts.color;
-  A.boys.forEach((p, j) => { const q = B.boys[j] || p; const [px, py] = P([p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k]);
-    g.beginPath(); g.arc(px, py, opts.r, 0, 7); g.fill(); });
-  if (A.w) { const q = B.w || A.w; const [px, py] = P([A.w[0] + (q[0] - A.w[0]) * k, A.w[1] + (q[1] - A.w[1]) * k]);
-    g.fillStyle = "#c9a227"; g.beginPath(); g.arc(px, py, opts.r + 5, 0, 7); g.fill(); g.lineWidth = 3; g.strokeStyle = INK; g.stroke(); }
-  g.restore();
-  g.lineWidth = 4; g.strokeStyle = INK; g.strokeRect(x, y, w, h);
-  return A;
+  g.fillStyle = "rgba(70,50,30,0.6)"; for (const a of M.addresses) { const [x, y] = P(a); g.fillRect(x - 3, y - 3, 6, 6); }
+  for (const d of M.districts) { const [x, y] = P([d.x, d.y]); text(d.name.toUpperCase(), x, y - 52, {size: 19, color: "rgba(80,60,35,0.6)", spacing: 3}); }
+  const [bx, by] = A(M.baker); star(bx, by, 18, INK); text("221B", bx, by - 30, {size: 24, color: INK, style: "bold"});
+  text("map: a real run of case 3", MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
+  const [cx, cy] = A(M.scene); g.strokeStyle = RED; g.lineWidth = 6;
+  g.beginPath(); g.moveTo(cx - 12, cy - 12); g.lineTo(cx + 12, cy + 12); g.moveTo(cx + 12, cy - 12); g.lineTo(cx - 12, cy + 12); g.stroke();
 }
 function star(x, y, r, col) { g.fillStyle = col; g.beginPath();
   for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
   g.closePath(); g.fill(); }
-
-/* ---------------------------------------------------------------- scoreboard bars */
-function bars(x, y, rows, p, {w = 640, title = "", rowH = 74} = {}) {
-  if (title) text(title, x, y - 54, {size: 46, align: "left"});
-  rows.forEach(([label, n, col], i) => {
-    const q = ease(prog(p, i * 0.12, i * 0.12 + 0.6)), yy = y + i * rowH;
-    text(label, x, yy, {size: 32, align: "left", weight: "bold"});
-    g.fillStyle = "#bdbdbd"; g.fillRect(x, yy + 20, w, 22);
-    g.fillStyle = col; g.fillRect(x, yy + 20, w * (n / 20) * q, 22);
-    text(`${Math.round(n * q)}/20`, x + w + 20, yy + 31, {size: 34, align: "left"});
-  });
-}
-
-/* ================================================================ the timeline */
-const H1 = D.holmesian;
-const SCENES = [
-  [0, 4.0, coldOpen], [4.0, 5.2, (t) => splash(t, 4.0, 5.2, "The game is afoot!", {size: 150, bg: "#07090c", seed: 5})],
-  [5.2, 10.5, premise], [10.5, 15.5, cast], [15.5, 21.0, firstTurnabout],
-  [21.0, 22.0, (t) => splash(t, 21.0, 22.0, "Hold it!", {seed: 11})], [22.0, 24.0, tooEasy],
-  [24.0, 25.6, secondTitle], [25.6, 29.2, testimony], [29.2, 31.1, counting], [31.1, 34.2, holmesThinks],
-  [34.2, 35.7, present], [35.7, 37.0, (t) => splash(t, 35.7, 37.0, "Objection!", {seed: 23, tilt: 0.06})],
-  [37.0, 40.2, verdict], [40.2, 43.0, morals], [43.0, 45.01, endCard],
-];
-
-function coldOpen(t) {
-  fog(t);
-  const q = "“It is a capital mistake to theorise before one has data.”";
-  text(typed(q, t, 0.3, 30), W / 2, 440, {size: 54, font: SERIF, color: "#e9e2cf", weight: "normal"});
-  text("Sherlock Holmes, A Scandal in Bohemia", W / 2, 520, {size: 30, font: SERIF, color: "#9c937e", weight: "normal", alpha: prog(t, 2.4, 2.8)});
-  text("Can AI solve a murder? And should it work alone?", W / 2, 700, {size: 58, color: "#fff", alpha: prog(t, 2.8, 3.1)});
-}
-function premise(t) {
-  greyCard();
-  if (t < 7.0) {
-    text("We built a murder in Victorian London.", W / 2, 440, {size: 76, alpha: prog(t, 5.2, 5.45)});
-    text("100 addresses · 10 suspects · one culprit, one motive, one hideout · 12 hours", W / 2, 560, {size: 40, weight: "normal", alpha: prog(t, 5.7, 6.0)});
-  } else if (t < 8.8) {
-    text("Every address holds one lead…", W / 2, 470, {size: 80, alpha: prog(t, 7.0, 7.25)});
-    text("…or a lie.", W / 2, 590, {size: 80, color: RED, alpha: prog(t, 7.8, 8.0)});
-  } else {
-    const s = 1 + 0.06 * ease(prog(t, 8.8, 10.5));
-    g.save(); g.translate(W / 2, H / 2); g.scale(s, s); text("Who solves it best?", 0, 0, {size: 110}); g.restore();
+function walkers(run, f, col, r, trail = 0) {
+  const T = run.length - 1, ft = f * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
+  const at = (i, j) => run[clamp(i, 0, T)].boys[j];
+  const n = run[i0].boys.length;
+  for (let j = 0; j < n; j++) {
+    const p = at(i0, j), q = at(i1, j) || p, pos = P([p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k]);
+    if (trail) { g.strokeStyle = col; g.globalAlpha = 0.35; g.lineWidth = 3; g.beginPath(); g.moveTo(...pos);
+      for (let b = 0; b < trail; b++) g.lineTo(...P(at(i0 - b, j))); g.stroke(); g.globalAlpha = 1; }
+    g.fillStyle = col; g.beginPath(); g.arc(pos[0], pos[1], r, 0, 7); g.fill();
   }
+  return {a: run[i0], b: run[i1], k};
 }
-function cast(t) {
-  greyCard();
-  text("Game logic: name the culprit, the motive and the hideout before time runs out.", W / 2, 90, {size: 44, alpha: prog(t, 10.5, 10.8)});
-  const cols = [380, 960, 1540], ap = (i) => ease(prog(t, 10.7 + i * 0.45, 11.1 + i * 0.45));
-  g.save(); g.globalAlpha = ap(0); detective(cols[0], 470, 1.0); g.restore();
-  plate(cols[0], 720, "The Lone Detective", "gpt-6-astra, one cab, one address at a time", ap(0));
-  g.save(); g.globalAlpha = ap(1); holmes(cols[1] - 40, 450, 0.95); for (let i = 0; i < 3; i++) boy(cols[1] + 90 + i * 55, 560 - (i % 2) * 18, 0.42); g.restore();
-  plate(cols[1], 720, "Holmes & the Irregulars", "Holmes at 221B, Wiggins and 12 boys", ap(1));
-  g.save(); g.globalAlpha = ap(2); const r = rng(4);
-  for (let i = 0; i < 26; i++) boy(cols[2] - 210 + r() * 420, 360 + r() * 260, 0.22 + r() * 0.12); g.restore();
-  plate(cols[2], 720, "The Swarm", "100 street boys, no one in charge", ap(2));
-  ["boot", "cigar", "will", "book", "brick"].forEach((k, i) => { const p = ease(prog(t, 12.4 + i * 0.12, 12.8 + i * 0.12));
-    g.save(); g.globalAlpha = p; icon(k, W / 2 - 400 + i * 200, 920 + (1 - p) * 40, 0.9); g.restore(); });
+function caption(lines, t, a, b) {
+  const al = fade(t, a, b, 0.35);
+  if (al <= 0) return;
+  g.save(); g.globalAlpha = al * 0.82; const gr = g.createLinearGradient(0, H - 230, 0, H);
+  gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(0.35, "rgba(0,0,0,0.85)"); gr.addColorStop(1, "rgba(0,0,0,0.92)");
+  g.fillStyle = gr; g.fillRect(0, H - 230, W, 230); g.restore();
+  lines.forEach((l, i) => text(l, W / 2, H - 120 + i * 58 - (lines.length - 1) * 29, {size: 46, style: "italic", alpha: al}));
 }
-function firstTurnabout(t) {
-  greyCard();
-  if (t < 16.8) {
-    text("The First Turnabout:", W / 2, 440, {size: 90, alpha: prog(t, 15.5, 15.7)});
-    text("the Standard Case", W / 2, 570, {size: 90, alpha: prog(t, 15.8, 16.0)});
-    return;
-  }
-  const f = ease(prog(t, 16.8, 20.2));
-  text("Holmes & the Irregulars", 495, 120, {size: 44});
-  const A = mapPanel(80, 160, 830, 581, D.baker, f, {color: "#2a5d9f", r: 7});
-  text(`reports reaching 221B: ${A.reports}`, 495, 780, {size: 32, weight: "normal"});
-  text("The Swarm", 1425, 120, {size: 44});
-  const S = mapPanel(1010, 160, 830, 581, D.swarm, f, {color: "#b0413e", r: 4.5, swarm: true});
-  text(`boys voting the true answer: ${S.truth_votes} (30 close the case)`, 1425, 780, {size: 32, weight: "normal"});
-  text("real runs, case 3 (free counting heuristics)", W / 2, 830, {size: 24, weight: "normal", color: "#555"});
-  if (t > 19.4) {
-    const p = prog(t, 19.4, 20.6);
-    g.save(); g.globalAlpha = clamp(p * 3) * 0.94; g.fillStyle = GREY; g.fillRect(0, 0, W, H); g.restore();
-    bars(560, 330, [["Holmes & the Irregulars", 19, "#2a5d9f"], ["The Swarm (counting rule)", 18, "#b0413e"], ["The Lone Detective (gpt-6-astra)", 11, "#555"]],
-      p, {w: 700, title: "Standard cases, solved out of 20", rowH: 120});
-  }
+function chapter(num, title, sub, t, a) {
+  const al = fade(t, a, a + 2.6, 0.4);
+  if (al <= 0) return;
+  g.save(); g.globalAlpha = al * 0.85; g.fillStyle = "rgba(6,8,11,0.9)"; g.fillRect(70, 70, 780, 200); g.restore();
+  text(num, 110, 128, {size: 34, color: GOLD, align: "left", alpha: al, spacing: 6});
+  text(title, 110, 186, {size: 58, align: "left", alpha: al});
+  text(sub, 110, 240, {size: 28, color: DIM, align: "left", style: "italic", alpha: al});
 }
-function tooEasy(t) {
-  greyCard();
-  text("Wait. A simple counting rule did as well?", W / 2, 360, {size: 66, alpha: prog(t, 22.0, 22.2)});
-  text("The case was too easy:", W / 2, 520, {size: 66, alpha: prog(t, 22.6, 22.8)});
-  text("the truth always came twice, and a lie came alone.", W / 2, 620, {size: 66, color: RED, alpha: prog(t, 22.9, 23.1)});
+function clock(minutes, alpha) {
+  const hh = Math.floor(8 + minutes / 60), mm = Math.floor(minutes % 60);
+  text(`${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`, W - 130, 110, {size: 52, color: CREAM, alpha, style: "bold"});
+  text("case time", W - 130, 154, {size: 22, color: DIM, alpha, style: "italic"});
 }
-function secondTitle(t) {
-  greyCard();
-  text("The Second Turnabout:", W / 2, 400, {size: 90, alpha: prog(t, 24.0, 24.2)});
-  text("the Holmesian Case", W / 2, 520, {size: 90, alpha: prog(t, 24.2, 24.4)});
-  text("The murderer paid his own servants to lie.", W / 2, 690, {size: 54, color: RED, alpha: prog(t, 24.7, 24.9)});
-}
-function testimony(t) {
-  fog(t, 0.6);
-  text("— Testimony —", W / 2, 120, {size: 64, color: "#ff9f1a"});
-  const lines = [
-    ["The coachman, in Pargeter's service", "“The culprit takes snuff, sir. I swept up the ash myself.”"],
-    ["Pargeter's valet", "“Hairs from someone grey-haired. I'd swear to it.”"],
-    ["Pargeter's housekeeper", "“My master was at home all evening and never went out.”"],
-  ];
-  lines.forEach(([who, say], i) => {
-    const a = 25.7 + i * 1.15; if (t < a) return;
-    const y = 250 + i * 250, p = ease(prog(t, a, a + 0.2));
-    g.save(); g.globalAlpha = p; g.translate((1 - p) * -60, 0);
-    g.fillStyle = "rgba(10,18,40,0.92)"; g.fillRect(160, y, 1600, 190); g.strokeStyle = "#7f97c7"; g.lineWidth = 4; g.strokeRect(160, y, 1600, 190);
-    g.fillStyle = "#3a5fa8"; g.fillRect(190, y - 26, 640, 52); text(who, 210, y, {size: 32, align: "left", color: "#fff"});
-    text(typed(say, t, a + 0.1, 60), 210, y + 108, {size: 46, align: "left", color: "#58e05a"});
-    g.restore();
-  });
-}
-function counting(t) {
-  greyCard();
-  bubble(260, 230, 1400, "Thinking process:", "counting rule",
-    `Two servants say snuff, one witness says otherwise. The majority wins: it must be ${H1.framed}.`, t, 29.2);
-  stamp(t, 30.25, "WRONG MAN", W / 2 + 330, 640);
-  text("Every approach that counts: 0 of 20 Holmesian cases", W / 2, 900, {size: 50, color: RED, alpha: prog(t, 30.5, 30.7)});
-}
-function holmesThinks(t) {
-  greyCard();
-  bubble(260, 200, 1400, "Thinking process:", "gpt-6-astra as Holmes", H1.holmes, t, 31.1, 75);
-  text("(its actual words in Holmesian case 1)", W / 2, 960, {size: 30, weight: "normal", color: "#444", alpha: prog(t, 31.6, 31.9)});
-}
-function present(t) {
-  fog(t, 0.5);
-  const x = 260, y = 220, w = 1400, h = 520, p = ease(prog(t, 34.2, 34.45));
-  g.save(); g.globalAlpha = p;
-  g.fillStyle = "#1e3e6e"; g.fillRect(x, y, w, h); g.strokeStyle = "#9fc3ff"; g.lineWidth = 6; g.strokeRect(x, y, w, h);
-  g.fillStyle = "#fff"; g.fillRect(x + 40, y + 60, 280, 280); icon("coin", x + 180, y + 200, 1.6);
-  g.fillStyle = "#f2b705"; g.fillRect(x + 360, y + 60, 980, 70); text("Evidence: the bribe", x + 380, y + 96, {size: 46, align: "left"});
-  para("The publican saw Pargeter hand a sovereign each to his own servants the morning after: “and mind you all tell it the same way.”",
-    x + 380, y + 170, 940, {size: 40, align: "left", color: "#fff", weight: "normal", top: true});
-  const blink = t > 34.9 && Math.floor(t * 8) % 2 === 0;
-  g.fillStyle = blink ? "#f2b705" : "#2f5da8"; round(x + w - 330, y + h - 110, 290, 80, 20); g.fill();
-  text("PRESENT", x + w - 185, y + h - 70, {size: 44, color: blink ? INK : "#fff"});
+function note(s, alpha = 1) { text(s, W - 60, 205, {size: 26, color: CREAM, align: "right", style: "italic", alpha}); }
+
+/* ================================================================ scenes */
+const SCENES = [[0, 5.6, telegram], [5.6, 8.6, threeWays], [8.6, 15.6, lone], [15.6, 23.0, baker], [23.0, 30.0, swarm],
+  [30.0, 37.6, twist], [37.6, 43.0, casebook], [43.0, 45.01, endCard]];
+
+function window221(t, al) {
+  // Baker Street at night: a lit first-floor window with Holmes in profile, pipe smoke rising, the door below
+  g.save(); g.globalAlpha = al;
+  g.fillStyle = "#14110d"; g.fillRect(560, 120, 800, 900);                       // the house front
+  for (let y = 140; y < 1020; y += 26) { g.fillStyle = "rgba(255,255,255,0.025)"; g.fillRect(560, y, 800, 2); }
+  const wx = 760, wy = 240, ww = 400, wh = 360;
+  const glow = g.createRadialGradient(wx + ww / 2, wy + wh / 2, 40, wx + ww / 2, wy + wh / 2, 520);
+  glow.addColorStop(0, "rgba(255,190,100,0.35)"); glow.addColorStop(1, "rgba(255,190,100,0)");
+  g.fillStyle = glow; g.fillRect(wx - 400, wy - 400, ww + 800, wh + 800);
+  g.fillStyle = "#e9a95a"; g.fillRect(wx, wy, ww, wh);
+  g.save(); g.beginPath(); g.rect(wx, wy, ww, wh); g.clip();
+  holmes(wx + 170, wy + 250, 0.8, "#1a120b");
+  const r = rng(3);                                                              // smoke curls from the pipe
+  for (let i = 0; i < 9; i++) { const k = ((t * 0.35 + i / 9) % 1), sx = wx + 255 + Math.sin(k * 9 + i) * 22, sy = wy + 235 - k * 220;
+    g.fillStyle = `rgba(80,60,40,${0.35 * (1 - k)})`; g.beginPath(); g.arc(sx, sy, 8 + k * 26 + r() * 4, 0, 7); g.fill(); }
+  g.restore();
+  g.strokeStyle = "#0d0a07"; g.lineWidth = 14; g.strokeRect(wx, wy, ww, wh);
+  g.beginPath(); g.moveTo(wx + ww / 2, wy); g.lineTo(wx + ww / 2, wy + wh); g.moveTo(wx, wy + wh / 2); g.lineTo(wx + ww, wy + wh / 2); g.lineWidth = 8; g.stroke();
+  g.fillStyle = "#1d2a1f"; g.fillRect(860, 720, 200, 300);                      // the door
+  g.fillStyle = GOLD; g.beginPath(); g.arc(1030, 880, 8, 0, 7); g.fill();
+  g.fillStyle = "#2a2116"; g.fillRect(890, 680, 140, 36); text("221B", 960, 699, {size: 30, color: GOLD, style: "bold", spacing: 4});
   g.restore();
 }
-function verdict(t) {
-  greyCard();
-  const p = prog(t, 37.1, 39.4);
-  bars(110, 300, [["Holmes & the Irregulars", 19, "#2a5d9f"], ["The Swarm (counting rule)", 18, "#b0413e"], ["The Lone Detective", 11, "#555"]],
-    p, {w: 560, title: "Standard cases", rowH: 120});
-  bars(1020, 300, [["Holmes (gpt-6-astra) & the Irregulars", 17, "#2a5d9f"], ["The Lone Detective (gpt-6-astra)", 11, "#555"],
-    ["The Swarm (Jev, reads the text)", 9, "#b0413e"], ["Everything that only counts", 0, "#999"]],
-    prog(t, 37.6, 39.8), {w: 640, title: "Holmesian cases", rowH: 120});
-  text("solved out of 20 · 12 case hours each", W / 2, 900, {size: 30, weight: "normal", color: "#444"});
+function telegram(t) {
+  fog(t);
+  window221(t, fade(t, 0.0, 3.0, 0.6) * 1);
+  text("Baker Street, London. A November night.", W / 2, 1040, {size: 34, color: DIM, style: "italic", alpha: fade(t, 0.4, 2.6, 0.4)});
+  const al = fade(t, 2.2, 5.6, 0.4), mono = "'Courier New', monospace", y = (1 - ease(prog(t, 2.2, 2.7))) * 300;
+  if (al > 0) {
+    g.save(); g.globalAlpha = al; g.translate(W / 2, H / 2 + y); g.rotate(-0.025);
+    paper(-520, -170, 1040, 300, 4);
+    text("POST OFFICE TELEGRAPH · TO MR SHERLOCK HOLMES, 221B", 0, -125, {size: 24, color: INK, spacing: 4});
+    g.fillStyle = "rgba(42,29,18,0.5)"; g.fillRect(-450, -100, 900, 2);
+    text(typed("COME AT ONCE. MURDER IN WHITECHAPEL.", t, 2.6, 30), -440, -40, {size: 42, color: INK, align: "left", font: mono, style: "bold"});
+    text(typed("TEN SUSPECTS. NO ARREST. LESTRADE", t, 3.9, 30), -440, 30, {size: 42, color: INK, align: "left", font: mono, style: "bold"});
+    g.restore();
+  }
+  text("“The game is afoot.”", W / 2, 930, {size: 56, style: "italic", alpha: fade(t, 4.6, 5.6, 0.3)});
+  vignette();
 }
-function morals(t) {
-  greyCard();
-  text("Counting finds the crowd.", W / 2, 300, {size: 76, alpha: prog(t, 40.2, 40.4)});
-  text("Reasoning finds the liar.", W / 2, 410, {size: 76, color: RED, alpha: prog(t, 40.6, 40.8)});
-  text("A genius alone runs out of time.", W / 2, 600, {size: 60, alpha: prog(t, 41.2, 41.4)});
-  text("A genius with Irregulars solves the case.", W / 2, 690, {size: 60, alpha: prog(t, 41.6, 41.8)});
-  stamp(t, 42.2, "SOLVED", 1540, 880, {size: 110, rot: -0.12});
+function threeWays(t) {
+  fog(t, 0.8, false);
+  const s = "Three ways to solve a murder.";
+  const cx = 360 + 1200 * ease(prog(t, 5.8, 7.8)), cy = 520 + Math.sin(t * 2) * 20;
+  text(s, W / 2, 520, {size: 96, color: "rgba(239,230,207,0.10)"});
+  lens(cx, cy, 190, () => { g.fillStyle = "rgba(20,16,12,0.6)"; g.fillRect(0, 0, W, H); text(s, W / 2, 520, {size: 96}); });
+  text(s, W / 2, 520, {size: 96, alpha: prog(t, 7.7, 8.2)});
+  vignette();
+}
+function lone(t) {
+  baseMap();
+  const path = D.solo.path, f = ease(prog(t, 9.0, 15.0)), n = path.length - 1, ft = f * n, i0 = Math.floor(ft), k = ft - i0;
+  g.strokeStyle = RED; g.lineWidth = 5; g.setLineDash([14, 10]); g.beginPath();
+  path.slice(0, i0 + 1).forEach((id, i) => { const [x, y] = A(id); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  const p = A(path[i0]), q = A(path[Math.min(n, i0 + 1)]), cab = [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  g.lineTo(...cab); g.stroke(); g.setLineDash([]);
+  path.slice(1, i0 + 1).forEach((id) => { const [x, y] = A(id); g.strokeStyle = RED; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 11, 0, 7); g.stroke(); });
+  g.fillStyle = RED; g.beginPath(); g.arc(cab[0], cab[1], 14, 0, 7); g.fill();
+  vignette(0.55);
+  clock(f * 720, 1);
+  note(`doors knocked on: ${i0} of 100`);
+  chapter("I.", "The Lone Genius", "one brilliant model plays the detective", t, 8.6);
+  caption(["One brilliant mind. One cab. One door at a time."], t, 11.0, 13.4);
+  caption(["Sharp enough to see through any lie…", "but a hundred doors, and only twelve hours."], t, 13.3, 15.6);
+}
+function baker(t) {
+  baseMap();
+  const f = ease(prog(t, 15.8, 22.8));
+  const [bx, by] = A(M.baker), pulse = 0.5 + 0.5 * Math.sin(t * 5);
+  const gl = g.createRadialGradient(bx, by, 0, bx, by, 120); gl.addColorStop(0, `rgba(224,179,87,${0.35 + 0.2 * pulse})`); gl.addColorStop(1, "rgba(224,179,87,0)");
+  g.fillStyle = gl; g.fillRect(bx - 120, by - 120, 240, 240);
+  const w = walkers(D.baker, f, BLUE, 9, 3);
+  if (w.a.w) { const q = w.b.w || w.a.w, pos = P([w.a.w[0] + (q[0] - w.a.w[0]) * w.k, w.a.w[1] + (q[1] - w.a.w[1]) * w.k]);
+    g.fillStyle = GOLD; g.beginPath(); g.arc(pos[0], pos[1], 13, 0, 7); g.fill(); g.lineWidth = 3; g.strokeStyle = INK; g.stroke();
+    text("Wiggins", pos[0] + 20, pos[1] - 22, {size: 22, color: INK, align: "left", style: "italic"}); }
+  holmes(bx + 70, by + 120, 0.32, INK);
+  vignette(0.55);
+  clock(f * (D.baker.length - 1) * 15, 1);
+  note(`reports reaching 221B: ${w.a.reports}`);
+  chapter("II.", "Holmes & the Irregulars", "a lead mind, helpers on dedicated errands", t, 15.6);
+  caption(["Holmes never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
+  caption(["Wiggins and twelve street boys each take a street,", "and run back with what they find."], t, 20.4, 23.0);
+}
+function swarm(t) {
+  baseMap();
+  const f = ease(prog(t, 23.2, 29.6)), w = walkers(D.swarm, f, SWARM, 6);
+  g.strokeStyle = "rgba(163,57,46,0.25)"; g.lineWidth = 2;
+  for (const s of (w.a.shares || []).slice(0, 30)) { const [x, y] = P(s); g.beginPath(); g.arc(x, y, 200 * MS * (0.25 + 0.75 * w.k), 0, 7); g.stroke(); }
+  const v = Math.round(w.a.truth_votes + ((w.b.truth_votes || 0) - w.a.truth_votes) * w.k);
+  vignette(0.55);
+  clock(f * (D.swarm.length - 1) * 15, 1);
+  note(`boys agreeing on one answer: ${v} (30 close the case)`);
+  chapter("III.", "The Swarm", "a hundred boys, and no one in charge", t, 23.0);
+  caption(["No one in charge. Every boy shouts what he has heard…"], t, 25.4, 27.8);
+  caption(["…and the case closes when thirty agree."], t, 27.7, 30.0);
+}
+function twist(t) {
+  fog(t, 0.7);
+  text("Then the murderer planned it.", W / 2, 150, {size: 70, alpha: fade(t, 30.0, 37.6, 0.4)});
+  const notes = [["The coachman", "“The man took snuff, sir.”"], ["The valet", "“Grey-haired. I'd swear to it.”"],
+    ["The housekeeper", "“My master never went out.”"]];
+  notes.forEach(([who, say], i) => {
+    const a = 30.5 + i * 0.35, al = prog(t, a, a + 0.3); if (al <= 0) return;
+    g.save(); g.globalAlpha = al; g.translate(330 + i * 630, 470); g.rotate((i - 1) * 0.04);
+    paper(-270, -150, 540, 300, 20 + i);
+    text(who, 0, -80, {size: 34, color: RED, style: "italic"});
+    text(say, 0, 10, {size: 34, color: INK, style: "italic"});
+    text("all three serve Henry Pargeter", 0, 90, {size: 22, color: "rgba(42,29,18,0.6)", style: "italic"});
+    g.restore();
+  });
+  // the lens slides across: under the glass, each statement shows what lies behind it
+  if (t > 32.0 && t < 35.4) {
+    const cx = 330 + 1260 * ease(prog(t, 32.0, 35.0)), cy = 480;
+    lens(cx, cy, 175, () => { g.fillStyle = "#1a120b"; g.fillRect(0, 0, W, H);
+      for (let i = 0; i < 3; i++) { text("paid one sovereign", 330 + i * 630, 450, {size: 38, color: GOLD, style: "italic"});
+        text("“tell it the same way”", 330 + i * 630, 505, {size: 34, color: CREAM, style: "italic"}); } });
+  }
+  const res = [["The Lone Genius", "sees through it", true], ["Holmes & the Irregulars", "sees through it", true], ["The Swarm", "split, often fooled", false]];
+  res.forEach(([who, what, ok], i) => {
+    const a = 35.4 + i * 0.4, al = fade(t, a, 37.6, 0.25); if (al <= 0) return;
+    text(`${who}: ${what}`, 330 + i * 630, 760, {size: 36, color: ok ? CREAM : "#e4836f", alpha: al});
+    text(ok ? "✓" : "✗", 330 + i * 630, 830, {size: 64, color: ok ? GOLD : "#e4836f", alpha: al});
+  });
+  text("“Pargeter's servants supply both his alibi and evidence against Leopold.”  gpt-6-astra as Holmes",
+    W / 2, 960, {size: 30, color: DIM, style: "italic", alpha: fade(t, 35.8, 37.6, 0.3)});
+  vignette(0.6);
+}
+function casebook(t) {
+  fog(t, 0.5, false);
+  const al = prog(t, 37.6, 38.0);
+  g.save(); g.globalAlpha = al; paper(260, 90, 1400, 780, 31); g.restore();
+  text("From the casebook", W / 2, 160, {size: 54, color: INK, style: "italic", alpha: al});
+  text("murders solved out of 20 · the same cases · twelve hours each", W / 2, 216, {size: 26, color: "rgba(42,29,18,0.7)", alpha: al});
+  const cols = [1180, 1460];
+  text("ordinary", cols[0], 300, {size: 32, color: INK, style: "italic", alpha: al});
+  text("planned", cols[1], 300, {size: 32, color: RED, style: "italic", alpha: al});
+  const rows = [["The Lone Genius", "gpt-6-astra alone", 11, 11], ["Holmes & the Irregulars", "gpt-6-astra leads, Jev boys run errands", 19, 17],
+    ["The Swarm", "a hundred Jev boys, no leader", 11, 9]];
+  rows.forEach(([who, how, a, b], i) => {
+    const r = prog(t, 38.1 + i * 0.45, 38.5 + i * 0.45), y = 410 + i * 150;
+    text(who, 340, y - 14, {size: 46, color: INK, align: "left", alpha: r});
+    text(how, 340, y + 32, {size: 26, color: "rgba(42,29,18,0.65)", align: "left", style: "italic", alpha: r});
+    text(String(a), cols[0], y, {size: 70, color: INK, alpha: r});
+    text(String(b), cols[1], y, {size: 70, color: RED, alpha: r});
+  });
+  const c = ease(prog(t, 40.0, 40.8));   // a red-ink ring around the winner
+  if (c > 0) { g.save(); g.strokeStyle = RED; g.lineWidth = 6; g.beginPath(); g.ellipse(960, 560, 690, 74, -0.01, -Math.PI / 2, -Math.PI / 2 + c * Math.PI * 2.05); g.stroke(); g.restore(); }
+  text("A swarm run by a simple counting rule: 18 on ordinary cases, 0 on planned ones.", W / 2, 820, {size: 26, color: "rgba(42,29,18,0.7)", style: "italic", alpha: prog(t, 39.6, 40.0)});
+  text("The genius thinks. The Irregulars look. Together, they solve it.", W / 2, 965, {size: 50, style: "italic", alpha: prog(t, 41.0, 41.5)});
+  vignette(0.5);
 }
 function endCard(t) {
-  g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
+  fog(t, 0.6);
   const p = prog(t, 43.1, 43.6);
-  text("THE IRREGULARS", W / 2, 470, {size: 120, font: SERIF, color: "#efe6cf", weight: "normal", alpha: p});
-  text("a swarm experiment · solo, Baker Street and swarm detectives", W / 2, 580, {size: 40, font: SERIF, color: "#9c937e", weight: "normal", alpha: prog(t, 43.5, 43.9)});
-  text("“Elementary.”", W / 2, 720, {size: 56, font: SERIF, color: "#efe6cf", weight: "normal", alpha: prog(t, 44.0, 44.3)});
+  holmes(W / 2, 360, 0.75 * (0.96 + 0.04 * p), `rgba(239,230,207,${0.9 * p})`);
+  text("THE IRREGULARS", W / 2, 640, {size: 120, alpha: p, spacing: 10});
+  text("one genius · a lead with helpers · a swarm", W / 2, 740, {size: 36, color: DIM, style: "italic", alpha: prog(t, 43.5, 43.9)});
+  text("“Elementary.”", W / 2, 860, {size: 56, alpha: prog(t, 44.0, 44.3)});
+  vignette();
 }
 
 function render(t) {
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
   const sc = SCENES.find(([a, b]) => t >= a && t < b) || SCENES[SCENES.length - 1];
   sc[2](t);
-  // a quick white flash on every cut into a splash
-  for (const a of [4.0, 21.0, 35.7]) if (t >= a && t < a + 0.08) { g.fillStyle = "rgba(255,255,255,0.85)"; g.fillRect(0, 0, W, H); }
+  for (const [a] of SCENES.slice(1)) { const d = Math.abs(t - a); if (d < 0.18) { g.fillStyle = `rgba(0,0,0,${1 - d / 0.18})`; g.fillRect(0, 0, W, H); } }
 }
 window.render = render;
 const q = new URLSearchParams(location.search);

@@ -41,6 +41,9 @@ def main():
     m, baker, s1 = track({"mode": "swarm", "swarm_policy": "baker_street", "holmes": "rule", "boy_policy": "rule",
                           "n_irregulars": 12, "seed": 3})
     _, swarm, s2 = track({"mode": "swarm", "swarm_policy": "rule", "comm_range": 200, "seed": 3})
+    e = Engine({"mode": "solo", "policy": "rule", "seed": 3}, realtime=False, log=False)
+    e.run_all()
+    solo = {"path": list(e.game.path), "minutes": e.game.minute, "solved": e.summary["solved"]}
     c = Case(coerce({"seed": 1, "difficulty": "holmesian"}))
     frame = [c.leads[a]["text"] for a in c.frame_addrs]
     bribe = [l["text"] for l in c.leads.values() if l["fact"][0] == "bribe"]
@@ -51,7 +54,7 @@ def main():
                 "ids": [a["id"] for a in m["addresses"]],
                 "edges": m["edges"], "districts": m["districts"], "thames": m["thames"],
                 "baker": m["baker"], "scene": m["scene"], "hideouts": list(m["hideouts"].values())},
-        "baker": baker, "swarm": swarm,
+        "baker": baker, "swarm": swarm, "solo": solo,
         "baker_result": s1["solved"], "swarm_result": s2["solved"],
         "holmesian": {"culprit": culprit["name"], "framed": framed["name"], "frame": frame, "bribe": bribe,
                       "planted": planted,
