@@ -27,23 +27,32 @@ def track(cfg):
             t["w"] = [round(w["x"]), round(w["y"])] if w else None
             t["reports"] = f["hq"]["reports"]
         else:
-            truth = e.case.truth_ids()
-            want = (truth["culprit"], truth["motive"], truth["hideout"])
-            t["truth_votes"] = sum(1 for b in f["irregulars"] if (b[3], b[4], b[5]) == want)
-            t["parts"] = [sum(int(v == w) for v, w in zip((b[3], b[4], b[5]), want)) for b in f["irregulars"]]
+            t["votes"] = [[b[3], b[4], b[5]] for b in f["irregulars"]]
             t["shares"] = [[round(x), round(y)] for _, x, y in f["shares"]][:60]
         ticks.append(t)
         if e.ended:
             break
         e.step()
     e.pool.shutdown(wait=False)
+    if not e.squad:  # how many of the three answers each boy shares with the swarm's own final verdict (right or wrong)
+        o, truth = e.game.outcome, e.case.truth_ids()
+        want = [o["culprit"], o["motive"], o["hideout"]] if o and o.get("culprit") else [truth[k] for k in ("culprit", "motive", "hideout")]
+        for t in ticks:
+            votes = t.pop("votes")
+            t["parts"] = [sum(int(v == w) for v, w in zip(vt, want)) for vt in votes]
+            t["truth_votes"] = sum(1 for p in t["parts"] if p == 3)
+        print("swarm verdict", want, "truth", truth)
+    i = e.summary["inference"]
+    print(cfg.get("swarm_policy"), "solved", e.summary["solved"], "ticks", len(ticks) - 1, "cost", round(i["cost"], 3),
+          "fallbacks", i["by_source"].get("fallback", 0), "of", sum(i["by_source"].values()))
     return m, ticks, e.summary
 
 
 def main():
-    m, baker, s1 = track({"mode": "swarm", "swarm_policy": "baker_street", "holmes": "rule", "boy_policy": "rule",
-                          "n_irregulars": 12, "seed": 3})
-    _, swarm, s2 = track({"mode": "swarm", "swarm_policy": "rule", "comm_range": 200, "seed": 3})
+    # real model runs on case 3: gpt-6-astra as Holmes with Jev boys, and a 100-boy Jev swarm (about $1)
+    m, baker, s1 = track({"mode": "swarm", "swarm_policy": "baker_street", "holmes": "chat", "boy_policy": "jev",
+                          "n_irregulars": 12, "seed": 3, "request_timeout_s": 30})
+    _, swarm, s2 = track({"mode": "swarm", "swarm_policy": "jev", "comm_range": 200, "seed": 3, "request_timeout_s": 30})
     # the lone genius: gpt-6-astra's actual route on case 3 in the 2 October benchmark (it solved it)
     run = [d for d in os.listdir(GENIUS) if d.endswith("_chat_s3")][0]
     steps = [json.loads(line) for line in open(os.path.join(GENIUS, run, "decisions.jsonl"))]
@@ -65,7 +74,8 @@ def main():
                 "edges": m["edges"], "districts": m["districts"], "thames": m["thames"],
                 "baker": m["baker"], "scene": m["scene"], "hideouts": list(m["hideouts"].values())},
         "baker": baker, "swarm": swarm, "solo": solo,
-        "baker_result": s1["solved"], "swarm_result": s2["solved"],
+        "baker_result": s1["solved"], "swarm_result": s2["solved"], "baker_minute": s1["outcome"]["minute"],
+        "swarm_minute": s2["outcome"]["minute"], "swarm_quorum": s2["outcome"]["quorum"],
         "holmesian": {"culprit": culprit["name"], "framed": framed["name"], "frame": frame, "bribe": bribe,
                       "planted": planted,
                       # gpt-6-astra as Holmes, Holmesian case 1, 3 October run 2 (runs/batch_20261003-163912_swarm_92155)

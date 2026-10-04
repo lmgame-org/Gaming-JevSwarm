@@ -102,7 +102,7 @@ function baseMap() {
   g.fillStyle = "rgba(70,50,30,0.6)"; for (const a of M.addresses) { const [x, y] = P(a); g.fillRect(x - 3, y - 3, 6, 6); }
   for (const d of M.districts) { const [x, y] = P([d.x, d.y]); text(d.name.toUpperCase(), x, y - 52, {size: 19, color: "rgba(80,60,35,0.6)", spacing: 3}); }
   const [bx, by] = A(M.baker); star(bx, by, 18, INK); text("221B", bx, by - 30, {size: 24, color: INK, style: "bold"});
-  text("map: real runs of case 3 (the lone genius: gpt-6-astra; the boys: free heuristics)", MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
+  text("map: real runs of case 3 (gpt-6-astra alone · gpt-6-astra with 12 Jev boys · 100 Jev boys)", MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
   const [cx, cy] = A(M.scene); g.strokeStyle = RED; g.lineWidth = 6;
   g.beginPath(); g.moveTo(cx - 12, cy - 12); g.lineTo(cx + 12, cy + 12); g.moveTo(cx + 12, cy - 12); g.lineTo(cx - 12, cy + 12); g.stroke();
 }
@@ -163,43 +163,95 @@ const SCENES = [[0, 4.6, night], [4.6, 9.0, irregularsQuote], [9.0, 13.0, minsky
   [16.0, 23.0, shift(lone, -7.4)], [23.0, 30.4, shift(baker, -7.4)], [30.4, 37.4, shift(swarm, -7.4)],
   [37.4, 42.8, shift(casebook, 0.2)], [42.8, 45.01, shift(endCard, 0.2)]];
 
+function skyline(y, col, seed) {   // London rooftops: chimneys, a dome and a clock tower
+  const r = rng(seed); g.fillStyle = col; g.beginPath(); g.moveTo(0, H);
+  let x = 0;
+  while (x < W) { const w = 60 + r() * 120, h = 40 + r() * 110; g.lineTo(x, y - h); g.lineTo(x + w * 0.2, y - h);
+    if (r() < 0.6) { g.lineTo(x + w * 0.2, y - h - 26); g.lineTo(x + w * 0.3, y - h - 26); g.lineTo(x + w * 0.3, y - h); }
+    g.lineTo(x + w, y - h); x += w; }
+  g.lineTo(W, H); g.closePath(); g.fill();
+  g.beginPath(); g.arc(1320, y - 150, 70, Math.PI, 0); g.fill(); g.fillRect(1250, y - 150, 140, 150); g.fillRect(1312, y - 250, 16, 40);  // dome
+  g.fillRect(420, y - 300, 50, 300); g.beginPath(); g.moveTo(410, y - 300); g.lineTo(445, y - 360); g.lineTo(480, y - 300); g.fill(); // clock tower
+}
+function rain(t, alpha) {
+  const r = rng(77); g.strokeStyle = `rgba(200,210,220,${0.12 * alpha})`; g.lineWidth = 1.5; g.beginPath();
+  for (let i = 0; i < 160; i++) { const x = (r() * W + t * 60) % W, y = (r() * H + t * (700 + r() * 300)) % H; g.moveTo(x, y); g.lineTo(x - 6, y + 22); }
+  g.stroke();
+}
+function lamp(x, y, t, alpha) {
+  const fl = 0.85 + 0.15 * Math.sin(t * 17) * Math.sin(t * 5.3);
+  const gl = g.createRadialGradient(x, y, 0, x, y, 380); gl.addColorStop(0, `rgba(255,196,110,${0.45 * fl * alpha})`); gl.addColorStop(1, "rgba(255,196,110,0)");
+  g.fillStyle = gl; g.fillRect(x - 380, y - 380, 760, 760);
+  g.save(); g.globalAlpha = alpha; g.fillStyle = "#0c0a08"; g.fillRect(x - 7, y + 20, 14, H - y); g.fillRect(x - 20, H - 60, 40, 60);
+  g.fillStyle = `rgba(255,214,140,${fl})`; g.beginPath(); g.moveTo(x - 22, y - 20); g.lineTo(x + 22, y - 20); g.lineTo(x + 14, y + 22); g.lineTo(x - 14, y + 22); g.fill();
+  g.fillStyle = "#0c0a08"; g.beginPath(); g.moveTo(x - 30, y - 20); g.lineTo(x, y - 46); g.lineTo(x + 30, y - 20); g.fill(); g.restore();
+}
 function night(t) {
-  fog(t);
-  window221(t, fade(t, 0.0, 4.6, 0.6));
-  text("221B Baker Street, London. 1890.", W / 2, 1040, {size: 34, color: DIM, style: "italic", alpha: fade(t, 0.5, 4.4, 0.4)});
-  vignette();
+  const al = fade(t, 0.0, 4.6, 0.6), z = 1 + 0.05 * prog(t, 0, 4.6);
+  g.fillStyle = "#05070a"; g.fillRect(0, 0, W, H);
+  g.save(); g.translate(W / 2, H / 2); g.scale(z, z); g.translate(-W / 2, -H / 2);
+  skyline(560, "#0b0e13", 5);
+  fog(t, 0.5, false); g.globalAlpha = 1;
+  window221(t, al);
+  lamp(330, 470, t, al);
+  // wet cobbles catching the lamplight
+  g.save(); g.globalAlpha = al; const r = rng(31);
+  for (let i = 0; i < 260; i++) { const x = r() * W, y = 1010 + r() * 80; g.fillStyle = `rgba(${150 + r() * 60},${120 + r() * 40},80,${0.05 + r() * 0.08})`;
+    g.beginPath(); g.ellipse(x, y, 16 + r() * 10, 5, 0, 0, 7); g.fill(); }
+  g.restore();
+  g.restore();
+  rain(t, al);
+  text("221B Baker Street, London. 1890.", W / 2, 1040, {size: 34, color: CREAM, style: "italic", alpha: fade(t, 0.5, 4.4, 0.4)});
+  vignette(0.8);
 }
 function irregularsQuote(t) {
-  fog(t, 0.8);
-  // a dozen street boys run through the fog, each his own way
+  g.fillStyle = "#05070a"; g.fillRect(0, 0, W, H);
+  const al = fade(t, 4.6, 9.0, 0.4);
+  const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#0a0d12"); sky.addColorStop(1, "#1a140d"); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  skyline(900, "#07090c", 9);
+  fog(t, 0.6, false);
+  // a dozen street boys dart along the street, each his own way
   const r = rng(12);
-  for (let i = 0; i < 14; i++) { const sp = 120 + r() * 160, dir = r() < 0.5 ? 1 : -1, y = 640 + r() * 300, x0 = r() * W;
-    const x = ((x0 + dir * sp * (t - 4.6)) % (W + 200) + W + 200) % (W + 200) - 100, bob = Math.abs(Math.sin((t * 9 + i) * 1.3)) * 8;
-    g.save(); g.globalAlpha = 0.55 * fade(t, 4.6, 9.0, 0.4); g.translate(x, y - bob); g.scale(dir * (0.28 + r() * 0.1), 0.3 + r() * 0.1);
-    g.fillStyle = "#c9bfa6"; g.beginPath(); g.ellipse(0, -30, 40, 46, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(10, -66, 54, 20, -0.15, 0, 7); g.fill();
-    g.beginPath(); g.moveTo(-60, 110); g.quadraticCurveTo(-50, 20, 0, 14); g.quadraticCurveTo(50, 20, 60, 110); g.fill(); g.restore(); }
-  const al = fade(t, 4.8, 9.0, 0.4);
-  text("Holmes's secret was never one mind.", W / 2, 200, {size: 50, color: DIM, style: "italic", alpha: al});
-  text("\u201cThey can go everywhere, see everything,", W / 2, 340, {size: 70, alpha: prog(t, 5.3, 5.8) * al});
-  text("overhear every one.\u201d", W / 2, 430, {size: 70, alpha: prog(t, 5.6, 6.1) * al});
-  text("Sherlock Holmes on the Baker Street Irregulars, The Sign of Four (1890)", W / 2, 520, {size: 30, color: DIM, style: "italic", alpha: prog(t, 6.3, 6.7) * al});
-  vignette();
+  for (let i = 0; i < 14; i++) { const sp = 140 + r() * 180, dir = r() < 0.5 ? 1 : -1, y = 880 + r() * 120, x0 = r() * W, sc = 0.45 + r() * 0.15;
+    const x = ((x0 + dir * sp * (t - 4.6)) % (W + 200) + W + 200) % (W + 200) - 100, bob = Math.abs(Math.sin((t * 9 + i) * 1.3)) * 10;
+    g.save(); g.globalAlpha = al; g.translate(x, y - bob); g.scale(dir * sc, sc); g.fillStyle = "#3a2f22";
+    g.beginPath(); g.ellipse(0, -30, 40, 46, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(10, -66, 54, 20, -0.15, 0, 7); g.fill();
+    g.beginPath(); g.moveTo(-60, 110); g.quadraticCurveTo(-50, 20, 0, 14); g.quadraticCurveTo(50, 20, 60, 110); g.fill();
+    const leg = Math.sin(t * 14 + i) * 30; g.fillRect(-25 + leg * 0.3, 100, 18, 70); g.fillRect(8 - leg * 0.3, 100, 18, 70); g.restore(); }
+  lamp(1700, 620, t, al);
+  text("Holmes's secret was never one mind.", W / 2, 200, {size: 50, color: GOLD, style: "italic", alpha: al});
+  text("“They can go everywhere, see everything,", W / 2, 360, {size: 72, alpha: prog(t, 5.3, 5.8) * al});
+  text("overhear every one.”", W / 2, 452, {size: 72, alpha: prog(t, 5.6, 6.1) * al});
+  text("Sherlock Holmes on the Baker Street Irregulars, The Sign of Four (1890)", W / 2, 545, {size: 30, color: DIM, style: "italic", alpha: prog(t, 6.3, 6.7) * al});
+  vignette(0.75);
 }
 function minskyQuote(t) {
-  fog(t, 0.6, false);
+  g.fillStyle = "#05070a"; g.fillRect(0, 0, W, H);
   const al = fade(t, 9.0, 13.0, 0.4);
+  // many small minds drifting, linking when they come close: a swarm becoming a network
+  const r = rng(21), pts = [];
+  for (let i = 0; i < 90; i++) { const x0 = r() * W, y0 = r() * H, a = r() * 7, sp = 18 + r() * 30;
+    pts.push([((x0 + Math.cos(a) * sp * t) % W + W) % W, ((y0 + Math.sin(a) * sp * t) % H + H) % H]); }
+  const link = 150 + 60 * prog(t, 9.0, 12.5);
+  g.lineWidth = 1.2;
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    const d = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]);
+    if (d < link) { g.strokeStyle = `rgba(224,179,87,${0.45 * (1 - d / link) * al})`; g.beginPath(); g.moveTo(...pts[i]); g.lineTo(...pts[j]); g.stroke(); } }
+  for (const [x, y] of pts) { g.fillStyle = `rgba(245,207,90,${0.7 * al})`; g.beginPath(); g.arc(x, y, 3.5, 0, 7); g.fill(); }
+  { const sh = g.createRadialGradient(W / 2, 500, 100, W / 2, 500, 900); sh.addColorStop(0, `rgba(5,7,10,${0.85 * al})`); sh.addColorStop(1, "rgba(5,7,10,0)"); g.fillStyle = sh; g.fillRect(0, 0, W, H); }
   text("A century later, the same idea in AI:", W / 2, 260, {size: 46, color: DIM, style: "italic", alpha: al});
-  text("\u201cThe power of intelligence stems from our vast diversity,", W / 2, 440, {size: 62, alpha: prog(t, 9.4, 9.9) * al});
-  text("not from any single, perfect principle.\u201d", W / 2, 530, {size: 62, alpha: prog(t, 9.8, 10.3) * al});
+  text("“The power of intelligence stems from our vast diversity,", W / 2, 440, {size: 62, alpha: prog(t, 9.4, 9.9) * al});
+  text("not from any single, perfect principle.”", W / 2, 530, {size: 62, alpha: prog(t, 9.8, 10.3) * al});
   text("Marvin Minsky, The Society of Mind (1986)", W / 2, 630, {size: 32, color: DIM, style: "italic", alpha: prog(t, 10.5, 10.9) * al});
-  text("One genius, or many minds?", W / 2, 830, {size: 58, color: GOLD, style: "italic", alpha: prog(t, 11.4, 11.8) * al});
-  vignette();
+  text("One genius, or many minds?", W / 2, 840, {size: 62, color: GOLD, style: "italic", alpha: prog(t, 11.4, 11.8) * al});
+  vignette(0.7);
 }
 function window221(t, al) {
   // Baker Street at night: a lit first-floor window with Holmes in profile, pipe smoke rising, the door below
   g.save(); g.globalAlpha = al;
   g.fillStyle = "#14110d"; g.fillRect(560, 120, 800, 900);                       // the house front
-  for (let y = 140; y < 1020; y += 26) { g.fillStyle = "rgba(255,255,255,0.025)"; g.fillRect(560, y, 800, 2); }
+  for (let y = 140, row = 0; y < 1020; y += 26, row++) { g.fillStyle = "rgba(255,255,255,0.03)"; g.fillRect(560, y, 800, 2);
+    for (let x = 560 + (row % 2) * 30; x < 1360; x += 60) g.fillRect(x, y, 2, 26); }
   const wx = 760, wy = 240, ww = 400, wh = 360;
   const glow = g.createRadialGradient(wx + ww / 2, wy + wh / 2, 40, wx + ww / 2, wy + wh / 2, 520);
   glow.addColorStop(0, "rgba(255,190,100,0.35)"); glow.addColorStop(1, "rgba(255,190,100,0)");
@@ -243,7 +295,7 @@ function lone(t) {
   hud(200); clock(m);
   note(`doors knocked on: ${t >= 15.0 ? D.solo.visits : i0} of 100 (${D.solo.visits} allowed)`);
   verdictTag(`SOLVED \u00b7 ${hrs(total)} \u00b7 all ${D.solo.visits} visits`, t, 15.0, GOLD);
-  chapter("I.", "The Lone Genius", "one brilliant model plays the detective", t, 8.6);
+  chapter("I.", "The Lone Genius", "gpt-6-astra, one big model, plays the detective", t, 8.6);
   caption(["One brilliant mind. One cab. One door at a time."], t, 11.0, 13.4);
   caption(["It cracks this case, but only just: all twenty visits, eleven hours.", "Across twenty murders, it solves eleven."], t, 13.3, 15.6);
 }
@@ -262,9 +314,9 @@ function baker(t) {
   hud(200); clock(f * (D.baker.length - 1) * 15);
   note(`reports reaching 221B: ${w.a.reports}`);
   verdictTag(`SOLVED \u00b7 ${hrs((D.baker.length - 1) * 15)}`, t, 22.3, GOLD);
-  chapter("II.", "Holmes & the Irregulars", "a lead mind, helpers on dedicated errands", t, 15.6);
-  caption(["Holmes never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
-  caption(["Wiggins and twelve street boys each take a street,", "and run back with what they find."], t, 20.4, 23.0);
+  chapter("II.", "Holmes & the Irregulars", "Holmes: gpt-6-astra · 12 boys: Jev, quick simple choices", t, 15.6);
+  caption(["Holmes (gpt-6-astra) never leaves 221B. He thinks, and gives the orders."], t, 18.0, 20.5);
+  caption(["Twelve boys, each a small, fast Jev model making simple choices,", "take a street each and run back with what they find."], t, 20.4, 23.0);
 }
 const AGREE = ["#7d4a3a", "#c0603c", "#e39a3c", "#f5cf5a"];   // a boy's colour: how many of the three answers he shares with the final verdict
 function swarm(t) {
@@ -297,8 +349,10 @@ function swarm(t) {
     g.fillStyle = AGREE[c]; g.beginPath(); g.arc(W - 330, my + 150 + i * 32, 8, 0, 7); g.fill();
     text(l, W - 310, my + 150 + i * 32, {size: 20, color: CREAM, align: "left", style: "italic"}); });
   verdictTag(`CONVERGED \u00b7 CASE CLOSED \u00b7 ${hrs(T * 15)}`, t, 28.6, GOLD);
-  chapter("III.", "The Swarm", "a hundred boys, and no one in charge", t, 23.0);
-  caption(["No one in charge. Each boy keeps his own guess,", "and swaps clues and votes with the boys near him."], t, 25.4, 27.8);
+  text(D.swarm_result ? "the right answer" : "this time: right culprit and hideout, wrong motive", W - 70, 650,
+    {size: 26, color: CREAM, align: "right", style: "italic", alpha: prog(t, 28.9, 29.2)});
+  chapter("III.", "The Swarm", "100 Jev boys, no one in charge", t, 23.0);
+  caption(["No one in charge. Each boy, a small Jev model, keeps his own guess", "and swaps clues and votes with the boys near him."], t, 25.4, 27.8);
   caption(["We only count the votes: once thirty boys name the same", "culprit, motive and hideout, the case is closed."], t, 27.7, 30.0);
 }
 function casebook(t) {
