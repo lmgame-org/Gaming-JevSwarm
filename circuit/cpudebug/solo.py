@@ -54,6 +54,7 @@ class Solo:
         self.status, self.last = "thinking", ""
         self.recent = []
         self.history = []
+        self.trail = []          # viewer: every probe in order
         self.turns = 0
         if self.policy == "jev":
             self.jev = JevClient(self.cfg["jev_provider"], self.cfg["jev_model"], self.cfg["jev_key"],
@@ -80,11 +81,15 @@ class Solo:
                                    "window": [min(vals), max(vals)] if vals else None},
                                f"reads {spec['net']} over cycles {min(vals) if vals else '-'}-{max(vals) if vals else '-'}")
             self.pos = spec["net"].split(".")[0]
+            self.trail.append({"block": self.pos, "type": "read", "mismatch": False, "tick": self.tick,
+                               "where": f"reads {spec['net']}"})
             return {"type": "read", "net": spec["net"], "values": vals}
         p = self.eng.probe(1, spec)
         self.nb.add_probe(p, 1, self.used)
         self.pos = b
         self.recent.append(p)
+        self.trail.append({"block": b, "type": p["type"], "mismatch": p["mismatch"], "tick": self.tick,
+                           "where": f"cycles {p['window'][0]}-{p['window'][1]}" if p["type"] == "check" else f"bench, {p['kind']}"})
         return p
 
     def accuse(self, ans, why):
@@ -282,8 +287,18 @@ class Solo:
     # ------------------------------------------------------------------ viewer
     def view(self):
         heat = heat_of(self.nb)
+        belief = [{"block": b, "bad": len(v["bad"]), "confirmed": v["confirmed"], "cleared": len(v["cleared"])}
+                  for b, v in self.nb.suspects()[:6]]
+        nxt = [f"{b}@{c}" for _, b, c in self.nb.frontier(limit=5)] if not self.done else []
         return {"agents": [{"id": 1, "block": self.pos, "status": self.status, "last": self.last, "role": "solo"}],
-                "heat": heat, "tick": self.tick, "probes_used": self.used}
+                "heat": heat, "tick": self.tick, "probes_used": self.used, "trail": self.trail[-60:],
+                "belief": belief, "cleared_n": len(self.nb.cleared()), "next": nxt,
+                "thought": self.last, "policy": self.policy}
+
+    def detail(self, i):
+        return {"role": "solo", "policy": self.policy, "at": self.pos, "last": self.last,
+                "suspects": [self.nb.summary(b, 3) for b, _ in self.nb.suspects()[:4]],
+                "probes": [kb.probe_view(p, 4) for p in self.recent[-4:]]}
 
 
 def describe(ans):

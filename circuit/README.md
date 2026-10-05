@@ -103,6 +103,37 @@ PYTHONPATH=.:../common python3 -m cpudebug.batch --settings solo_rule,baker_rule
 PYTHONPATH=.:../common python3 -m cpudebug.report docs/x.csv
 ```
 
+## The viewer
+
+![Baker Street live view](docs/img/viewer_baker_street.png)
+
+**Launch screen** ([screenshot](docs/img/launch.png)):
+- the three families as tabs, each option card showing its benchmark result and cost;
+- presets and every knob;
+- a live preview of the failing test, shaded by how much of the back-trace passes through each block;
+- a spoiler-free solvability check;
+- a cost and time estimate.
+
+**Live view.** The schematic has every block by pipeline stage, with wires (feedback wires dashed). On top of it:
+- the suspicion map: cleared, mismatched once, confirmed, next on the back-trace;
+- probe flashes;
+- a "Reveal the bug" spoiler toggle (bug blocks and liars);
+- scroll-zoom and drag-pan;
+- click-through on any block (spec, ports, possible faults, a free look at its values) or agent (its notebook,
+  errand or vote).
+
+**Per family:**
+- [Solo](docs/img/viewer_solo.png): the numbered probe path, the notebook, and what the debugger thinks.
+- Baker Street: Holmes's desk at 221B, Wiggins's post and his runs with the bag, boys with dashed lines to the blocks
+  left on their errand, runners carrying reports, Holmes's current answer and open questions, the latest reports, and
+  the roster.
+- [Swarm](docs/img/viewer_swarm.png): 100 dots coloured by vote, radio ripples, and the vote tally against the quorum
+  over time.
+
+**Everywhere:** captions, a title card, an end stamp and banner, the pipeline-diagram timeline with the probed
+windows, your own guess, pause/step/speed, presentation mode (P), and dark mode
+([screenshot](docs/img/viewer_baker_street_dark.png)).
+
 ## Files
 
 ```

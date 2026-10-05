@@ -42,26 +42,38 @@ def bench():
     import glob
     out = {}
     rows = []
-    for p in sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_*.csv"))):
+    files = sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_*.csv")))
+    big = [p for p in files if "100seeds" in p]
+    for p in (big or files):  # the 100-seed run supersedes the 20-seed one
         with open(p) as f:
             rows += list(csv.DictReader(f))
     for r in rows:
         if "setting" not in r:
             continue
-        d = out.setdefault(r["setting"], {"solved": 0, "n": 0, "spend": 0.0})
+        d = out.setdefault(r["setting"], {"solved": 0, "n": 0, "spend": 0.0, "walls": []})
         d["n"] += 1
         d["solved"] += r["fix_ok"] == "True"
         d["spend"] += float(r["cost_usd"] or 0)
+        d["walls"].append(float(r.get("wall_s") or 0))
     for d in out.values():
         c = d["spend"] / max(1, d["n"])
-        d["cost"] = "free" if c == 0 else f"${c:.4f} per case"
+        d["cost"] = "free" if c == 0 else f"${c:.4f} per case" if c < 0.01 else f"${c:.3f} per case"
+        w = sorted(d.pop("walls"))
+        m = w[len(w) // 2] if w else 0
+        d["wall"] = f"{m:.0f} s" if m >= 1 else "under a second"
     return out
 
 
 def preview(q):
     c = Case(coerce(q))
+    sl = c.slice_cycles()
     return {"blocks": c.public_blocks(), "edges": c.edges(), "brief": c.brief(), "results": c.results,
-            "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "src": c.test["src"], "window": c.window}
+            "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "src": c.test["src"], "window": c.window,
+            "slice": {b: len(v) for b, v in sl.items()},
+            # spoiler-free solvability: does the handed-out test's back-trace reach every broken block?
+            "check": {"reachable": all(f["block"] in sl for f in c.faults), "slice_blocks": len(sl),
+                      "slice_nodes": sum(len(v) for v in sl.values()), "suspect_blocks": sum(1 for b in c.blocks if not b.trusted),
+                      "failing": sum(1 for r in c.results if not r["ok"]), "cycles": c.n}}
 
 
 class Handler(BaseHandler):
@@ -86,7 +98,16 @@ class Handler(BaseHandler):
         if path == "/api/frame":
             return self.send_json(eng.frame(full=True) if eng else {"error": "no run"}, 200 if eng else 404)
         if path == "/api/secret":  # viewer-only spoiler; investigators never get this
-            return self.send_json(eng.case.secret() if eng else {"error": "no run"}, 200 if eng else 404)
+            if not eng:
+                return self.send_json({"error": "no run"}, 404)
+            sec = eng.case.secret()
+            sec["liars"] = eng.game.liars() if hasattr(eng.game, "liars") else []
+            return self.send_json(sec)
+        if path == "/api/agent":
+            if not eng:
+                return self.send_json({"error": "no run"}, 404)
+            d = eng.agent_detail(q.get("id", "0"))
+            return self.send_json(d or {"error": "no such agent"}, 200 if d else 404)
         if path == "/api/inspect":
             if not eng:
                 return self.send_json({"error": "no run"}, 404)

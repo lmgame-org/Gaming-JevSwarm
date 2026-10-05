@@ -86,6 +86,7 @@ class Swarm:
         self.shares = []
         self.tally = Counter()
         self.labels = {}
+        self.series = []           # viewer: (tick, top vote count, label)
         if c["swarm_policy"] in ("jev", "hybrid"):
             self.jev = JevClient(c["jev_provider"], c["jev_model"], c["jev_key"], timeout=c["request_timeout_s"])
 
@@ -403,6 +404,9 @@ class Swarm:
             dc = Counter(d for a in self.agents for d in a.nb.distrust)
             struck = {sid for sid, k in dc.items() if k >= 2}
         self.tally = Counter(a.vote for a in self.agents if a.vote and a.id not in struck)
+        top = self.tally.most_common(1)
+        self.series.append([self.tick, top[0][1] if top else 0, top[0][0] if top else None,
+                            sum(1 for a in self.agents if a.vote)])
         if not self.tally:
             return
         lab, k = self.tally.most_common(1)[0]
@@ -439,7 +443,19 @@ class Swarm:
                   for a in self.agents]
         return {"agents": agents, "heat": heat, "tick": self.tick, "shares": self.shares[-60:],
                 "tally": self.tally.most_common(6), "quorum_need": self.cfg["quorum_frac"] * len(self.agents),
-                "range": self.cfg["comm_range"]}
+                "range": self.cfg["comm_range"], "series": self.series[-200:],
+                "labels": {k: kb.fix_label(v) for k, v in self.labels.items() if k in dict(self.tally.most_common(6))}}
+
+    def detail(self, i):
+        a = self.by.get(i)
+        if not a:
+            return None
+        heard = Counter(v for v in a.heard.values() if v)
+        return {"role": "irr", "id": a.id, "at": a.pos, "action": a.action, "vote": a.vote,
+                "plan": list(a.plan) if a.plan else None,
+                "suspects": [a.nb.summary(b, 2) for b, _ in a.nb.suspects()[:3]],
+                "cleared": len(a.nb.cleared()), "heard_votes": heard.most_common(4),
+                "distrusts": sorted(map(str, a.nb.distrust)), "unshared": len(a.unshared)}
 
     def liars(self):
         return [a.id for a in self.agents if a.liar]

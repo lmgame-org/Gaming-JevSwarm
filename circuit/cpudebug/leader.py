@@ -86,6 +86,7 @@ class BakerStreet:
         self.transit = []          # (arrive_tick, [reports]) Wiggins running to 221B
         self.post = 6
         self.new_reports = 0
+        self.report_log = []       # viewer: (tick, boy, block, mismatch)
         self.calls = 0
         self.pid = 0
         self.plans = 0
@@ -135,6 +136,7 @@ class BakerStreet:
         for p in rep:
             self.pid += 1
             self.nb.add_probe(p, bid, self.pid, first_hand=False)
+            self.report_log.append({"tick": self.tick, "boy": bid, "block": p["block"], "bad": bool(p["mismatch"])})
             self.eng.event("report", f"boy #{bid}: {p['block']} " + ("does NOT match its spec" if p["mismatch"]
                                                                        else "matches its spec"), block=p["block"])
         self.new_reports += 1
@@ -370,11 +372,38 @@ class BakerStreet:
     def view(self):
         agents = []
         for b in self.boys:
+            items = [it[0] for it in b.errand["items"]] if b.errand else []
             agents.append({"id": b.id, "block": b.pos if b.pos in self.case.by else None, "where": b.pos,
-                           "status": b.status, "last": b.last, "role": "boy"})
+                           "status": b.status, "last": b.last, "role": "boy", "items": items,
+                           "done": sorted(b.done_items)})
+        runners = [{"boy": boy.id, "from": boy.pos if boy.pos in self.case.by else None, "arrive": t,
+                    "to": "post" if self.wiggins else "HQ", "n": len(rep)} for t, boy, rep in self.outbox]
+        ans = self.nb.answer()
+        if not ans:
+            sus = self.nb.suspects()
+            if sus:
+                fs = self.nb.fits(sus[0][0])
+                ans = {"fixes": [kb.fault_answer(sus[0][0], fs[0])]} if fs else None
+        openq = [{"block": b, "by": sorted(map(str, v["sources"]))} for b, v in self.nb.suspects() if not v["confirmed"]][:5]
+        nxt = [f"{b}@{c}" for _, b, c in self.nb.frontier(limit=6)] if not self.done else []
         return {"agents": agents, "heat": heat_of(self.nb), "tick": self.tick, "post": self.post if self.wiggins else None,
-                "holmes": {"calls": self.calls, "distrusted": sorted(map(str, self.nb.distrust))},
-                "bag": len(self.bag), "queue": len(self.queue)}
+                "holmes": {"calls": self.calls, "distrusted": sorted(map(str, self.nb.distrust)), "kind": self.cfg["holmes"],
+                           "answer_now": ans, "open": openq, "next": nxt,
+                           "confirmed": [b for b, v in self.nb.suspects() if v["confirmed"]]},
+                "reports": self.report_log[-12:], "runners": runners,
+                "transit": [{"arrive": t, "n": len(r)} for t, r in self.transit],
+                "bag": len(self.bag), "queue": len(self.queue), "wiggins": self.wiggins}
+
+    def detail(self, i):
+        b = next((x for x in self.boys if x.id == i), None)
+        if not b:
+            return None
+        return {"role": "boy", "id": b.id, "status": b.status, "where": b.pos, "last": b.last,
+                "errand": b.errand["why"] if b.errand else None,
+                "items": [f"{x}@{c}" for x, c in b.errand["items"]] if b.errand else [],
+                "probes": [kb.probe_view(p, 3) for p in b.notes[-3:]],
+                "reports_by_him": sum(1 for r in self.report_log if r["boy"] == b.id),
+                "distrusted_by_holmes": str(b.id) in set(map(str, self.nb.distrust))}
 
     def liars(self):
         return [b.id for b in self.boys if b.liar]

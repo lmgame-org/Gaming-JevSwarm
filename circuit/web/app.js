@@ -1,667 +1,1036 @@
 "use strict";
-/* Circuit: launch screen and live viewer. No framework; canvas for the schematic and the pipeline diagram. */
+/* Circuit: launch screen and live viewer. No framework; canvas for the schematic, the timeline and the vote chart.
+   Patterns follow holmes/web (camera, tweened agents, captions, title card, stamp, end banner), redrawn for a chip. */
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const api = (p, body) => fetch(p, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json());
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)");
+const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
 
-let SCHEMA = null, cfg = {}, PREV = null, STATIC = null, FRAME = null, ES = null;
-let SECRET = null, SEL = null, HOVER = null, LAYOUT = null, PLAYOUT = null;
-const agentPos = {};
-const flashes = [];
-let lastProbeN = 0;
-
-const TRACKS = {
-  solo: { name: "Solo debugger", color: "--genius", sub: "One investigator, one probe at a time, a small probe budget" },
-  leader: { name: "Baker Street", color: "--jev", sub: "Holmes directs a dozen boys; Wiggins carries orders and reports" },
-  swarm: { name: "Swarm", color: "--hybrid", sub: "100 Irregulars, no leader: radio range, liar defence, quorum" },
-};
-const POLICY_COLOR = { chat: "--genius", jev: "--jev", rule: "--rule", random: "--faint", hybrid: "--hybrid" };
-function trackColor(c) {
-  if (c.mode === "solo") return POLICY_COLOR[c.solo_policy];
-  if (c.mode === "leader") return POLICY_COLOR[c.boy_policy];
-  return POLICY_COLOR[c.swarm_policy];
-}
-function settingLabel(c) {
-  if (c.mode === "solo") return `Solo · ${SCHEMA ? SCHEMA.solo_policies[c.solo_policy] : c.solo_policy}`;
-  if (c.mode === "leader") return `Baker Street · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes, ${c.boy_policy} boys${c.wiggins ? "" : ", no Wiggins"}`;
-  return `Swarm · ${c.swarm_policy} · ${c.comm_range} wires`;
-}
+let SCHEMA = null, cfg = {}, PREV = null, ST = null, F = null, es = null, SECRET = null;
+let track = "leader";
 
 /* ---------------------------------------------------------------------------------------------- theme */
-function effectiveTheme() {
-  const t = document.documentElement.dataset.theme;
-  return t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-}
-function applyThemeLabels() { document.querySelectorAll(".theme-toggle").forEach((b) => (b.textContent = effectiveTheme() === "dark" ? "Light" : "Dark")); }
+function effectiveTheme() { return document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); }
+function themeLabels() { document.querySelectorAll(".theme-toggle").forEach((b) => (b.textContent = effectiveTheme() === "dark" ? "Light" : "Dark")); }
 function toggleTheme() {
   const t = effectiveTheme() === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem("circuit-theme", t); } catch (e) { /* storage blocked */ }
-  applyThemeLabels();
-  redrawAll();
+  themeLabels(); BASES.clear(); drawPreview(); drawWave(); drawSeries();
 }
 try { const t = localStorage.getItem("circuit-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { /* storage blocked */ }
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { applyThemeLabels(); redrawAll(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { themeLabels(); BASES.clear(); });
 document.querySelectorAll(".theme-toggle").forEach((b) => b.addEventListener("click", toggleTheme));
-applyThemeLabels();
+themeLabels();
 
-/* ---------------------------------------------------------------------------------------------- layout */
-const COLS = [
-  { key: "IF", w: 1.0 }, { key: "IF/ID", w: 0.62 }, { key: "ID decode", w: 1.0 }, { key: "ID control", w: 1.0 },
-  { key: "ID registers", w: 1.0 }, { key: "ID/EX", w: 0.62 }, { key: "EX fwd+branch", w: 1.0 }, { key: "EX ALU", w: 1.0 },
-  { key: "EX/MEM", w: 0.62 }, { key: "MEM", w: 0.75 }, { key: "MEM/WB", w: 0.62 }, { key: "WB", w: 0.9 },
-];
-function colOf(b) {
-  switch (b.stage) {
-    case "IF": return 0;
-    case "IF/ID": return 1;
-    case "ID": return b.group === "decoder" ? 2 : (b.group === "control" || b.group === "hazard") ? 3 : 4;
-    case "ID/EX": return 5;
-    case "EX": return b.group === "alu" ? 7 : 6;
-    case "EX/MEM": return 8;
-    case "MEM": return 9;
-    case "MEM/WB": return 10;
-    default: return 11;
-  }
+function alpha(color, a) {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
+  return m ? `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})` : color;
 }
-function shortName(n) { return n.replace(/^(ifid|idex|exmem|memwb)_/, ""); }
-
-function layout(blocks, W, H, compact) {
-  const top = compact ? 6 : 26, bottom = compact ? 6 : 40, pad = compact ? 3 : 8;
-  const tw = COLS.reduce((s, c) => s + c.w, 0);
-  const cols = COLS.map(() => []);
-  blocks.forEach((b) => cols[colOf(b)].push(b));
-  const maxRows = Math.max(...cols.map((c) => c.length));
-  const rowH = (H - top - bottom) / maxRows;
-  const pos = {};
-  let x = pad;
-  const unit = (W - pad * 2) / tw;
-  const colX = [];
-  COLS.forEach((c, i) => {
-    const cw = c.w * unit;
-    colX.push([x, cw]);
-    const list = cols[i];
-    const y0 = top + (H - top - bottom - list.length * rowH) / 2;
-    list.forEach((b, k) => {
-      const bw = cw - (compact ? 2 : 10), bh = Math.max(3, rowH - (compact ? 1.5 : 6));
-      pos[b.name] = { x: x + (cw - bw) / 2, y: y0 + k * rowH + (rowH - bh) / 2, w: bw, h: bh, b };
-    });
-    x += cw;
-  });
-  return { pos, colX, top, rowH, W, H, bottom };
-}
-
 function fitCanvas(c) {
-  const r = c.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
+  const r = c.getBoundingClientRect(), dpr = devicePixelRatio || 1;
   const w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
   if (c.width !== w * dpr || c.height !== h * dpr) { c.width = w * dpr; c.height = h * dpr; }
-  const ctx = c.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  return { ctx, w, h };
+  const g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { g, w, h };
+}
+function rr(g, x, y, w, h, r) {
+  g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
-}
-function alpha(color, a) {
-  // color is a #rrggbb css var value
-  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
-  if (!m) return color;
-  return `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})`;
-}
-
-/* ---------------------------------------------------------------------------------------------- launch */
-async function initLaunch() {
-  SCHEMA = await api("/api/schema");
-  cfg = { ...SCHEMA.defaults };
-  renderModes(); renderCase(); renderForm(); renderKeys(); renderRuns(); estimate();
-  $("#rejoinBtn").hidden = !SCHEMA.running;
-  preview();
-}
-function setCfg(patch, opts = {}) {
-  Object.assign(cfg, patch);
-  renderModes(); estimate();
-  if (opts.form !== false) renderForm();
-  if (opts.panel) renderCase();
-  if (opts.preview) preview();
-}
-function renderModes() {
-  const el = $("#modes");
-  el.innerHTML = "";
-  Object.entries(TRACKS).forEach(([k, t]) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "mode"; b.setAttribute("role", "radio");
-    b.setAttribute("aria-checked", String(cfg.mode === k));
-    b.innerHTML = `<b><i class="dot" style="background:var(${t.color})"></i>${esc(t.name)}</b><span>${esc(t.sub)}</span>`;
-    b.addEventListener("click", () => setCfg({ mode: k }, { panel: true }));
-    el.appendChild(b);
-  });
-  $("#modeChip").textContent = settingLabel(cfg);
-}
-function ctl(label, input, hint) {
-  const d = document.createElement("div");
-  d.className = "ctl";
-  d.innerHTML = `<label>${esc(label)}</label>`;
-  d.appendChild(input);
-  if (hint) { const h = document.createElement("div"); h.className = "hint"; h.textContent = hint; d.appendChild(h); }
-  return d;
-}
-function numInput(key, { min, max, step = 1 } = {}, opts = {}) {
-  const i = document.createElement("input");
-  i.type = "number"; i.value = cfg[key]; i.step = step;
-  if (min !== undefined) i.min = min;
-  if (max !== undefined) i.max = max;
-  i.addEventListener("change", () => setCfg({ [key]: Number(i.value) }, opts));
-  return i;
-}
-function selInput(key, choices, opts = {}) {
-  const s = document.createElement("select");
-  Object.entries(choices).forEach(([k, v]) => { const o = document.createElement("option"); o.value = k; o.textContent = v; s.appendChild(o); });
-  s.value = String(cfg[key]);
-  s.addEventListener("change", () => setCfg({ [key]: s.value === "true" ? true : s.value === "false" ? false : s.value }, opts));
-  return s;
-}
-function renderCase() {
-  const el = $("#casePanel");
-  el.innerHTML = "";
-  const tp = document.createElement("div"); tp.className = "ctls";
-  if (cfg.mode === "solo") {
-    tp.append(ctl("Debugger", selInput("solo_policy", SCHEMA.solo_policies, { panel: true })),
-      ctl("Probes allowed", numInput("probe_budget", { min: 1, max: 200 }), "checks, bench drives and (genius) waveform reads"));
-    if (cfg.solo_policy === "chat") tp.append(ctl("Probes per turn", numInput("probes_per_turn", { min: 1, max: 20 })), ctl("Most turns", numInput("max_turns", { min: 1, max: 30 })));
-  } else if (cfg.mode === "leader") {
-    tp.append(ctl("Holmes", selInput("holmes", SCHEMA.holmes, { panel: true })), ctl("Street boys", selInput("boy_policy", SCHEMA.boys)),
-      ctl("Number of boys", numInput("n_boys", { min: 1, max: 100 })), ctl("Wiggins", selInput("wiggins", { true: "on: collects reports at a forward post", false: "off: every boy runs back to 221B" })),
-      ctl("Most blocks per errand", numInput("errand_max", { min: 1, max: 6 })));
-    if (cfg.holmes === "chat") tp.append(ctl("Most planning rounds", numInput("hq_max_calls", { min: 1, max: 40 })));
-  } else {
-    tp.append(ctl("Swarm type", selInput("swarm_policy", SCHEMA.swarm_policies)), ctl("Irregulars", numInput("n_agents", { min: 2, max: 300 })),
-      ctl("Radio range (wires)", numInput("comm_range", { min: 0, max: 12 })), ctl("Quorum (share)", numInput("quorum_frac", { min: 0.02, max: 1, step: 0.05 })),
-      ctl("Shares taken in per tick", numInput("bandwidth", { min: 0, max: 20 })));
-  }
-  const head = (t) => { const h = document.createElement("h4"); h.textContent = t; return h; };
-  const seed = document.createElement("div");
-  seed.className = "seedrow";
-  const si = numInput("seed", { min: 0 }, { preview: true, panel: true });
-  const prev = document.createElement("button"); prev.type = "button"; prev.textContent = "◀"; prev.title = "previous bug";
-  const next = document.createElement("button"); next.type = "button"; next.textContent = "▶"; next.title = "next bug";
-  prev.onclick = () => setCfg({ seed: Math.max(0, cfg.seed - 1) }, { preview: true, panel: true });
-  next.onclick = () => setCfg({ seed: cfg.seed + 1 }, { preview: true, panel: true });
-  seed.append(si, prev, next);
-  const bt = SCHEMA.schema.find((g) => g[0].startsWith("The bug"))[1].find((f) => f[0] === "bug_type")[3];
-  const g1 = document.createElement("div"); g1.className = "ctls";
-  g1.append(ctl("Bug number", seed, "same number, same bug"), ctl("Kind of bug", selInput("bug_type", bt, { preview: true })),
-    ctl("What they are told", selInput("failure_info", { final: "final wrong values only", first: "first wrong instruction" }, { preview: true })),
-    ctl("Glitched readings (share)", numInput("noise", { min: 0, max: 0.5, step: 0.01 })),
-    ctl("Rare-trigger bugs (share)", numInput("rare_frac", { min: 0, max: 1, step: 0.1 }, { preview: true })),
-    ctl("Two-bug cases (share)", numInput("double_frac", { min: 0, max: 1, step: 0.1 }, { preview: true })));
-  const g2 = document.createElement("div"); g2.className = "ctls";
-  g2.append(ctl("Time limit (case hours)", numInput("deadline_hours", { min: 0.5, max: 48, step: 0.5 }), "15 minutes per tick"),
-    ctl("Model spend cap per case ($)", numInput("budget_usd", { min: 0, step: 0.05 })),
-    ctl("Liars (share of boys / Irregulars)", numInput("liar_frac", { min: 0, max: 1, step: 0.05 })),
-    ctl("Liar defence", selInput("liar_defence", { true: "on", false: "off" })));
-  el.append(head(TRACKS[cfg.mode].name), tp, head("The bug (hardening)"), g1, head("Clock, budget and liars"), g2);
-  const ez = document.createElement("button"); ez.type = "button"; ez.textContent = "Use the original easy setting";
-  ez.onclick = () => setCfg({ failure_info: "first", test_pick: "shortest", window: 4, noise: 0, rare_frac: 0, double_frac: 0, liar_frac: 0, probe_budget: 40 }, { panel: true, preview: true });
-  el.append(ez);
-}
-function renderForm() {
-  const f = $("#cfgForm");
-  f.innerHTML = "";
-  SCHEMA.schema.forEach(([group, fields]) => {
-    const fs = document.createElement("fieldset");
-    fs.innerHTML = `<legend>${esc(group)}</legend>`;
-    const g = document.createElement("div"); g.className = "ctls";
-    fields.forEach(([key, label, kind, extra]) => {
-      let inp;
-      if (kind === "choice") inp = selInput(key, extra, { form: false, panel: true, preview: key === "bug_type" });
-      else if (kind === "bool") {
-        inp = document.createElement("input"); inp.type = "checkbox"; inp.checked = !!cfg[key];
-        inp.addEventListener("change", () => setCfg({ [key]: inp.checked }, { form: false, panel: true }));
-      } else if (kind === "text") {
-        inp = document.createElement("input"); inp.type = "text"; inp.value = cfg[key];
-        inp.addEventListener("change", () => setCfg({ [key]: inp.value }, { form: false }));
-      } else inp = numInput(key, { min: extra.min, max: extra.max, step: kind === "float" ? "any" : 1 }, { form: false, panel: true, preview: key === "seed" || key === "window" });
-      g.appendChild(ctl(label, inp));
-    });
-    fs.appendChild(g);
-    f.appendChild(fs);
-  });
-}
-function renderKeys() {
-  $("#keyStatus").innerHTML = SCHEMA.key_files.map((k) => `<div class="mono">${k.exists ? "✓" : "·"} ${esc(k.path)}</div>`).join("");
-}
-function renderRuns() {
-  const r = SCHEMA.runs || [];
-  $("#runsList").innerHTML = r.length ? r.map((x) => `<div class="run"><span class="mono">${esc(x.name.slice(0, 15))}</span>
-    <span>${esc(x.setting || x.mode)} #${x.seed}</span><span class="${x.fix_ok ? "ok" : "no"}">${x.fix_ok ? "fixed" : "not fixed"}</span>
-    <span class="muted">${x.probes} probes · $${(x.cost || 0).toFixed(3)}</span></div>`).join("") : "<span class='muted'>none yet</span>";
-}
-function estimate() {
-  const c = cfg, lines = [], bench = (SCHEMA.bench || {})[benchKey(c)];
-  if (c.mode === "solo") lines.push(`<p>One debugger, <b>${c.probe_budget}</b> probes, ${c.deadline_hours} case hours. Each probe costs 15 minutes; walking far costs 15 more.</p>`);
-  else if (c.mode === "leader") lines.push(`<p>Holmes (${c.holmes === "chat" ? "gpt-6-astra" : "exact counting"}) and <b>${c.n_boys}</b> boys (${c.boy_policy})${c.wiggins ? " with Wiggins" : ", no Wiggins"}, ${c.deadline_hours} case hours.</p>`);
-  else lines.push(`<p><b>${c.n_agents}</b> ${c.swarm_policy} Irregulars, radio range ${c.comm_range} wires, quorum ${Math.round(c.quorum_frac * c.n_agents)}, ${c.deadline_hours} case hours.</p>`);
-  lines.push(`<p class="muted">Hardening: ${c.failure_info === "final" ? "final values only" : "first wrong instruction"}, ${Math.round(c.noise * 100)}% glitches, ${Math.round(c.rare_frac * 100)}% rare-trigger bugs, ${Math.round(c.double_frac * 100)}% two-bug cases, ${Math.round(c.liar_frac * 100)}% liars (defence ${c.liar_defence ? "on" : "off"}). Spend cap $${Number(c.budget_usd).toFixed(2)}.</p>`);
-  if (bench) lines.push(`<p><b>20-case benchmark:</b> solved ${bench.solved}/${bench.n}, ${bench.cost}</p>`);
-  $("#estimate").innerHTML = lines.join("");
-}
+/* ---------------------------------------------------------------------------------------------- families */
+const FAM = {
+  solo: { name: "Solo debugger", color: "--solo", sub: "One investigator, one probe at a time, 10 probes" },
+  leader: { name: "Baker Street", color: "--boy", sub: "Holmes plans at 221B, Wiggins runs reports, a dozen boys probe" },
+  swarm: { name: "Swarm", color: "--irr", sub: "100 Irregulars, no leader: radio range, liar defence, quorum" },
+};
+const OPT = {
+  solo_policy: { chat: ["gpt-6-astra", "the genius: reads the netlist and asks for probes"], jev: ["Jev", "one quick call per probe"],
+    rule: ["rule (cone tracing)", "re-measures mismatches, follows the back-trace (free)"], random: ["random", "a baseline (free)"] },
+  holmes: { chat: ["gpt-6-astra", "reads every report and plans the errands"], rule: ["exact counting", "back-trace planner, two boys per mismatch (free)"] },
+  boy_policy: { jev: ["Jev", "a small local choice each step"], rule: ["rule", "do the errand, re-measure, run back (free)"], random: ["random", "a baseline (free)"] },
+  swarm_policy: { jev: ["Jev", "Jev decides what to chase and how to vote"], hybrid: ["hybrid", "Jev chases, exact counting votes"],
+    rule: ["rule", "reproduce, share, vote only what you reproduced (free)"], random: ["random", "a baseline (free)"] },
+};
 function benchKey(c) {
   if (c.mode === "solo") return `solo_${c.solo_policy === "chat" ? "genius" : c.solo_policy}`;
   if (c.mode === "leader") return `baker_${c.holmes === "chat" ? "genius" : "rule"}_${c.boy_policy}${c.wiggins ? "" : "_nowiggins"}`;
   return `swarm_${c.swarm_policy}_r${c.comm_range}`;
 }
-let pvTimer = null;
-function preview() {
-  clearTimeout(pvTimer);
-  pvTimer = setTimeout(async () => {
-    const q = new URLSearchParams({ seed: cfg.seed, bug_type: cfg.bug_type, window: cfg.window });
-    PREV = await api("/api/preview?" + q);
-    $("#pvTitle").textContent = `Bug #${cfg.seed}: ${PREV.brief.test}`;
-    $("#pvInfo").textContent = `${PREV.n} cycles`;
-    $("#pvFail").innerHTML = `<p>${esc(PREV.brief.failure)}</p>`;
-    $("#pvTests").innerHTML = PREV.results.map((r) => `<span class="${r.ok ? "good" : "bad"}" title="${esc(r.desc)}">${r.ok ? "✓" : "✗"} ${esc(r.name)}</span>`).join("");
-    $("#pvSrc").textContent = PREV.brief.program.join("\n");
-    drawPreview();
-  }, 120);
+function setupLabel(c) {
+  if (c.mode === "solo") return `Solo · ${OPT.solo_policy[c.solo_policy][0]}`;
+  if (c.mode === "leader") return `Baker Street · ${c.holmes === "chat" ? "gpt-6-astra" : "counting"} Holmes, ${c.boy_policy} boys${c.wiggins ? "" : ", no Wiggins"}`;
+  return `Swarm · ${c.swarm_policy} · ${c.comm_range} wires`;
 }
-function drawPreview() {
-  if (!PREV) return;
-  const c = $("#preview");
-  const { ctx, w, h } = fitCanvas(c);
-  PLAYOUT = layout(PREV.blocks, w, h, true);
-  ctx.clearRect(0, 0, w, h);
-  const starts = new Set(PREV.starts.map((s) => s[0]));
-  for (const p of Object.values(PLAYOUT.pos)) {
-    ctx.fillStyle = p.b.trusted ? css("--pipe") : css("--logic");
-    ctx.strokeStyle = starts.has(p.b.name) ? css("--bad") : css("--line2");
-    ctx.lineWidth = starts.has(p.b.name) ? 2 : 1;
-    roundRect(ctx, p.x, p.y, p.w, p.h, 2); ctx.fill(); ctx.stroke();
-  }
-}
-async function testModel(which) {
-  const out = $("#testOut");
-  out.hidden = false; out.textContent = "checking…";
-  const r = await api("/api/test", { which, cfg });
-  out.textContent = JSON.stringify(r, null, 1);
-}
-async function launch() {
-  $("#launchErr").textContent = "";
-  const r = await api("/api/launch", { cfg });
-  if (!r.ok) { $("#launchErr").textContent = r.error || "launch failed"; return; }
-  startDash();
-}
-$("#launchBtn").addEventListener("click", launch);
-$("#rejoinBtn").addEventListener("click", startDash);
-$("#testJev").addEventListener("click", () => testModel("jev"));
-$("#testChat").addEventListener("click", () => testModel("chat"));
+function famColor(c) { return css(c.mode === "solo" ? "--solo" : c.mode === "leader" ? "--boy" : "--irr"); }
 
-/* ---------------------------------------------------------------------------------------------- dashboard */
-async function startDash() {
-  STATIC = await api("/api/static");
-  if (STATIC.error) return;
-  FRAME = null; SECRET = null; SEL = null; lastProbeN = 0; flashes.length = 0;
-  for (const k of Object.keys(agentPos)) delete agentPos[k];
-  $("#launch").hidden = true; $("#dash").hidden = false;
-  $("#dTitle").textContent = `${settingLabel(STATIC.cfg)} · bug #${STATIC.cfg.seed} · ${STATIC.brief.test}`;
-  $("#fTest").textContent = STATIC.brief.test;
-  $("#fText").textContent = STATIC.brief.failure;
-  $("#speed").value = STATIC.cfg.speed;
-  $("#speedVal").textContent = STATIC.cfg.speed;
-  $("#inspector").hidden = true;
-  $("#resultCard").hidden = true;
-  $("#tTruth").checked = false;
-  renderLegend();
-  if (ES) ES.close();
-  ES = new EventSource("/api/stream");
-  ES.onmessage = (e) => onFrame(JSON.parse(e.data));
-  ES.onerror = () => { /* the server ends the stream when a new case starts */ };
-  redrawAll();
-}
-function onFrame(f) {
-  FRAME = f;
-  if (f.probe_log && f.probes > lastProbeN) {
-    const fresh = f.probes - lastProbeN;
-    f.probe_log.slice(-fresh).forEach((p) => flashes.push({ block: p.block, t0: performance.now(), bad: p.mismatch }));
-    lastProbeN = f.probes;
+/* ---------------------------------------------------------------------------------------------- schematic layout */
+const COLS = [
+  { key: "IF", w: 1.0 }, { key: "IF/ID", w: 0.6 }, { key: "ID decode", w: 1.0 }, { key: "ID control", w: 1.05 },
+  { key: "ID registers", w: 1.0 }, { key: "ID/EX", w: 0.6 }, { key: "EX fwd + branch", w: 1.05 }, { key: "EX ALU", w: 1.0 },
+  { key: "EX/MEM", w: 0.6 }, { key: "MEM", w: 0.75 }, { key: "MEM/WB", w: 0.6 }, { key: "WB", w: 0.9 },
+];
+const VW = 1000, VH = 640, TOP = 34, FLOOR = 572;
+function colOf(b) {
+  switch (b.stage) {
+    case "IF": return 0; case "IF/ID": return 1;
+    case "ID": return b.group === "decoder" ? 2 : (b.group === "control" || b.group === "hazard") ? 3 : 4;
+    case "ID/EX": return 5; case "EX": return b.group === "alu" ? 7 : 6;
+    case "EX/MEM": return 8; case "MEM": return 9; case "MEM/WB": return 10; default: return 11;
   }
-  renderMetrics(f); renderSuspects(f); renderEvents(f); renderGuesses(f);
-  $("#dPhase").textContent = f.ended ? "finished" : `tick ${f.tick}/${f.deadline} · ${(f.tick * f.tick_min / 60).toFixed(2)} h`;
-  $("#bPause").textContent = f.paused ? "Resume" : "Pause";
-  if (f.ended) showResult(f);
-  drawWave();
 }
-function renderLegend() {
-  const items = [["--logic", "logic block"], ["--pipe", "register / memory (verified)"], ["--front", "next on the back-trace", true],
-    ["--good", "cleared"], ["--warn", "mismatched once"], ["--bad", "confirmed bad"]];
-  $("#legend").innerHTML = items.map(([v, t, ring]) => `<span><i style="${ring ? `border:2px solid var(${v});background:transparent` : `background:var(${v})`}"></i>${t}</span>`).join("");
-}
-function card(label, value, title) { return `<div class="mc" title="${esc(title || "")}"><b>${value}</b><span>${label}</span></div>`; }
-function renderMetrics(f) {
-  const cards = [
-    card("case time", `${(f.tick * f.tick_min / 60).toFixed(1)}<span class="meta">/${(f.deadline * f.tick_min / 60).toFixed(0)} h</span>`, `tick ${f.tick} of ${f.deadline}`),
-    card("probes", f.probe_budget ? `${f.probes}<span class="meta">/${f.probe_budget}</span>` : f.probes, "checks and bench drives"),
-    card("model spend", `$${f.cost.toFixed(4)}`, `cap $${f.budget_usd}`),
-    card("model calls", f.calls, `${f.failures} failed, ${f.fallbacks} fell back to the rule`),
-    card(f.mode === "swarm" ? "Irregulars" : f.mode === "leader" ? "boys" : "debugger", f.agents.length),
-    card("seconds", f.elapsed.toFixed(0)),
-  ];
-  let extra = "";
-  if (f.mode === "swarm" && f.tally) {
-    const need = Math.ceil(f.quorum_need);
-    extra = `<div class="tally small"><b>Votes</b> (quorum ${need})` + (f.tally.length ? f.tally.map(([lab, k]) =>
-      `<div class="sus"><span class="mono">${esc(lab.replace("|", " / "))}</span><span class="meta">${k}</span><div class="bar"><i style="width:${Math.min(100, Math.round(100 * k / need))}%;background:var(--accent)"></i></div></div>`).join("") : "<p class='muted'>nobody votes yet</p>") + "</div>";
-  }
-  if (f.mode === "leader") extra = `<p class="small muted">Holmes planned ${f.holmes?.calls ?? 0} time(s) with the model · ${f.queue ?? 0} errand(s) waiting · Wiggins' bag: ${f.bag ?? 0}` +
-    (f.holmes?.distrusted?.length ? ` · distrusts boy(s) ${f.holmes.distrusted.join(", ")}` : "") + "</p>";
-  $("#metrics").innerHTML = `<div class="metrics">${cards.join("")}</div>${extra}`;
-}
-function renderSuspects(f) {
-  const rows = Object.entries(f.heat).filter(([, v]) => v[1] === "x" || v[1] === "u" || v[1] === "r")
-    .sort((a, b) => b[1][0] - a[1][0]).slice(0, 8);
-  const label = { x: "suspect", u: "unsure", r: "red herring" };
-  const col = { x: "--bad", u: "--warn", r: "--faint" };
-  let html = rows.length ? rows.map(([b, v]) => `<div class="sus" data-b="${esc(b)}"><span class="mono">${esc(b)}</span><span class="meta">${label[v[1]]} ${v[0].toFixed(2)}</span>
-      <div class="bar"><i style="width:${Math.round(v[0] * 100)}%;background:var(${col[v[1]]})"></i></div></div>`).join("") : "<p class='muted'>No suspects yet.</p>";
-  const cleared = Object.values(f.heat).filter((v) => v[1] === "c").length;
-  html += `<p class="meta">${cleared} block${cleared === 1 ? "" : "s"} cleared.` +
-    (f.frontier.length ? ` Next on the back-trace: ${f.frontier.slice(0, 5).map((x) => `<span class="mono">${esc(x[0])}@${x[1]}</span>`).join(", ")}` : "") + "</p>";
-  if (f.answer) html += `<p><b>Named:</b> <span class="mono">${esc(f.answer.block)}.${esc(f.answer.port)}</span> — ${esc(f.answer.desc || "")}</p>`;
-  $("#suspects").innerHTML = html;
-  $("#suspects").querySelectorAll(".sus").forEach((d) => d.addEventListener("click", () => select(d.dataset.b)));
-}
-function renderEvents(f) {
-  $("#events").innerHTML = f.events.slice().reverse().map((e) => `<div class="ev ${esc(e.kind)}"><span class="t">${e.t.toFixed(1)}s</span>${esc(e.text)}</div>`).join("");
-}
-function renderGuesses(f) {
-  if (!f.guesses.length) return;
-  $("#guesses").innerHTML = f.guesses.map((g) => `<div>You suspected <span class="mono">${esc(g.block)}</span> after ${g.probes} probes` +
-    (f.ended && f.secret ? (g.block === f.secret.block ? " — <span class='ok'>right</span>" : " — <span class='no'>wrong</span>") : "") + "</div>").join("");
-}
-function showResult(f) {
-  const r = f.result, s = f.secret, a = f.answer;
-  if (!r || !s) return;
-  const el = $("#resultCard");
-  el.hidden = false;
-  el.className = "card result " + (r.fix_ok ? "win" : "lose");
-  const mk = (ok) => `<span class="${ok ? "ok" : "no"}">${ok ? "yes" : "no"}</span>`;
-  const named = a ? a.fixes.map((x) => `<span class="mono">${esc(x.block)}.${esc(x.port)}</span>: ${esc(x.desc || "")}`).join("<br>") : (f.mode === "swarm" ? "No quorum: the swarm gave no answer." : "No answer.");
-  const bugs = s.bugs.map((b) => `<span class="mono">${esc(b.block)}.${esc(b.port)}</span>, ${esc(b.type_label)}: ${esc(b.desc)}${b.rare ? " (rare trigger)" : ""}`).join("<br>");
-  el.innerHTML = `<h3>${r.fix_ok ? "Fixed: every test passes" : f.summary?.wrong_quorum ? "Wrong quorum" : "Not fixed"}</h3>
-    <p class="small">${named}</p>
-    <p class="small">The bug${s.bugs.length > 1 ? "s" : ""}: ${bugs}</p>
-    <div class="marks small"><span>Faulty block${s.bugs.length > 1 ? "s" : ""}</span>${mk(r.block_ok)}<span>Signal</span>${mk(r.location_ok)}
-      <span>Bug type</span>${mk(r.type_ok)}<span>Fix passes the tests</span><span>${mk(r.fix_ok)} <span class="meta">${r.tests_passed ?? "-"}/${r.tests_total}</span></span>
-      <span>Case time</span><span class="mono">${f.summary ? f.summary.sim_hours : "-"} h</span><span>Probes</span><span class="mono">${f.probes}</span>
-      <span>Model spend</span><span class="mono">$${f.cost.toFixed(4)}</span>${f.liars && f.liars.length ? `<span>Liars</span><span class="mono">#${f.liars.join(", #")}</span>` : ""}</div>
-    <button type="button" id="bNew2" class="primary">New case</button>`;
-  $("#bNew2").onclick = goLaunch;
-}
-
-/* ---------------------------------------------------------------------------------------------- schematic */
-function blockStatus(name) { return FRAME && FRAME.heat[name]; }
-function drawSchem(now) {
-  const c = $("#schem");
-  if (!STATIC || $("#dash").hidden) return;
-  const { ctx, w, h } = fitCanvas(c);
-  LAYOUT = layout(STATIC.blocks, w, h, false);
-  const L = LAYOUT;
-  ctx.clearRect(0, 0, w, h);
-  // column headers and separators
-  ctx.font = "600 10.5px " + css("--f-ui");
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  L.colX.forEach(([x, cw], i) => {
-    ctx.fillStyle = css("--muted");
-    ctx.fillText(COLS[i].key, x + cw / 2, 12);
-    if (COLS[i].w < 0.7) { ctx.fillStyle = alpha(css("--pipe"), 0.35); ctx.fillRect(x + 2, L.top - 4, cw - 4, h - L.top - L.bottom + 8); }
+const short = (n) => n.replace(/^(ifid|idex|exmem|memwb)_/, "");
+function layout(blocks) {
+  const tw = COLS.reduce((s, c) => s + c.w, 0), unit = (VW - 16) / tw;
+  const cols = COLS.map(() => []);
+  blocks.forEach((b) => cols[colOf(b)].push(b));
+  const maxRows = Math.max(...cols.map((c) => c.length)), rowH = (FLOOR - TOP - 10) / maxRows;
+  const pos = {}, colX = [];
+  let x = 8;
+  COLS.forEach((c, i) => {
+    const cw = c.w * unit; colX.push([x, cw]);
+    const list = cols[i], y0 = TOP + (FLOOR - TOP - 10 - list.length * rowH) / 2;
+    list.forEach((b, k) => {
+      const bw = cw - 12, bh = rowH - 6;
+      pos[b.name] = { x: x + 6, y: y0 + k * rowH + 3, w: bw, h: bh, cx: x + cw / 2, cy: y0 + k * rowH + rowH / 2, b };
+    });
+    x += cw;
   });
-  // edges of the selected / hovered block
-  const focus = HOVER || SEL;
-  if (focus) {
-    for (const [src, dst, port] of STATIC.edges) {
-      if (src !== focus && dst !== focus) continue;
-      const a = L.pos[src], b = L.pos[dst];
-      if (!a || !b) continue;
-      const x1 = a.x + a.w, y1 = a.y + a.h / 2, x2 = b.x, y2 = b.y + b.h / 2;
-      ctx.strokeStyle = dst === focus ? css("--info") : css("--accent");
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      if (x2 > x1) { const mx = (x1 + x2) / 2; ctx.moveTo(x1, y1); ctx.bezierCurveTo(mx, y1, mx, y2, x2, y2); }
-      else { ctx.moveTo(x1, y1); ctx.bezierCurveTo(x1 + 40, y1 - 60, x2 - 40, y2 - 60, x2, y2); }
-      ctx.stroke();
+  return { pos, colX, rowH };
+}
+let LAY = null, ADJ = null, BY = {};
+function prepare(blocks, edges) {
+  LAY = layout(blocks);
+  BY = {}; blocks.forEach((b) => (BY[b.name] = b));
+  ADJ = {}; blocks.forEach((b) => (ADJ[b.name] = new Set()));
+  for (const [a, b] of edges) { if (a !== b) { ADJ[a].add(b); ADJ[b].add(a); } }
+  PATHS.clear();
+}
+const PATHS = new Map();
+function wirePath(a, b) {
+  if (!a || !b || a === b || !ADJ[a] || !ADJ[b]) return null;
+  const k = a + ">" + b;
+  if (PATHS.has(k)) return PATHS.get(k);
+  const prev = { [a]: null }, q = [a];
+  while (q.length) { const u = q.shift(); if (u === b) break; for (const v of ADJ[u]) if (!(v in prev)) { prev[v] = u; q.push(v); } }
+  const ids = []; let u = b; while (u) { ids.unshift(u); u = prev[u]; }
+  const pts = ids.map((id) => [LAY.pos[id].cx, LAY.pos[id].cy]);
+  if (PATHS.size > 4000) PATHS.clear();
+  PATHS.set(k, pts);
+  return pts;
+}
+function along(pts, f) {
+  if (!pts || pts.length === 1) return pts ? pts[0] : null;
+  const segs = []; let total = 0;
+  for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); total += l; }
+  let d = Math.max(0, Math.min(1, f)) * total;
+  for (let i = 0; i < segs.length; i++) {
+    if (d <= segs[i]) { const t = segs[i] ? d / segs[i] : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * t, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * t]; }
+    d -= segs[i];
+  }
+  return pts[pts.length - 1];
+}
+const DESK = [120, FLOOR + 40];
+function postXY(col) { if (col === null || col === undefined || !LAY) return null; const [x, cw] = LAY.colX[col]; return [x + cw / 2, FLOOR + 34]; }
+
+/* ---------------------------------------------------------------------------------------------- camera */
+const CAM = { z: 1, cx: VW / 2, cy: VH / 2, from: null, to: null, t0: 0, dur: 0, drag: null };
+function view(c) { const W = c.clientWidth, H = c.clientHeight; return { W, H, s: Math.min(W / VW, H / VH) }; }
+function camNow() {
+  if (!CAM.to) return CAM;
+  const k = CAM.dur ? Math.min(1, (performance.now() - CAM.t0) / CAM.dur) : 1, e = ease(k);
+  CAM.z = CAM.from.z + (CAM.to.z - CAM.from.z) * e; CAM.cx = CAM.from.cx + (CAM.to.cx - CAM.from.cx) * e; CAM.cy = CAM.from.cy + (CAM.to.cy - CAM.from.cy) * e;
+  if (k >= 1) CAM.to = null;
+  return CAM;
+}
+function camTo(z, cx, cy, dur = 900) { CAM.from = { z: CAM.z, cx: CAM.cx, cy: CAM.cy }; CAM.to = { z, cx, cy }; CAM.t0 = performance.now(); CAM.dur = REDUCED.matches ? 0 : dur; }
+const P = (v, x, y) => [v.W / 2 + (x - CAM.cx) * v.s * CAM.z, v.H / 2 + (y - CAM.cy) * v.s * CAM.z];
+const UP = (v, X, Y) => [CAM.cx + (X - v.W / 2) / (v.s * CAM.z), CAM.cy + (Y - v.H / 2) / (v.s * CAM.z)];
+
+/* ---------------------------------------------------------------------------------------------- base layer */
+const BASES = new Map();
+function baseLayer(c) {
+  const v = view(c), dpr = devicePixelRatio || 1;
+  const key = `${v.W}x${v.H}|${effectiveTheme()}|${CAM.z.toFixed(3)}|${CAM.cx.toFixed(1)}|${CAM.cy.toFixed(1)}|${ST ? ST.cfg.seed : 0}`;
+  if (BASES.has(key)) return BASES.get(key);
+  if (BASES.size > 8) BASES.delete(BASES.keys().next().value);
+  const off = document.createElement("canvas"); off.width = v.W * dpr; off.height = v.H * dpr;
+  const g = off.getContext("2d"); g.scale(dpr, dpr);
+  g.fillStyle = css("--board"); g.fillRect(0, 0, v.W, v.H);
+  const S = v.s * CAM.z;
+  // stage bands
+  LAY.colX.forEach(([x, cw], i) => {
+    const [x1, y1] = P(v, x, TOP - 6), [x2, y2] = P(v, x + cw, FLOOR);
+    g.fillStyle = COLS[i].w < 0.7 ? css("--band-pipe") : (i % 2 ? css("--band") : "transparent");
+    g.fillRect(x1, y1, x2 - x1, y2 - y1);
+    g.fillStyle = css("--muted"); g.font = `600 ${Math.max(8, 10.5 * Math.min(1.4, S))}px ${css("--f-ui")}`; g.textAlign = "center";
+    const [lx, ly] = P(v, x + cw / 2, TOP - 14); g.fillText(COLS[i].key, lx, ly);
+  });
+  // bench floor
+  const [fx1, fy1] = P(v, 0, FLOOR + 6), [fx2, fy2] = P(v, VW, VH);
+  g.fillStyle = css("--band-pipe"); g.fillRect(fx1, fy1, fx2 - fx1, fy2 - fy1);
+  // wires
+  // forward wires solid; feedback wires (to an earlier stage) fainter, so the pipeline still reads left to right
+  const back = (a, b) => LAY.pos[b] && LAY.pos[a] && LAY.pos[b].x <= LAY.pos[a].x + LAY.pos[a].w;
+  g.lineWidth = Math.max(0.6, 0.8 * S);
+  g.strokeStyle = css("--wire"); g.beginPath();
+  for (const [a, b] of ST.edges) if (!back(a, b)) wireCurve(g, v, a, b);
+  g.stroke();
+  g.save(); g.globalAlpha = 0.35; g.setLineDash([3, 4]); g.beginPath();
+  for (const [a, b] of ST.edges) if (back(a, b)) wireCurve(g, v, a, b);
+  g.stroke(); g.restore();
+  // blocks
+  for (const p of Object.values(LAY.pos)) {
+    const [x, y] = P(v, p.x, p.y), w = p.w * S, h = p.h * S;
+    rr(g, x, y, w, h, 4 * Math.min(1, S)); g.fillStyle = p.b.trusted ? css("--pipe") : css("--logic"); g.fill();
+    g.strokeStyle = css("--line2"); g.lineWidth = 1; g.stroke();
+    if (h > 9) {
+      g.fillStyle = p.b.trusted ? css("--pipe-ink") : css("--board-ink");
+      g.font = `${p.b.trusted ? 400 : 500} ${Math.min(13, Math.max(8, 10 * S))}px ${css("--f-mono")}`; g.textAlign = "center"; g.textBaseline = "middle";
+      let lab = p.b.trusted ? short(p.b.name) : p.b.name;
+      while (lab.length > 2 && g.measureText(lab).width > w - 6) lab = lab.slice(0, -1);
+      g.fillText(lab, x + w / 2, y + h / 2 + 0.5);
     }
   }
-  const truth = ($("#tTruth").checked && SECRET) || (FRAME && FRAME.ended && FRAME.secret) || null;
-  const guessSet = new Set((FRAME?.guesses || []).map((g) => g.block));
-  const starts = new Set(STATIC.starts.map((s) => s[0]));
-  ctx.font = "10.5px " + css("--f-mono");
-  for (const p of Object.values(L.pos)) {
-    const st = blockStatus(p.b.name);
-    ctx.fillStyle = p.b.trusted ? css("--pipe") : css("--logic");
-    roundRect(ctx, p.x, p.y, p.w, p.h, 4); ctx.fill();
+  g.textBaseline = "alphabetic";
+  // 221B desk
+  const [dx, dy] = P(v, 12, FLOOR + 12), dw = 150 * S, dh = 52 * S;
+  rr(g, dx, dy, dw, dh, 6); g.fillStyle = css("--surface"); g.fill(); g.strokeStyle = css("--line2"); g.stroke();
+  g.fillStyle = css("--muted"); g.font = `600 ${Math.max(8, 10 * S)}px ${css("--f-ui")}`; g.textAlign = "left";
+  g.fillText(ST.mode === "leader" ? "221B BAKER STREET" : ST.mode === "solo" ? "THE BENCH" : "THE BENCH FLOOR", dx + 8 * S, dy + 14 * S);
+  BASES.set(key, off);
+  return off;
+}
+function wireCurve(g, v, a, b, only) {
+  const A = LAY.pos[a], B = LAY.pos[b];
+  if (!A || !B) return;
+  const [x1, y1] = P(v, A.x + A.w, A.cy), [x2, y2] = P(v, B.x, B.cy);
+  g.moveTo(x1, y1);
+  if (x2 > x1 + 4) { const mx = (x1 + x2) / 2; g.bezierCurveTo(mx, y1, mx, y2, x2, y2); }
+  else { const lift = P(v, 0, TOP - 4)[1]; g.bezierCurveTo(x1 + 30, Math.min(y1, y2) - 40, x2 - 30, lift + 10, x2, y2); }
+}
+
+/* ---------------------------------------------------------------------------------------------- agents and tweening */
+const AG = { prev: new Map(), cur: new Map(), t0: 0, dur: 0, last: 0 };
+const RUN0 = new Map();     // boy id -> tick he started running back
+let WIG0 = null;            // tick Wiggins started running
+const FLASH = [];
+const RIPPLE = [];
+let lastProbeN = 0;
+function anchorOf(a) {
+  if (a.block && LAY.pos[a.block]) return { block: a.block, xy: [LAY.pos[a.block].cx, LAY.pos[a.block].cy] };
+  if (a.where === "post" && F && F.post !== null && F.post !== undefined) return { block: null, xy: postXY(F.post) };
+  return { block: null, xy: [DESK[0] + 30, DESK[1]] };
+}
+function retarget(f) {
+  const now = performance.now();
+  const gap = AG.last ? Math.min(1400, Math.max(150, now - AG.last)) : 0;
+  AG.last = now;
+  const shown = new Map();
+  for (const id of AG.cur.keys()) shown.set(id, agentXY(id));
+  AG.prev = new Map();
+  for (const [id, xy] of shown) AG.prev.set(id, { xy, block: (AG.cur.get(id) || {}).block });
+  AG.cur = new Map();
+  for (const a of f.agents) AG.cur.set(a.id, anchorOf(a));
+  AG.t0 = now; AG.dur = REDUCED.matches ? 0 : gap * 0.92;
+}
+function tk() { return AG.dur ? Math.min(1, (performance.now() - AG.t0) / AG.dur) : 1; }
+function agentXY(id) {
+  const c = AG.cur.get(id); if (!c) return null;
+  const p = AG.prev.get(id);
+  if (!p) return c.xy;
+  const k = ease(tk());
+  if (F && F.mode !== "swarm" && p.block && c.block && p.block !== c.block) {
+    const pts = wirePath(p.block, c.block);
+    if (pts) return along(pts, k);
+  }
+  return [p.xy[0] + (c.xy[0] - p.xy[0]) * k, p.xy[1] + (c.xy[1] - p.xy[1]) * k];
+}
+
+/* ---------------------------------------------------------------------------------------------- drawing the live map */
+const VOTEC = ["--v1", "--v2", "--v3", "--v4", "--v5"];
+function voteColor(label) {
+  if (!F || !F.tally) return css("--faint");
+  const i = F.tally.findIndex((t) => t[0] === label);
+  return i >= 0 && i < VOTEC.length ? css(VOTEC[i]) : css("--muted");
+}
+function truthOn() { return $("#tTruth").checked && SECRET; }
+let HOVER = null, SEL = null;
+
+function drawMap(now) {
+  const c = $("#map");
+  if (!ST || $("#dash").hidden || !LAY) return;
+  camNow();
+  const { g, w, h } = fitCanvas(c), v = view(c), S = v.s * CAM.z;
+  g.drawImage(baseLayer(c), 0, 0, w, h);
+  if (!F) return;
+  // focus wires (selected / hovered block)
+  const focus = (HOVER && HOVER.kind === "block" && HOVER.id) || (SEL && SEL.kind === "block" && SEL.id);
+  if (focus) {
+    for (const [a, b] of ST.edges) {
+      if (a !== focus && b !== focus) continue;
+      g.strokeStyle = b === focus ? css("--wire-hot") : css("--wire-out"); g.lineWidth = 1.6;
+      g.beginPath(); wireCurve(g, v, a, b); g.stroke();
+    }
+  }
+  // heat
+  const starts = new Set(ST.starts.map((s) => s[0]));
+  for (const p of Object.values(LAY.pos)) {
+    const [x, y] = P(v, p.x, p.y), bw = p.w * S, bh = p.h * S, st = F.heat[p.b.name];
     if (st) {
       const [s, k] = st;
-      if (k === "x") { ctx.fillStyle = alpha(css("--bad"), 0.25 + 0.6 * s); roundRect(ctx, p.x, p.y, p.w, p.h, 4); ctx.fill(); }
-      else if (k === "c") { ctx.fillStyle = alpha(css("--good"), 0.22); roundRect(ctx, p.x, p.y, p.w, p.h, 4); ctx.fill(); }
-      else if (k === "u") { ctx.fillStyle = alpha(css("--warn"), 0.3); roundRect(ctx, p.x, p.y, p.w, p.h, 4); ctx.fill(); }
-      else if (k === "r") { ctx.fillStyle = alpha(css("--faint"), 0.25); roundRect(ctx, p.x, p.y, p.w, p.h, 4); ctx.fill(); }
+      g.save(); rr(g, x, y, bw, bh, 4 * Math.min(1, S));
+      if (k === "x") { g.fillStyle = alpha(css("--bad"), 0.3 + 0.5 * s); g.fill(); }
+      else if (k === "c") { g.fillStyle = alpha(css("--good"), 0.22); g.fill(); }
+      else if (k === "u") { g.fillStyle = alpha(css("--warn"), 0.28); g.fill(); }
+      else if (k === "f") { g.setLineDash([4, 3]); g.lineDashOffset = -now / 60; g.strokeStyle = css("--front"); g.lineWidth = 1.2 + 2.2 * s; g.stroke(); }
+      g.restore();
     }
-    ctx.lineWidth = 1; ctx.strokeStyle = css("--line2"); ctx.setLineDash([]);
-    if (st && st[1] === "f") { ctx.strokeStyle = css("--front"); ctx.lineWidth = 1.5 + 3 * st[0]; }
-    if (st && st[1] === "r") ctx.setLineDash([4, 3]);
-    if (starts.has(p.b.name) && !st) { ctx.strokeStyle = css("--bad"); ctx.lineWidth = 1.5; }
-    if (p.b.name === SEL) { ctx.strokeStyle = css("--ink"); ctx.lineWidth = 2; }
-    roundRect(ctx, p.x, p.y, p.w, p.h, 4); ctx.stroke(); ctx.setLineDash([]);
-    if (FRAME?.answer && FRAME.answer.block === p.b.name) {
-      ctx.strokeStyle = css("--accent"); ctx.lineWidth = 2.5; roundRect(ctx, p.x - 3, p.y - 3, p.w + 6, p.h + 6, 6); ctx.stroke();
+    if (starts.has(p.b.name)) {
+      g.fillStyle = css("--bad"); g.beginPath(); g.arc(x + bw - 3, y + 3, 4.5, 0, 7); g.fill();
+      g.fillStyle = "#fff"; g.font = `700 7px ${css("--f-ui")}`; g.textAlign = "center"; g.fillText("!", x + bw - 3, y + 5.5);
     }
-    if (truth && truth.block === p.b.name) {
-      ctx.strokeStyle = css("--bad"); ctx.lineWidth = 2.5; ctx.setLineDash([5, 3]);
-      roundRect(ctx, p.x - 5, p.y - 5, p.w + 10, p.h + 10, 7); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = css("--bad"); ctx.font = "600 10px " + css("--f-ui"); ctx.textAlign = "right";
-      ctx.fillText("BUG", p.x + p.w, p.y - 9); ctx.font = "10.5px " + css("--f-mono");
+    if (SEL && SEL.kind === "block" && SEL.id === p.b.name) { rr(g, x - 2, y - 2, bw + 4, bh + 4, 6); g.strokeStyle = css("--ink"); g.lineWidth = 2; g.stroke(); }
+    if (F.answer && F.answer.fixes.some((x2) => x2.block === p.b.name)) { rr(g, x - 4, y - 4, bw + 8, bh + 8, 7); g.strokeStyle = css("--accent"); g.lineWidth = 2.5; g.stroke(); }
+    if (truthOn() && SECRET.bugs.some((bg) => bg.block === p.b.name)) {
+      g.save(); g.setLineDash([5, 3]); rr(g, x - 6, y - 6, bw + 12, bh + 12, 8); g.strokeStyle = css("--bad"); g.lineWidth = 2.5; g.stroke(); g.restore();
+      g.fillStyle = css("--bad"); g.font = `700 ${Math.max(9, 10 * S)}px ${css("--f-ui")}`; g.textAlign = "right"; g.fillText("BUG", x + bw + 4, y - 8);
     }
-    ctx.fillStyle = css("--ink"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    let label = p.b.trusted ? shortName(p.b.name) : p.b.name;
-    while (label.length > 2 && ctx.measureText(label).width > p.w - 6) label = label.slice(0, -1);
-    if (p.h >= 9) ctx.fillText(label, p.x + p.w / 2, p.y + p.h / 2 + 0.5);
-    if (guessSet.has(p.b.name)) { ctx.fillStyle = css("--accent"); ctx.font = "13px " + css("--f-ui"); ctx.fillText("★", p.x + p.w - 6, p.y + 5); ctx.font = "10.5px " + css("--f-mono"); }
+    if ((F.guesses || []).some((q) => q.block === p.b.name)) { g.fillStyle = css("--accent"); g.font = `14px ${css("--f-ui")}`; g.textAlign = "left"; g.fillText("★", x + 2, y + 11); }
   }
   // probe flashes
-  for (let i = flashes.length - 1; i >= 0; i--) {
-    const fl = flashes[i], p = L.pos[fl.block];
-    const age = (now - fl.t0) / 900;
-    if (age > 1 || !p) { flashes.splice(i, 1); continue; }
-    ctx.strokeStyle = alpha(fl.bad ? css("--bad") : css("--info"), 1 - age);
-    ctx.lineWidth = 2;
-    roundRect(ctx, p.x - 6 * age - 2, p.y - 6 * age - 2, p.w + 12 * age + 4, p.h + 12 * age + 4, 6); ctx.stroke();
+  for (let i = FLASH.length - 1; i >= 0; i--) {
+    const fl = FLASH[i], p = LAY.pos[fl.block], age = (now - fl.t0) / 1000;
+    if (age > 1 || !p) { FLASH.splice(i, 1); continue; }
+    const [x, y] = P(v, p.x, p.y), bw = p.w * S, bh = p.h * S, e = 7 * age;
+    rr(g, x - e, y - e, bw + 2 * e, bh + 2 * e, 6); g.strokeStyle = alpha(fl.bad ? css("--bad") : css("--info"), 1 - age); g.lineWidth = 2; g.stroke();
   }
-  drawAgents(ctx, L, w, h);
+  if (F.mode === "solo") drawSolo(g, v, S, now);
+  else if (F.mode === "leader") drawLeader(g, v, S, now);
+  else drawSwarm(g, v, S, now);
 }
-function drawAgents(ctx, L, w, h) {
-  if (!FRAME) return;
-  const color = css(trackColor(STATIC.cfg) || "--jev");
-  const swarm = FRAME.mode === "swarm";
-  const at = {};
-  FRAME.agents.forEach((a) => { const k = a.block || "_" + (a.where || "hq"); (at[k] = at[k] || []).push(a); });
-  // Holmes at 221B (bottom left), Wiggins at his post
-  if (FRAME.mode === "leader") {
-    ctx.fillStyle = css("--ink"); ctx.font = "600 10px " + css("--f-ui"); ctx.textAlign = "left";
-    ctx.fillText("221B Baker Street", 10, h - 30);
-    drawToken(ctx, 22, h - 14, "H", css("--ink"), 9);
-    if (FRAME.post !== null && FRAME.post !== undefined && L.colX[FRAME.post]) {
-      const [x, cw] = L.colX[FRAME.post];
-      drawToken(ctx, x + cw / 2, h - 14, "W", css("--accent"), 9);
+function token(g, x, y, r, fill, label, ring) {
+  g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = fill; g.fill();
+  g.lineWidth = ring ? 2 : 1.4; g.strokeStyle = ring ? css("--ink") : css("--surface"); g.stroke();
+  if (label) { g.fillStyle = effectiveTheme() === "dark" && fill === css("--holmes") ? "#131816" : "#fff"; g.font = `600 ${Math.max(8, r * 1.05)}px ${css("--f-ui")}`;
+    g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(label, x, y + 0.5); g.textBaseline = "alphabetic"; }
+}
+function drawSolo(g, v, S, now) {
+  const tr = F.trail || [];
+  // the probe path: a fading polyline through every block probed, numbered
+  const pts = tr.map((t) => LAY.pos[t.block]).filter(Boolean);
+  if (pts.length > 1) {
+    for (let i = 1; i < pts.length; i++) {
+      const a = P(v, pts[i - 1].cx, pts[i - 1].cy), b = P(v, pts[i].cx, pts[i].cy);
+      g.strokeStyle = alpha(css("--solo"), 0.15 + 0.6 * (i / pts.length)); g.lineWidth = 2;
+      g.setLineDash([6, 4]); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+    }
+    g.setLineDash([]);
+  }
+  tr.forEach((t, i) => {
+    const p = LAY.pos[t.block]; if (!p) return;
+    const [x, y] = P(v, p.x + 10, p.y + p.h - 4);
+    g.beginPath(); g.arc(x, y, 7, 0, 7); g.fillStyle = t.mismatch ? css("--bad") : css("--surface"); g.fill();
+    g.strokeStyle = css("--solo"); g.lineWidth = 1.4; g.stroke();
+    g.fillStyle = t.mismatch ? "#fff" : css("--ink"); g.font = `600 8px ${css("--f-mono")}`; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(String(i + 1), x, y + 0.5); g.textBaseline = "alphabetic";
+  });
+  const a = F.agents[0], xy = agentXY(a.id);
+  if (xy) { const [x, y] = P(v, xy[0], xy[1]); token(g, x, y - 12, 9, css("--solo"), F.policy === "chat" ? "G" : F.policy === "jev" ? "J" : "D", true); }
+}
+function drawLeader(g, v, S, now) {
+  // Holmes at his desk, Wiggins at his post (or running to Baker Street with the bag)
+  const [hx, hy] = P(v, 30, FLOOR + 44); token(g, hx, hy, 10, css("--holmes"), "H");
+  g.fillStyle = css("--ink"); g.font = `${Math.max(9, 10.5 * Math.min(1.3, S))}px ${css("--f-ui")}`; g.textAlign = "left";
+  g.fillText(F.holmes && F.holmes.kind === "chat" ? "Holmes · gpt-6-astra" : "Holmes · counting", hx + 15, hy + 4);
+  const post = F.post !== null && F.post !== undefined ? postXY(F.post) : null;
+  if (post) {
+    let wxy = post;
+    if (F.transit && F.transit.length) {
+      if (WIG0 === null) WIG0 = F.tick;
+      const arr = Math.min(...F.transit.map((t) => t.arrive)), span = Math.max(1, arr - WIG0);
+      const k = Math.min(1, (F.tick - 1 + tk() - WIG0) / span);
+      wxy = [post[0] + (DESK[0] - post[0]) * k, post[1] + (DESK[1] - post[1]) * k];
+    } else WIG0 = null;
+    const [px, py] = P(v, post[0], post[1]);
+    g.strokeStyle = css("--wiggins"); g.lineWidth = 1.5; g.beginPath(); g.moveTo(px, py + 12); g.lineTo(px, py - 14); g.stroke();
+    g.fillStyle = css("--wiggins"); g.beginPath(); g.moveTo(px, py - 14); g.lineTo(px + 12, py - 10); g.lineTo(px, py - 6); g.fill();
+    const [wx, wy] = P(v, wxy[0], wxy[1]); token(g, wx + 12, wy + 2, 9, css("--wiggins"), "W");
+    if (F.bag) { g.fillStyle = css("--muted"); g.font = `10px ${css("--f-ui")}`; g.textAlign = "left"; g.fillText(`bag: ${F.bag}`, wx + 24, wy + 6); }
+  }
+  // dashed lines from each boy to the blocks left on his errand
+  const runners = new Map((F.runners || []).map((r) => [r.boy, r]));
+  for (const a of F.agents) {
+    const xy = agentXY(a.id); if (!xy) continue;
+    if (a.items && a.items.length && a.status !== "returning") {
+      g.save(); g.setLineDash([3, 4]); g.strokeStyle = alpha(css("--boy"), 0.55); g.lineWidth = 1.2;
+      a.items.forEach((b, i) => {
+        if ((a.done || []).includes(i)) return;
+        const p = LAY.pos[b]; if (!p) return;
+        const [x1, y1] = P(v, xy[0], xy[1]), [x2, y2] = P(v, p.cx, p.cy);
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+      });
+      g.restore();
     }
   }
-  const leading = swarm && FRAME.tally && FRAME.tally[0] ? FRAME.tally[0][0] : null;
-  for (const [k, list] of Object.entries(at)) {
+  for (const a of F.agents) {
+    let xy = agentXY(a.id); if (!xy) continue;
+    const r = runners.get(a.id);
+    if (r) {   // running back with the report, envelope in hand
+      if (!RUN0.has(a.id)) RUN0.set(a.id, F.tick);
+      const t0 = RUN0.get(a.id), dest = r.to === "post" && post ? post : DESK, span = Math.max(1, r.arrive - t0);
+      const k = Math.min(1, (F.tick - 1 + tk() - t0) / span);
+      xy = [xy[0] + (dest[0] - xy[0]) * k, xy[1] + (dest[1] - xy[1]) * k];
+    } else RUN0.delete(a.id);
+    const [x, y] = P(v, xy[0], xy[1]);
+    const liar = truthOn() && (F.liars || SECRET.liars || []).includes(a.id);
+    token(g, x + ((a.id % 4) - 1.5) * 6, y + (a.id % 3) * 5 - 5, 7.5, css("--boy"), String(a.id), a.status === "probing");
+    if (liar) { g.strokeStyle = css("--liar"); g.lineWidth = 2; g.beginPath(); g.arc(x + ((a.id % 4) - 1.5) * 6, y + (a.id % 3) * 5 - 5, 10.5, 0, 7); g.stroke(); }
+    if (r) { g.fillStyle = css("--surface"); g.strokeStyle = css("--boy"); g.lineWidth = 1; g.fillRect(x + 6, y - 14, 10, 7); g.strokeRect(x + 6, y - 14, 10, 7);
+      g.beginPath(); g.moveTo(x + 6, y - 14); g.lineTo(x + 11, y - 10); g.lineTo(x + 16, y - 14); g.stroke(); }
+    if (SEL && SEL.kind === "agent" && SEL.id === a.id) { g.strokeStyle = css("--ink"); g.lineWidth = 2; g.beginPath(); g.arc(x, y, 13, 0, 7); g.stroke(); }
+  }
+}
+let DOTS = [];
+function drawSwarm(g, v, S, now) {
+  DOTS = [];
+  // radio ripples where someone shared this tick
+  for (let i = RIPPLE.length - 1; i >= 0; i--) {
+    const rp = RIPPLE[i], age = (now - rp.t0) / 1400, p = LAY.pos[rp.block];
+    if (age > 1 || !p) { RIPPLE.splice(i, 1); continue; }
+    const [x, y] = P(v, p.cx, p.cy), R = (14 + 26 * (F.range || 2)) * S * ease(age);
+    g.strokeStyle = alpha(css("--info"), 0.45 * (1 - age)); g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, R, 0, 7); g.stroke();
+  }
+  const byBlock = {};
+  for (const a of F.agents) (byBlock[a.block] = byBlock[a.block] || []).push(a);
+  const leading = F.tally && F.tally[0] ? F.tally[0][0] : null;
+  for (const [b, list] of Object.entries(byBlock)) {
+    const p = LAY.pos[b]; if (!p) continue;
     list.forEach((a, i) => {
-      let tx, ty;
-      if (k.startsWith("_")) {
-        const base = k === "_post" && FRAME.post !== null && L.colX[FRAME.post] ? L.colX[FRAME.post][0] : 40;
-        tx = base + 14 + (i % 12) * 15; ty = h - 14 - Math.floor(i / 12) * 15;
-      } else {
-        const p = L.pos[k];
-        if (!p) return;
-        if (swarm) { tx = p.x + 4 + (i % 8) * (p.w - 8) / 8; ty = p.y + p.h - 3 - Math.floor(i / 8) * 4; }
-        else { tx = p.x + p.w - 6 - (i % 4) * 13; ty = p.y + p.h / 2 + (i >= 4 ? 9 : 0); }
-      }
-      const cur = agentPos[a.id] || (agentPos[a.id] = { x: tx, y: ty });
-      cur.x += (tx - cur.x) * 0.15; cur.y += (ty - cur.y) * 0.15;
-      if (swarm) {
-        ctx.beginPath(); ctx.arc(cur.x, cur.y, 2.6, 0, Math.PI * 2);
-        ctx.fillStyle = a.vote ? (a.vote === leading ? css("--accent") : css("--bad")) : color;
-        ctx.fill();
-      } else {
-        drawToken(ctx, cur.x, cur.y, FRAME.mode === "solo" ? "S" : String(a.id), color, 7.5, a.status === "probing");
-      }
+      const xy = agentXY(a.id); if (!xy) return;
+      // a strip of dots along the bottom edge of the block, below its label
+      const per = Math.max(6, Math.floor((p.w - 8) / 6.5)), col = i % per, row = Math.floor(i / per);
+      const ox = -p.w / 2 + 5 + col * ((p.w - 10) / Math.max(1, per - 1)), oy = p.h / 2 - 3.2 - row * 4.2;
+      const [x, y] = P(v, xy[0] + ox, xy[1] + oy);
+      const vc = a.vote ? voteColor(a.vote) : css("--irr");
+      DOTS.push({ id: a.id, x, y });
+      g.beginPath(); g.arc(x, y, a.vote ? 2.9 : 2.3, 0, 7); g.fillStyle = a.vote ? vc : alpha(vc, 0.85); g.fill();
+      if (a.vote === leading && a.vote) { g.strokeStyle = css("--surface"); g.lineWidth = 0.8; g.stroke(); }
+      if (truthOn() && (F.liars || SECRET.liars || []).includes(a.id)) { g.strokeStyle = css("--liar"); g.lineWidth = 1.6; g.beginPath(); g.arc(x, y, 5.5, 0, 7); g.stroke(); }
+      if (SEL && SEL.kind === "agent" && SEL.id === a.id) { g.strokeStyle = css("--ink"); g.lineWidth = 2; g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); }
     });
   }
-  if (swarm && FRAME.shares) {
-    for (const b of FRAME.shares) {
-      const p = L.pos[b];
-      if (!p) continue;
-      ctx.strokeStyle = alpha(css("--info"), 0.35); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(p.x + p.w / 2, p.y + p.h / 2, 10 + 12 * (FRAME.range || 2), 0, Math.PI * 2); ctx.stroke();
-    }
+}
+
+/* ---------------------------------------------------------------------------------------------- map interaction */
+function hitTest(e) {
+  const c = $("#map"), r = c.getBoundingClientRect(), v = view(c), X = e.clientX - r.left, Y = e.clientY - r.top;
+  if (F && F.mode !== "swarm") {
+    for (const a of F.agents) { const xy = agentXY(a.id); if (!xy) continue; const [x, y] = P(v, xy[0], xy[1]); if (Math.hypot(x - X, y - Y) < 11) return { kind: "agent", id: a.id, X, Y }; }
   }
-}
-function drawToken(ctx, x, y, label, color, r, ring) {
-  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = color; ctx.fill();
-  ctx.lineWidth = 1.5; ctx.strokeStyle = ring ? css("--ink") : css("--surface"); ctx.stroke();
-  ctx.fillStyle = "#fff"; ctx.font = "600 9px " + css("--f-ui"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillText(label, x, y + 0.5);
-}
-function hit(x, y) {
-  if (!LAYOUT) return null;
-  for (const p of Object.values(LAYOUT.pos)) if (x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) return p.b.name;
+  if (F && F.mode === "swarm") {
+    let best = null, bd = 6;
+    for (const d of DOTS) { const dd = Math.hypot(d.x - X, d.y - Y); if (dd < bd) { bd = dd; best = d; } }
+    if (best) return { kind: "agent", id: best.id, X, Y };
+  }
+  const [mx, my] = UP(v, X, Y);
+  for (const p of Object.values(LAY.pos)) {
+    if (mx >= p.x && mx <= p.x + p.w && my >= p.y && my <= p.y + p.h) return { kind: "block", id: p.b.name, X, Y };
+  }
   return null;
 }
-$("#schem").addEventListener("mousemove", (e) => {
-  const r = e.target.getBoundingClientRect();
-  HOVER = hit(e.clientX - r.left, e.clientY - r.top);
-  e.target.title = HOVER ? `${HOVER}: ${LAYOUT.pos[HOVER].b.spec}` : "";
-});
-$("#schem").addEventListener("mouseleave", () => (HOVER = null));
-$("#schem").addEventListener("click", (e) => {
-  const r = e.target.getBoundingClientRect();
-  const b = hit(e.clientX - r.left, e.clientY - r.top);
-  if (b) select(b);
-});
-
-function select(name) {
-  SEL = name;
-  const b = STATIC.blocks.find((x) => x.name === name);
-  const el = $("#inspector");
-  el.hidden = false;
-  const fr = FRAME?.frontier.find((x) => x[0] === name);
-  const cyc = fr ? fr[1] : (STATIC.brief.first_bad_cycle ?? 0);
-  const st = blockStatus(name);
-  const stText = st ? ({ x: "suspect", c: "cleared", u: "unsure", r: "red herring", f: "next on the back-trace" }[st[1]]) : "not looked at";
-  el.innerHTML = `<div class="card-head"><h3 class="mono">${esc(name)}</h3><span class="meta">${esc(b.stage)} · ${esc(b.group)} · ${stText}</span></div>
-    <p class="small">${esc(b.spec)}</p>
-    <p class="small muted">${Object.entries(b.ins).map(([p, n]) => `<span class="mono">${esc(p)}</span>←${esc(n)}`).join(", ") || "no inputs"}<br>
-      outputs: ${Object.entries(b.outs).map(([p, w]) => `<span class="mono">${esc(p)}</span>:${w}`).join(", ")}${b.trusted ? " · verified IP" : ""}</p>
-    <div class="insp-head small"><span>Free look at cycle</span><input type="number" id="iCyc" min="0" max="${STATIC.n - 1}" value="${cyc}">
-      <button type="button" id="iLook">Look</button><button type="button" id="iGuess" class="primary">I suspect this block</button></div>
-    <p class="meta">A free look shows the values only. Comparing them with the spec is what costs the investigators a probe.</p>
-    <div id="iRows"></div>`;
-  $("#iLook").onclick = () => look(name);
-  $("#iGuess").onclick = async () => { await api("/api/guess", { block: name }); };
-  look(name);
+function setupMap() {
+  const c = $("#map");
+  c.addEventListener("wheel", (e) => {
+    e.preventDefault(); const r = c.getBoundingClientRect(), v = view(c);
+    const [mx, my] = UP(v, e.clientX - r.left, e.clientY - r.top);
+    const z = Math.max(1, Math.min(5, CAM.z * Math.exp(-e.deltaY * 0.0015)));
+    CAM.to = null; CAM.cx = mx - (mx - CAM.cx) * CAM.z / z; CAM.cy = my - (my - CAM.cy) * CAM.z / z; CAM.z = z;
+    if (z === 1) { CAM.cx = VW / 2; CAM.cy = VH / 2; }
+  }, { passive: false });
+  c.addEventListener("pointerdown", (e) => { CAM.drag = { x: e.clientX, y: e.clientY, cx: CAM.cx, cy: CAM.cy, moved: false }; });
+  window.addEventListener("pointerup", () => { setTimeout(() => (CAM.drag = null), 0); });
+  c.addEventListener("pointermove", (e) => {
+    if (CAM.drag && (e.buttons & 1)) {
+      const v = view(c), dx = e.clientX - CAM.drag.x, dy = e.clientY - CAM.drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) CAM.drag.moved = true;
+      if (CAM.z > 1) { CAM.cx = CAM.drag.cx - dx / (v.s * CAM.z); CAM.cy = CAM.drag.cy - dy / (v.s * CAM.z); }
+      return;
+    }
+    HOVER = hitTest(e); showTip(HOVER);
+  });
+  c.addEventListener("mouseleave", () => { HOVER = null; showTip(null); });
+  c.addEventListener("dblclick", () => camTo(1, VW / 2, VH / 2));
+  c.addEventListener("click", (e) => {
+    if (CAM.drag && CAM.drag.moved) return;
+    const h = hitTest(e); if (!h) return;
+    select(h.kind, h.id);
+    if (h.kind === "block" && CAM.z < 1.5) { const p = LAY.pos[h.id]; camTo(1.8, p.cx, p.cy); }
+  });
 }
-async function look(name) {
+function showTip(h) {
+  const t = $("#tip");
+  if (!h || !F) { t.hidden = true; return; }
+  let html = "";
+  if (h.kind === "block") {
+    const b = BY[h.id], st = F.heat[h.id], here = F.agents.filter((a) => a.block === h.id).length;
+    const status = st ? { x: "confirmed bad", c: "cleared", u: "mismatched once", f: "next on the back-trace", r: "red herring" }[st[1]] : (b.trusted ? "verified IP" : "not looked at");
+    html = `<b>${esc(h.id)}</b> <span class="meta">${esc(b.stage)} · ${status}${here ? ` · ${here} agent${here > 1 ? "s" : ""} here` : ""}</span><br>${esc(b.spec)}`;
+  } else {
+    const a = F.agents.find((x) => x.id === h.id);
+    html = `<b>${F.mode === "leader" ? "boy" : "Irregular"} #${h.id}</b> <span class="meta">${esc(a.status)}</span><br>${esc(a.last || "")}`;
+  }
+  t.innerHTML = html; t.hidden = false;
+  const card = $("#map").parentElement.getBoundingClientRect(), r = $("#map").getBoundingClientRect();
+  t.style.left = Math.min(card.width - 340, h.X + r.left - card.left + 14) + "px"; t.style.top = (h.Y + r.top - card.top + 14) + "px";
+}
+
+/* ---------------------------------------------------------------------------------------------- selection */
+async function select(kind, id) {
+  SEL = { kind, id };
+  if (kind === "block") {
+    const b = BY[id], st = F && F.heat[id];
+    const status = st ? { x: "confirmed bad", c: "cleared", u: "mismatched once", f: "next on the back-trace" }[st[1]] : (b.trusted ? "verified IP (never broken)" : "not looked at yet");
+    $("#selTitle").textContent = id; $("#selMeta").textContent = `${b.stage} · ${b.group} · ${status}`;
+    const fr = F ? F.frontier.find((x) => x[0] === id) : null;
+    const cyc = fr ? fr[1] : (ST.starts[0] ? ST.starts[0][1] : 0);
+    $("#selBody").innerHTML = `<p>${esc(b.spec)}</p>
+      <div class="kv small"><span>inputs</span><span class="mono">${Object.entries(b.ins).map(([p, n]) => `${esc(p)}←${esc(n)}`).join(", ") || "-"}</span>
+      <span>outputs</span><span class="mono">${Object.entries(b.outs).map(([p, w]) => `${esc(p)}:${w}`).join(", ")}</span>
+      <span>possible faults</span><span class="mono">${b.faults.length ? esc(b.faults.join(", ")) : "none (verified)"}</span></div>
+      <div class="row gap small" style="margin-top:8px"><span>free look at cycle</span><input id="iCyc" type="number" min="0" max="${ST.n - 1}" value="${cyc}" style="width:80px">
+        <button id="iLook">Look</button>${b.trusted ? "" : `<button id="iGuess" class="primary">I suspect it</button>`}</div>
+      <div class="meta">A free look shows values only; comparing them with the spec is what costs the investigators a probe.</div><div id="iRows"></div>`;
+    $("#iLook").onclick = () => look(id);
+    if ($("#iGuess")) $("#iGuess").onclick = () => api("/api/guess", { block: id });
+    look(id);
+  } else {
+    const d = await api(`/api/agent?id=${id}`);
+    const who = d.role === "boy" ? "Boy" : d.role === "irr" ? "Irregular" : "Debugger";
+    $("#selTitle").textContent = `${who} #${id}`;
+    $("#selMeta").textContent = d.role === "boy" ? `${d.status}${d.liar ? " · BRIBED" : ""}` : d.role === "irr" ? `${(d.action || "").toLowerCase()} at ${d.at}${d.liar ? " · LIAR" : ""}` : d.policy;
+    const sus = (d.suspects || []).map((s) => `<div class="mono small">${esc(s.block)}: ${s.bad_measurements} bad, ${s.confirmed ? "confirmed" : "unconfirmed"}</div>`).join("") || "<span class='muted'>none</span>";
+    let kv = "";
+    if (d.role === "boy") kv = `<span>errand</span><span>${esc(d.errand || "none")}</span><span>reports so far</span><span>${d.reports_by_him}</span><span>Holmes trusts him</span><span>${d.distrusted_by_holmes ? "no" : "yes"}</span>`;
+    else if (d.role === "irr") kv = `<span>vote</span><span class="mono">${esc((d.vote || "unsure").replace("|", " / "))}</span><span>plan</span><span>${esc(d.plan ? d.plan.join(" ") : "reflex")}</span>
+      <span>cleared blocks</span><span>${d.cleared}</span><span>votes heard</span><span class="mono">${esc((d.heard_votes || []).map(([l, k]) => `${l.split("|")[0]}×${k}`).join(", ") || "-")}</span>
+      <span>distrusts</span><span class="mono">${esc((d.distrusts || []).join(", ") || "nobody")}</span>`;
+    else kv = `<span>at</span><span class="mono">${esc(d.at || "-")}</span><span>doing</span><span>${esc(d.last || "")}</span>`;
+    const probes = (d.probes || []).map((p) => `<div class="mono small">${esc(p.probe)}</div>`).join("");
+    $("#selBody").innerHTML = `<div class="kv small">${kv}</div><h4 class="sub-h" style="margin-top:8px">Suspects in its notebook</h4>${sus}${probes ? `<h4 class="sub-h" style="margin-top:8px">Last probes</h4>${probes}` : ""}`;
+  }
+  renderRoster();
+}
+async function look(id) {
   const cyc = Number($("#iCyc").value) || 0;
-  const r = await api(`/api/inspect?block=${encodeURIComponent(name)}&cycle=${cyc}`);
+  const r = await api(`/api/inspect?block=${encodeURIComponent(id)}&cycle=${cyc}`);
   if (r.error) return;
   const fmt = (o) => Object.entries(o).map(([k, v]) => `${k}=${v}`).join(" ");
   $("#iRows").innerHTML = `<table class="rows"><tr><th>cyc</th><th>instr</th><th>in</th><th>out</th></tr>` +
     r.rows.map((x) => `<tr><td>${x.cycle}</td><td>${esc(x.instr || "-")}</td><td>${esc(fmt(x.in))}</td><td>${esc(fmt(x.out))}</td></tr>`).join("") + "</table>";
 }
 
-/* ---------------------------------------------------------------------------------------------- pipeline diagram */
+/* ---------------------------------------------------------------------------------------------- launch */
+async function initLaunch() {
+  SCHEMA = await api("/api/schema");
+  cfg = { ...SCHEMA.defaults, ...(window.__cfg || {}) };
+  track = cfg.mode;
+  renderTracks(); renderCase(); renderForm(); renderKeys(); renderRuns(); estimate();
+  $("#rejoinBtn").hidden = !SCHEMA.running;
+  preview();
+}
+function setCfg(patch, o = {}) {
+  Object.assign(cfg, patch); window.__cfg = cfg;
+  if (o.tracks !== false) renderTracks();
+  if (o.form !== false) renderForm();
+  if (o.case) renderCase();
+  estimate();
+  if (o.preview) preview();
+}
+function benchLine(key) {
+  const b = (SCHEMA.bench || {})[key];
+  return b ? `${b.solved}/${b.n} solved · ${b.cost}` : "not benchmarked yet";
+}
+function optGroup(title, key, note) {
+  const d = document.createElement("div"); d.className = "group";
+  d.innerHTML = `<h4>${esc(title)}</h4>${note ? `<p class="meta" style="margin:-4px 0 8px">${esc(note)}</p>` : ""}`;
+  const box = document.createElement("div"); box.className = "opts";
+  for (const [k, [name, sub]] of Object.entries(OPT[key])) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(cfg[key] === k));
+    const probe = { ...cfg, [key]: k };
+    b.innerHTML = `<b>${esc(name)}</b><span class="sub">${esc(sub)}</span><span class="stat">${esc(benchLine(benchKey(probe)))}</span>`;
+    b.onclick = () => setCfg({ [key]: k });
+    box.appendChild(b);
+  }
+  d.appendChild(box);
+  return d;
+}
+function slider(key, label, { min, max, step, fmt = (x) => x, hint = "" }) {
+  const d = document.createElement("div"); d.className = "ctl";
+  d.innerHTML = `<label>${esc(label)} <span class="val">${esc(fmt(cfg[key]))}</span></label><input type="range" min="${min}" max="${max}" step="${step}" value="${cfg[key]}">${hint ? `<span class="hint">${esc(hint)}</span>` : ""}`;
+  const i = d.querySelector("input");
+  i.oninput = () => { d.querySelector(".val").textContent = fmt(Number(i.value)); };
+  i.onchange = () => setCfg({ [key]: Number(i.value) }, { preview: ["rare_frac", "double_frac", "window"].includes(key) });
+  return d;
+}
+function toggle(key, label, hint) {
+  const d = document.createElement("div"); d.className = "ctl";
+  d.innerHTML = `<label class="toggle"><input type="checkbox" ${cfg[key] ? "checked" : ""}><span class="track"></span>${esc(label)}</label>${hint ? `<span class="hint">${esc(hint)}</span>` : ""}`;
+  d.querySelector("input").onchange = (e) => setCfg({ [key]: e.target.checked });
+  return d;
+}
+function selectCtl(key, label, choices, o = {}) {
+  const d = document.createElement("div"); d.className = "ctl";
+  d.innerHTML = `<label>${esc(label)}</label><select>${Object.entries(choices).map(([k, v]) => `<option value="${esc(k)}" ${String(cfg[key]) === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>`;
+  d.querySelector("select").onchange = (e) => setCfg({ [key]: e.target.value }, o);
+  return d;
+}
+function grid(...items) { const d = document.createElement("div"); d.className = "ctls"; items.forEach((x) => d.appendChild(x)); return d; }
+function renderTracks() {
+  const t = $("#tracks"); t.innerHTML = "";
+  for (const [k, f] of Object.entries(FAM)) {
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(cfg.mode === k));
+    b.innerHTML = `<b><i style="background:var(${f.color})"></i>${esc(f.name)}</b><span>${esc(f.sub)}</span>`;
+    b.onclick = () => setCfg({ mode: k });
+    t.appendChild(b);
+  }
+  const p = $("#trackPanel"); p.innerHTML = "";
+  const how = document.createElement("p"); how.className = "how";
+  if (cfg.mode === "solo") {
+    how.innerHTML = "<b>One debugger</b> works alone: every probe costs 15 minutes and one of a small budget. It accuses when it is sure, or when its probes or time run out.";
+    p.append(how, optGroup("The debugger", "solo_policy"), grid(slider("probe_budget", "Probes allowed", { min: 2, max: 40, step: 1, hint: "checks, bench drives and (genius) waveform reads" })));
+  } else if (cfg.mode === "leader") {
+    how.innerHTML = "<b>Holmes</b> never leaves 221B: he reads reports, sends <b>boys</b> on errands of one to three blocks, and names the bug when sure. <b>Wiggins</b> carries orders to a forward post and runs the reports back. Bribed boys hide the bug and frame an innocent block.";
+    p.append(how, optGroup("Holmes, the decision-maker", "holmes"), optGroup("The street boys", "boy_policy"),
+      grid(slider("n_boys", "Number of boys", { min: 1, max: 40, step: 1 }), toggle("wiggins", "Wiggins collects reports at a forward post", "off: every boy walks back to 221B"),
+        slider("errand_max", "Blocks per errand", { min: 1, max: 6, step: 1 })));
+  } else {
+    how.innerHTML = "<b>100 Irregulars</b> start one per block, with no leader. Each tick each one checks its block, moves one wire, shares its findings by radio, or waits; the case closes when enough of them vote the same block and fault. Liars push a frame-up.";
+    p.append(how, optGroup("The Irregulars", "swarm_policy"),
+      grid(slider("comm_range", "Radio range (wires)", { min: 0, max: 8, step: 1 }), slider("n_agents", "Irregulars", { min: 10, max: 200, step: 10 }),
+        slider("quorum_frac", "Quorum (share voting the same)", { min: 0.1, max: 0.6, step: 0.05, fmt: (x) => `${Math.round(x * 100)}%` }),
+        slider("bandwidth", "Shares taken in per tick", { min: 1, max: 10, step: 1 })));
+  }
+  const bl = document.createElement("div"); bl.className = "bench-line";
+  bl.innerHTML = `Benchmark for this setup: <b>${esc(benchLine(benchKey(cfg)))}</b>`;
+  p.appendChild(bl);
+  $("#setupChip").textContent = setupLabel(cfg); $("#setupChip").style.setProperty("--chip", famColor(cfg));
+}
+function renderCase() {
+  const el = $("#casePanel"); el.innerHTML = "";
+  const head = document.createElement("div"); head.className = "row gap";
+  head.innerHTML = `<span class="case-name" id="caseName">Bug #${cfg.seed}</span><span class="grow"></span>`;
+  const seed = document.createElement("div"); seed.className = "seedrow";
+  seed.innerHTML = `<button type="button" title="previous bug">◀</button><input type="number" min="0" value="${cfg.seed}" style="width:90px"><button type="button" title="next bug">▶</button><button type="button">random</button>`;
+  const [prev, inp, next, rnd] = seed.children;
+  prev.onclick = () => setCfg({ seed: Math.max(0, cfg.seed - 1) }, { case: true, preview: true });
+  next.onclick = () => setCfg({ seed: cfg.seed + 1 }, { case: true, preview: true });
+  rnd.onclick = () => setCfg({ seed: Math.floor(Math.random() * 1000) }, { case: true, preview: true });
+  inp.onchange = () => setCfg({ seed: Number(inp.value) }, { case: true, preview: true });
+  head.appendChild(seed);
+  const presets = document.createElement("div"); presets.className = "presets";
+  for (const [k, p] of Object.entries(SCHEMA.presets)) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = p.label;
+    b.onclick = () => { const o = { ...SCHEMA.defaults, seed: cfg.seed, ...p.overrides }; cfg = o; setCfg({}, { case: true, preview: true }); };
+    presets.appendChild(b);
+  }
+  const pct = (x) => `${Math.round(x * 100)}%`;
+  el.append(head,
+    grid(selectCtl("failure_info", "What the investigators are told", { final: "only the final wrong values", first: "the first wrong instruction" }, { preview: true }),
+      selectCtl("test_pick", "Which failing test", { longest: "the longest", shortest: "the shortest" }, { preview: true }),
+      slider("window", "Cycles per check", { min: 1, max: 8, step: 1 }),
+      slider("deadline_hours", "Time limit", { min: 1, max: 12, step: 0.5, fmt: (x) => `${x} h (${Math.round(x * 4)} ticks)` })),
+    grid(slider("noise", "Glitched readings", { min: 0, max: 0.2, step: 0.01, fmt: pct }),
+      slider("rare_frac", "Rare-trigger bugs", { min: 0, max: 1, step: 0.1, fmt: pct }),
+      slider("double_frac", "Two-bug cases", { min: 0, max: 1, step: 0.1, fmt: pct }),
+      slider("liar_frac", "Bribed boys / lying Irregulars", { min: 0, max: 0.4, step: 0.05, fmt: pct }),
+      toggle("liar_defence", "Liar defence", "two sources per mismatch; outvoted sources lose trust"),
+      slider("budget_usd", "Model spend cap per case", { min: 0, max: 2, step: 0.05, fmt: (x) => `$${Number(x).toFixed(2)}` })));
+  const ph = document.createElement("div"); ph.innerHTML = `<h4 class="sub-h">Presets</h4>`; ph.appendChild(presets);
+  el.appendChild(ph);
+}
+function renderForm() {
+  const f = $("#cfgForm"); f.innerHTML = "";
+  for (const [group, fields] of SCHEMA.schema) {
+    const d = document.createElement("details"); d.innerHTML = `<summary>${esc(group)}</summary>`;
+    for (const [key, label, kind, extra] of fields) {
+      const row = document.createElement("div"); row.className = "field";
+      let input;
+      if (kind === "choice") input = `<select>${Object.entries(extra).map(([k, v]) => `<option value="${esc(k)}" ${String(cfg[key]) === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>`;
+      else if (kind === "bool") input = `<input type="checkbox" ${cfg[key] ? "checked" : ""}>`;
+      else if (kind === "text") input = `<input type="text" value="${esc(cfg[key])}">`;
+      else input = `<input type="number" value="${cfg[key]}" step="${kind === "float" ? "any" : 1}">`;
+      row.innerHTML = `<label>${esc(label)}</label>${input}`;
+      const el = row.querySelector("select,input");
+      el.onchange = () => {
+        const val = kind === "bool" ? el.checked : kind === "int" || kind === "float" ? Number(el.value) : el.value;
+        setCfg({ [key]: val }, { form: false, case: true, preview: ["seed", "bug_type", "failure_info", "test_pick", "rare_frac", "double_frac", "window"].includes(key) });
+      };
+      d.appendChild(row);
+    }
+    f.appendChild(d);
+  }
+}
+function renderKeys() { $("#keyStatus").innerHTML = SCHEMA.key_files.map((k) => `<div class="mono">${k.exists ? "✓" : "·"} ${esc(k.path)}</div>`).join(""); }
+function renderRuns() {
+  const r = SCHEMA.runs || [];
+  $("#runsList").innerHTML = r.length ? r.map((x) => `<div>${esc(x.name.slice(9, 15))} ${esc(x.setting || x.mode)} #${x.seed} <span class="${x.fix_ok ? "ok" : "no"}">${x.fix_ok ? "fixed" : "not fixed"}</span> · $${(x.cost || 0).toFixed(3)}</div>`).join("") : "<span class='muted'>none yet</span>";
+}
+function estimate() {
+  const c = cfg, b = (SCHEMA.bench || {})[benchKey(c)], L = [];
+  const usesChat = (c.mode === "solo" && c.solo_policy === "chat") || (c.mode === "leader" && c.holmes === "chat");
+  const usesJev = (c.mode === "solo" && c.solo_policy === "jev") || (c.mode === "leader" && c.boy_policy === "jev") || (c.mode === "swarm" && ["jev", "hybrid"].includes(c.swarm_policy));
+  L.push(`<p><b>${esc(setupLabel(c))}</b>, ${c.deadline_hours} case hours.</p>`);
+  if (b) {
+    const cost = b.cost === "free" ? "free" : b.cost;
+    L.push(`<p>On the hardened benchmark this setup solved <b>${b.solved} of ${b.n}</b> cases (${Math.round(100 * b.solved / b.n)}%). Cost: <b>${esc(cost)}</b>${b.wall ? `; a headless case takes about ${b.wall}` : ""}.</p>`);
+  } else L.push(`<p class="muted">This exact setup has not been benchmarked.</p>`);
+  L.push(`<p class="muted">Model calls: ${usesChat ? "gpt-6-astra" : ""}${usesChat && usesJev ? " + " : ""}${usesJev ? "Jev" : ""}${!usesChat && !usesJev ? "none (free)" : ""}. Spend is capped at $${Number(c.budget_usd).toFixed(2)} per case.</p>`);
+  const missing = SCHEMA.key_files.filter((k) => !k.exists).length === SCHEMA.key_files.length;
+  if ((usesChat || usesJev) && missing) L.push(`<p class="err">No key file found; model calls will fall back to the rule.</p>`);
+  $("#estimate").innerHTML = L.join("");
+}
+let pvTimer = null;
+function preview() {
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(async () => {
+    const q = new URLSearchParams({ seed: cfg.seed, bug_type: cfg.bug_type, window: cfg.window, failure_info: cfg.failure_info,
+      test_pick: cfg.test_pick, rare_frac: cfg.rare_frac, double_frac: cfg.double_frac, noise: cfg.noise });
+    PREV = await api("/api/preview?" + q);
+    $("#pvTitle").textContent = `Bug #${cfg.seed}: ${PREV.brief.test}`;
+    if ($("#caseName")) $("#caseName").textContent = `Bug #${cfg.seed}: ${PREV.brief.test} (${PREV.n} cycles)`;
+    $("#pvInfo").textContent = `${PREV.n} cycles`;
+    $("#pvFail").textContent = PREV.brief.failure;
+    $("#pvTests").innerHTML = PREV.results.map((r) => `<span class="${r.ok ? "good" : "bad"}" title="${esc(r.desc)}">${r.ok ? "✓" : "✗"} ${esc(r.name)}</span>`).join("");
+    const k = PREV.check;
+    $("#pvChecks").innerHTML = [
+      [k.reachable, k.reachable ? "Solvable from this test: the failure's back-trace reaches every broken block" : "This test's back-trace misses a broken block; another failing test shows it"],
+      [true, `${k.failing} of 9 tests fail; this one runs ${k.cycles} cycles`],
+      ["info", `Back-trace: ${k.slice_nodes.toLocaleString()} block-cycles over ${k.slice_blocks} of the ${k.suspect_blocks} logic blocks`],
+      ["info", cfg.failure_info === "final" ? "Investigators see only the final wrong values" : "Investigators see the first wrong instruction"],
+    ].map(([ok, t]) => `<li class="${ok === "info" ? "info" : ok ? "" : "bad"}">${esc(t)}</li>`).join("");
+    $("#pvSrc").textContent = PREV.brief.program.join("\n");
+    drawPreview();
+  }, 140);
+}
+function drawPreview() {
+  if (!PREV || $("#launch").hidden) return;
+  const c = $("#preview"), { g, w, h } = fitCanvas(c);
+  const L = layout(PREV.blocks), s = Math.min(w / VW, h / VH), ox = (w - VW * s) / 2, oy = (h - VH * s) / 2;
+  g.fillStyle = css("--board"); g.fillRect(0, 0, w, h);
+  const mx = Math.max(1, ...Object.values(PREV.slice)), starts = new Set(PREV.starts.map((x) => x[0]));
+  for (const p of Object.values(L.pos)) {
+    const x = ox + p.x * s, y = oy + p.y * s, bw = p.w * s, bh = p.h * s;
+    rr(g, x, y, bw, bh, 2); g.fillStyle = p.b.trusted ? css("--pipe") : css("--logic"); g.fill();
+    const n = PREV.slice[p.b.name] || 0;
+    if (n) { rr(g, x, y, bw, bh, 2); g.fillStyle = alpha(css("--front"), 0.12 + 0.6 * Math.sqrt(n / mx)); g.fill(); }
+    g.strokeStyle = starts.has(p.b.name) ? css("--bad") : css("--line2"); g.lineWidth = starts.has(p.b.name) ? 2 : 0.8; g.stroke();
+  }
+}
+async function testModel(which) { const o = $("#testOut"); o.hidden = false; o.textContent = "checking…"; o.textContent = JSON.stringify(await api("/api/test", { which, cfg }), null, 1); }
+async function launch() {
+  $("#launchErr").textContent = "";
+  const r = await api("/api/launch", { cfg });
+  if (!r.ok) { $("#launchErr").textContent = r.error || "launch failed"; return; }
+  startDash();
+}
+$("#launchBtn").onclick = launch;
+$("#rejoinBtn").onclick = startDash;
+$("#testJev").onclick = () => testModel("jev");
+$("#testChat").onclick = () => testModel("chat");
+
+/* ---------------------------------------------------------------------------------------------- dashboard */
+async function startDash() {
+  ST = await api("/api/static");
+  if (ST.error) return;
+  prepare(ST.blocks, ST.edges); BASES.clear();
+  F = null; SECRET = null; SEL = null; lastProbeN = 0; FLASH.length = 0; RIPPLE.length = 0; RUN0.clear(); WIG0 = null;
+  AG.prev = new Map(); AG.cur = new Map(); AG.last = 0; CAM.z = 1; CAM.cx = VW / 2; CAM.cy = VH / 2; CAM.to = null;
+  $("#launch").hidden = true; $("#dash").hidden = false; $("#endBanner").hidden = true; $("#showResult").hidden = true; $("#stamp").hidden = true;
+  delete $("#endBanner").dataset.shown;
+  $("#tTruth").checked = false; $("#captions").innerHTML = "";
+  document.querySelectorAll(".fam-solo").forEach((e) => (e.hidden = ST.mode !== "solo"));
+  document.querySelectorAll(".fam-leader").forEach((e) => (e.hidden = ST.mode !== "leader"));
+  document.querySelectorAll(".fam-swarm").forEach((e) => (e.hidden = ST.mode !== "swarm"));
+  $("#modeTag").textContent = setupLabel(ST.cfg); $("#modeTag").style.setProperty("--chip", famColor(ST.cfg));
+  $("#caseTitle").innerHTML = `Bug #${ST.cfg.seed}: ${esc(ST.brief.test)} <span class="meta">${esc(ST.brief.failure)}</span>`;
+  $("#speed").value = Math.log10(ST.cfg.speed); $("#speedVal").textContent = `${ST.cfg.speed.toFixed(1)}/s`;
+  $("#selTitle").textContent = "Selection"; $("#selMeta").textContent = "click a block or an agent on the schematic"; $("#selBody").innerHTML = "";
+  renderBrief(); renderLegend(); fillGuess();
+  titleCard();
+  if (es) es.close();
+  if (new URLSearchParams(location.search).has("still")) {   // one frame, no stream (for screenshots)
+    $("#titleCard").hidden = true;
+    const f = await api("/api/frame"); onFrame(f); onFrame(f);
+    return;
+  }
+  es = new EventSource("/api/stream");
+  es.onmessage = (e) => onFrame(JSON.parse(e.data));
+}
+function titleCard() {
+  const t = $("#titleCard");
+  t.innerHTML = `<div class="tc-kicker">Bug #${ST.cfg.seed} · ${esc(ST.brief.test)} · ${esc(setupLabel(ST.cfg))}</div>
+    <div class="tc-title">${esc(ST.brief.failure.replace(/^[a-z_]+ fails: /, ""))}</div>
+    <div class="tc-sub">${esc(ST.brief.failing_tests.length)} of 9 tests fail. Find the broken block, the signal, the bug type and the fix within ${ST.cfg.deadline_hours} hours of bench time.</div>`;
+  t.hidden = false; t.classList.remove("out");
+  setTimeout(() => t.classList.add("out"), REDUCED.matches ? 1500 : 3200);
+  setTimeout(() => (t.hidden = true), REDUCED.matches ? 1600 : 4100);
+}
+function onFrame(f) {
+  const first = !F;
+  F = f;
+  if (f.secret) SECRET = { ...f.secret, liars: f.liars || [] };
+  retarget(f);
+  if (f.probe_log && f.probes > lastProbeN) {
+    const fresh = Math.min(f.probes - lastProbeN, 30);
+    if (!first) f.probe_log.slice(-fresh).forEach((p) => FLASH.push({ block: p.block, bad: p.mismatch, t0: performance.now() }));
+    lastProbeN = f.probes;
+  }
+  if (f.mode === "swarm" && f.shares) f.shares.slice(0, 25).forEach((b) => RIPPLE.push({ block: b, t0: performance.now() }));
+  const hrs = (f.tick * f.tick_min) / 60, clock = 9 * 60 + f.tick * f.tick_min;
+  $("#clock").textContent = `${String(Math.floor(clock / 60) % 24).padStart(2, "0")}:${String(Math.round(clock % 60)).padStart(2, "0")}`;
+  $("#progFill").style.width = `${Math.min(100, (100 * f.tick) / f.deadline)}%`;
+  $("#progText").textContent = `${hrs.toFixed(1)} / ${((f.deadline * f.tick_min) / 60).toFixed(0)} h`;
+  const live = $("#liveDot"); live.className = "live " + (f.ended ? "closed" : f.paused ? "paused" : "on"); live.textContent = f.ended ? "Closed" : f.paused ? "Paused" : "Live";
+  $("#playBtn").innerHTML = f.paused ? `<span aria-hidden="true">▶</span> <span class="lbl">Resume</span>` : `<span aria-hidden="true">❚❚</span> <span class="lbl">Pause</span>`;
+  if (f.mode === "solo") renderSolo(f); else if (f.mode === "leader") renderLeader(f); else renderSwarm(f);
+  renderEvents(f); renderUsage(f); renderGuesses(f); captions(f); drawWave();
+  if (SEL && SEL.kind === "agent" && Math.random() < 0.3) select("agent", SEL.id);
+  if (f.ended) endBanner(f);
+}
+
+/* ---------------------------------------------------------------------------------------------- side panels */
+function beliefRows(list, max) {
+  return list.map((b) => `<div class="brow${truthOn() && SECRET.bugs.some((x) => x.block === b.block) ? " truth" : ""}" data-b="${esc(b.block)}">
+    <span class="nm">${esc(b.block)}</span><div class="bar2"><div style="width:${Math.round(100 * Math.min(1, b.score / max))}%;--series:var(${b.confirmed ? "--bad" : "--warn"})"></div></div>
+    <span class="pc">${esc(b.note)}</span></div>`).join("");
+}
+function bindRows(el) { el.querySelectorAll("[data-b]").forEach((d) => (d.onclick = () => select("block", d.dataset.b))); }
+let NB_N = 0;
+function renderSolo(f) {
+  $("#soloMeta").textContent = `${f.probes_used}/${f.probe_budget} probes`;
+  const rows = (f.belief || []).map((b) => ({ block: b.block, score: b.bad + (b.confirmed ? 2 : 0), confirmed: b.confirmed, note: b.confirmed ? "confirmed" : `${b.bad} bad` }));
+  $("#belief").innerHTML = rows.length ? `<div class="bgroup"><h4>Suspects</h4>${beliefRows(rows, 4)}</div>` : `<p class="muted small">No block has misbehaved yet.</p>`;
+  bindRows($("#belief"));
+  const ans = f.answer ? f.answer.fixes.map((x) => `<b class="mono">${esc(x.block)}.${esc(x.port)}</b>: ${esc(x.desc)}`).join("<br>") : null;
+  $("#soloNote").innerHTML = `${f.cleared_n} block${f.cleared_n === 1 ? "" : "s"} cleared. ` + (ans ? `<br>Accused: ${ans}` :
+    `Now: ${esc(f.thought || "thinking")}` + (f.next && f.next.length ? `<br>Next on the back-trace: <span class="mono">${esc(f.next.join(", "))}</span>` : ""));
+  const tr = f.trail || [];
+  $("#nbMeta").textContent = `${tr.length} probe${tr.length === 1 ? "" : "s"}`;
+  $("#notebook").innerHTML = tr.slice().reverse().map((t, i) => `<div class="nb ${t.type === "read" ? "read" : t.mismatch ? "bad" : "good"}${i === 0 && tr.length > NB_N ? " fresh" : ""}" data-b="${esc(t.block)}">
+    <div class="addr">#${tr.length - i} · ${esc(t.block)} · ${esc(t.where)}</div><div>${t.type === "read" ? "waveform read" : t.mismatch ? "does NOT match its spec" : "matches its spec"}</div></div>`).join("") || `<p class="muted small">Nothing probed yet.</p>`;
+  NB_N = tr.length; bindRows($("#notebook"));
+}
+function renderLeader(f) {
+  const h = f.holmes || {};
+  $("#hqMeta").textContent = `${h.kind === "chat" ? "gpt-6-astra" : "counting"} · ${h.calls || 0} model plan${h.calls === 1 ? "" : "s"} · ${f.queue} errand${f.queue === 1 ? "" : "s"} queued`;
+  const ans = f.answer || h.answer_now;
+  const ansTxt = ans && ans.fixes && ans.fixes.length ? ans.fixes.map((x) => `<b class="mono">${esc(x.block)}.${esc(x.port)}</b>: ${esc(x.desc)}`).join("<br>") : "<span class='muted'>no answer yet</span>";
+  const openq = (h.open || []).map((o) => `<li><span class="mono">${esc(o.block)}</span> mismatched for boy ${esc(o.by.join(", "))}; needs another boy to confirm</li>`).join("");
+  $("#hq").innerHTML = `<h4 class="sub-h">${f.answer ? "Holmes names" : "His answer so far"}</h4><div class="hq-answer">${ansTxt}</div>
+    <h4 class="sub-h" style="margin-top:10px">Open questions</h4><ul class="hq-q">${openq || "<li class='muted'>none</li>"}
+    ${h.next && h.next.length ? `<li>next on the back-trace: <span class="mono">${esc(h.next.slice(0, 4).join(", "))}</span></li>` : ""}</ul>
+    ${h.distrusted && h.distrusted.length ? `<p class="small err" style="margin:8px 0 0">No longer believes boy${h.distrusted.length > 1 ? "s" : ""} ${esc(h.distrusted.join(", "))}.</p>` : ""}`;
+  const reps = (f.reports || []).slice().reverse();
+  $("#repMeta").textContent = f.wiggins ? `Wiggins' bag: ${f.bag}` : "boys report in person";
+  $("#reports").innerHTML = reps.map((r) => `<div data-b="${esc(r.block)}"><span class="t">t${r.tick}</span><span>boy #${r.boy}: <span class="mono">${esc(r.block)}</span> ${r.bad ? "<span class='no'>does NOT match</span>" : "matches its spec"}</span></div>`).join("") || "<p class='muted small'>No report has reached Baker Street yet.</p>";
+  bindRows($("#reports"));
+  renderRoster();
+}
+function renderRoster() {
+  if (!F || F.mode !== "leader") return;
+  const liars = truthOn() ? (F.liars || SECRET.liars || []) : [];
+  $("#roster").innerHTML = F.agents.map((a) => `<div class="boy${SEL && SEL.kind === "agent" && SEL.id === a.id ? " sel" : ""}" data-id="${a.id}">
+    <b>#${a.id}</b>${liars.includes(a.id) ? " <span class='no'>bribed</span>" : ""}<span class="st">${esc(a.status)}${a.items && a.items.length ? ": " + esc(a.items.join(", ")) : ""}</span></div>`).join("");
+  $("#roster").querySelectorAll("[data-id]").forEach((d) => (d.onclick = () => select("agent", Number(d.dataset.id))));
+}
+function renderSwarm(f) {
+  const need = Math.ceil(f.quorum_need), voting = f.agents.filter((a) => a.vote).length;
+  $("#voteMeta").textContent = `${voting} of ${f.agents.length} voting · quorum ${need}`;
+  const rows = (f.tally || []).map(([lab, k], i) => `<div class="trow" data-b="${esc(lab.split("|")[0])}"><div class="top"><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(${VOTEC[i] || "--muted"})"></i>
+    <span class="mono">${esc(lab.replace("|", " / "))}</span></span><b>${k}</b></div>
+    <div class="qbar"><div style="width:${Math.min(100, (100 * k) / Math.max(need, 1) * 0.8)}%;background:var(${VOTEC[i] || "--muted"})"></div><i style="left:80%"></i></div>
+    ${f.labels && f.labels[lab] ? `<div class="meta">${esc(f.labels[lab])}</div>` : ""}</div>`).join("");
+  $("#tally").innerHTML = rows || "<p class='muted small'>Nobody votes yet: an Irregular votes only for a bug it has reproduced itself (or that three trusted sources measured).</p>";
+  bindRows($("#tally"));
+  drawSeries();
+}
+function drawSeries() {
+  if (!F || F.mode !== "swarm") return;
+  const c = $("#series"), { g, w, h } = fitCanvas(c), s = F.series || [], need = F.quorum_need, T = F.deadline;
+  g.clearRect(0, 0, w, h);
+  const X = (t) => 30 + (w - 40) * (t / T), Y = (k) => h - 18 - (h - 30) * Math.min(1, k / Math.max(need * 1.25, 1));
+  g.strokeStyle = css("--line"); g.lineWidth = 1; g.beginPath(); g.moveTo(30, h - 18); g.lineTo(w - 10, h - 18); g.stroke();
+  g.strokeStyle = css("--ink"); g.setLineDash([4, 3]); g.beginPath(); g.moveTo(30, Y(need)); g.lineTo(w - 10, Y(need)); g.stroke(); g.setLineDash([]);
+  g.fillStyle = css("--muted"); g.font = `10px ${css("--f-ui")}`; g.textAlign = "left"; g.fillText(`quorum ${Math.ceil(need)}`, 32, Y(need) - 4);
+  const line = (idx, col) => { g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); s.forEach((p, i) => { const x = X(p[0]), y = Y(p[idx]); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); };
+  if (s.length) { line(3, alpha(css("--irr"), 0.6)); line(1, css("--v1")); }
+  g.fillStyle = css("--muted"); g.textAlign = "left"; g.fillText("top vote", 32, 12); g.fillStyle = css("--irr"); g.fillText("· all voting", 84, 12);
+  g.textAlign = "right"; g.fillStyle = css("--muted"); g.fillText(`tick ${T}`, w - 10, h - 4);
+}
+function renderLegend() {
+  const sw = (fill, stroke, dash) => `<svg width="18" height="12"><rect x="1" y="1" width="16" height="10" rx="2" fill="${fill}" stroke="${stroke}" ${dash ? 'stroke-dasharray="3 2"' : ""}/></svg>`;
+  const dot = (c, r = 5, ring) => `<svg width="14" height="14"><circle cx="7" cy="7" r="${r}" fill="${c}" ${ring ? `stroke="${ring}" stroke-width="2"` : ""}/></svg>`;
+  const blocks = [[sw(css("--logic"), css("--line2")), "logic block (where bugs live)"], [sw(css("--pipe"), css("--line2")), "register / memory (verified)"],
+    [sw(alpha(css("--good"), 0.35), css("--line2")), "cleared: matches its spec"], [sw(alpha(css("--warn"), 0.4), css("--line2")), "mismatched once (glitch or bug?)"],
+    [sw(alpha(css("--bad"), 0.6), css("--line2")), "confirmed: wrong value repeated"], [sw("none", css("--front"), true), "next on the back-trace"],
+    [dot(css("--bad"), 4), "where the wrong final values sit"]];
+  let agents;
+  if (ST.mode === "solo") agents = [[dot(css("--solo"), 6), "the debugger"], [`<svg width="30" height="12"><line x1="1" y1="6" x2="29" y2="6" stroke="${css("--solo")}" stroke-width="2" stroke-dasharray="5 3"/></svg>`, "its probe path, numbered (red: mismatch)"]];
+  else if (ST.mode === "leader") agents = [[dot(css("--holmes"), 6), "Holmes at 221B"], [dot(css("--wiggins"), 6), "Wiggins and his post"], [dot(css("--boy"), 6), "a boy (dashed: blocks left on his errand)"],
+    [`<svg width="14" height="12"><rect x="2" y="2" width="10" height="7" fill="none" stroke="${css("--boy")}"/></svg>`, "running back with a report"]];
+  else agents = [[dot(css("--irr"), 3), "an Irregular (unsure)"], [dot(css("--v1"), 3.5), "voting the leading answer"], [dot(css("--v2"), 3.5), "voting another answer"],
+    [`<svg width="18" height="14"><circle cx="9" cy="7" r="6" fill="none" stroke="${css("--info")}"/></svg>`, "a radio share (range)"]];
+  const spoil = [[`<svg width="18" height="12"><rect x="1" y="1" width="16" height="10" rx="2" fill="none" stroke="${css("--bad")}" stroke-dasharray="3 2" stroke-width="2"/></svg>`, "the bug (Reveal)"],
+    [dot("none", 5, css("--liar")), "a liar (Reveal)"], [sw("none", css("--accent")), "the investigators' answer"]];
+  const grp = (t, items) => `<div class="lg-group"><b>${t}</b>${items.map(([i, l]) => `<span class="lg">${i}${esc(l)}</span>`).join("")}</div>`;
+  $("#legend").innerHTML = grp("Blocks", blocks) + grp(ST.mode === "solo" ? "The debugger" : ST.mode === "leader" ? "Baker Street" : "The swarm", agents) + grp("Answers and spoilers", spoil);
+}
+function renderBrief() {
+  const b = ST.brief;
+  $("#brief").innerHTML = `<p>${esc(b.failure)}</p>
+    <h4>Tests</h4><div class="tests">${ST.results.map((r) => `<span class="${r.ok ? "good" : "bad"}">${r.ok ? "✓" : "✗"} ${esc(r.name)}</span>`).join("")}</div>
+    <h4>Back-trace start points</h4><div class="mono small">${esc(b.start_points.join(", "))}</div>
+    <h4>The program (${esc(b.test)})</h4><pre class="src">${esc(b.program.join("\n"))}</pre>`;
+}
+function fillGuess() {
+  $("#gBlock").innerHTML = ST.blocks.filter((b) => !b.trusted).map((b) => `<option value="${esc(b.name)}">${esc(b.name)}</option>`).join("");
+  $("#gGo").onclick = () => api("/api/guess", { block: $("#gBlock").value });
+}
+function renderGuesses(f) {
+  if (!f.guesses.length) { $("#guesses").innerHTML = "<span class='muted'>Name the block you think is broken; you will see at the end whether you beat the investigators.</span>"; return; }
+  $("#guesses").innerHTML = f.guesses.map((g) => `<div>You suspected <b class="mono">${esc(g.block)}</b> at tick ${g.tick}` +
+    (f.ended && f.secret ? (f.secret.bugs.some((x) => x.block === g.block) ? " <span class='ok'>right</span>" : " <span class='no'>wrong</span>") : "") + "</div>").join("");
+}
+function renderUsage(f) {
+  const c = (l, v, t) => `<div class="mc" title="${esc(t || "")}"><b>${v}</b><span>${l}</span></div>`;
+  $("#infCards").innerHTML = c("model calls", f.calls) + c("spend", `$${f.cost.toFixed(4)}`, `cap $${f.budget_usd}`) + c("probes", f.probes) +
+    c("fell back", f.fallbacks, "calls that failed or timed out and used the rule") + c("ticks", `${f.tick}/${f.deadline}`) + c("seconds", f.elapsed.toFixed(0));
+  $("#errors").textContent = (f.errors || []).slice(-1).join(" ");
+}
+function renderEvents(f) {
+  const el = $("#events"), atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 8;
+  el.innerHTML = f.events.slice(-80).map((e) => `<div class="${esc(e.kind)}${e.mismatch ? " bad" : ""}"><span class="t">t${e.tick}</span><span>${esc(e.text)}</span></div>`).join("");
+  if (atBottom) el.scrollTop = el.scrollHeight;
+}
+const SEEN = new Set();
+function captions(f) {
+  const box = $("#captions");
+  for (const e of f.events.slice(-12)) {
+    const key = `${e.t}|${e.text}`;
+    if (SEEN.has(key)) continue;
+    SEEN.add(key);
+    let cls = null, title = null;
+    if (e.kind === "accuse") { cls = "big"; title = "The accusation"; }
+    else if (e.kind === "quorum") { cls = "big"; title = "Quorum"; }
+    else if (e.kind === "cold") { cls = "bad"; title = "Time is up"; }
+    else if (e.kind === "holmes") { cls = "note"; title = "Holmes"; }
+    else if (e.kind === "genius") { cls = "note"; title = "The genius"; }
+    else if (e.kind === "wiggins") { cls = "note"; title = "Wiggins"; }
+    else if ((e.kind === "probe" || e.kind === "report") && e.mismatch !== false && /NOT|MISMATCH/.test(e.text)) { cls = "bad"; title = "Mismatch"; }
+    if (!cls || f.ended && e.kind !== "end") continue;
+    const d = document.createElement("div"); d.className = `cap ${cls}`; d.innerHTML = `<b>${esc(title)}</b>${esc(e.text.slice(0, 220))}`;
+    box.appendChild(d);
+    while (box.children.length > 2) box.firstChild.remove();
+    setTimeout(() => d.classList.add("out"), 5200); setTimeout(() => d.remove(), 5800);
+  }
+}
+function endBanner(f) {
+  const b = $("#endBanner");
+  if (b.dataset.shown) return;
+  b.dataset.shown = "1";
+  const r = f.result, s = f.secret, a = f.answer, sm = f.summary || {};
+  const cls = r.fix_ok ? "solved" : r.block_ok ? "partly" : "wrong";
+  const verdict = r.fix_ok ? "Fixed: every test passes" : sm.wrong_quorum ? "Wrong quorum: the swarm agreed on a wrong answer" : !a ? (f.mode === "swarm" ? "No quorum: the swarm gave no answer" : "No answer") : r.block_ok ? "Right block, wrong fix" : "Wrong block";
+  const st = $("#stamp"); st.className = `stamp ${cls}`; st.textContent = r.fix_ok ? "Fixed" : sm.wrong_quorum ? "Framed" : r.block_ok ? "Close" : "Not fixed"; st.hidden = false;
+  const mk = (ok) => ok ? "<span class='ok'>✓ right</span>" : "<span class='no'>✗ wrong</span>";
+  const named = a ? a.fixes.map((x) => `<span class="mono">${esc(x.block)}.${esc(x.port)}</span> ${esc(x.desc)}`).join("; ") : "-";
+  const truth = s.bugs.map((x) => `<span class="mono">${esc(x.block)}.${esc(x.port)}</span> ${esc(x.desc)}${x.rare ? " (rare trigger)" : ""}`).join("; ");
+  b.className = `end ${cls}`;
+  b.innerHTML = `<div class="badge" aria-hidden="true">${r.fix_ok ? "✓" : r.block_ok ? "◐" : "✗"}</div>
+    <div class="verdict">${verdict}</div>
+    <div class="small muted">${sm.sim_hours !== undefined ? `After ${sm.sim_hours} case hours, ` : ""}${f.probes} probes, $${f.cost.toFixed(4)}.${f.liars && f.liars.length ? ` Liars: #${f.liars.join(", #")}.` : ""}</div>
+    <div class="parts"><span>Named</span><span>${named}</span><span>The bug</span><span>${truth}</span>
+      <span>Block</span><span>${mk(r.block_ok)}</span><span>Signal / type</span><span>${mk(r.location_ok)} / ${mk(r.type_ok)}</span>
+      <span>Fix</span><span>${mk(r.fix_ok)} <span class="meta">${r.tests_passed ?? "-"}/${r.tests_total} tests pass</span></span></div>
+    <div class="actions"><button id="hideEnd" class="ghost">Close</button><button id="againBtn" class="primary">New case</button></div>`;
+  b.hidden = false;
+  $("#hideEnd").onclick = () => { b.hidden = true; $("#showResult").hidden = false; };
+  $("#againBtn").onclick = goLaunch;
+  $("#tTruth").checked = true;
+}
+
+/* ---------------------------------------------------------------------------------------------- timeline */
 function drawWave() {
-  if (!STATIC || $("#dash").hidden) return;
-  const c = $("#wave");
-  const { ctx, w, h } = fitCanvas(c);
-  ctx.clearRect(0, 0, w, h);
-  const n = STATIC.n, left = 44, top = 16, rows = ["IF", "ID", "EX", "MEM", "WB"];
-  const rh = (h - top - 34) / rows.length, cw = (w - left - 6) / n;
-  ctx.font = "10px " + css("--f-mono"); ctx.textBaseline = "middle";
-  // probed windows
-  const log = FRAME?.probe_log || [];
+  if (!ST || $("#dash").hidden) return;
+  const c = $("#wave"), { g, w, h } = fitCanvas(c);
+  g.fillStyle = css("--board"); g.fillRect(0, 0, w, h);
+  const n = ST.n, left = 46, top = 16, rows = ["IF", "ID", "EX", "MEM", "WB"], rh = (h - top - 40) / rows.length, cw = (w - left - 6) / n;
+  const log = (F && F.probe_log) || [];
   log.forEach((p, i) => {
     if (p.type !== "check" || !p.window) return;
-    const x = left + p.window[0] * cw, ww = (p.window[1] - p.window[0] + 1) * cw;
-    const recent = i >= log.length - 3;
-    ctx.fillStyle = alpha(p.mismatch ? css("--bad") : css("--info"), recent ? 0.22 : 0.07);
-    ctx.fillRect(x, top, ww, rh * rows.length);
-    ctx.fillStyle = alpha(p.mismatch ? css("--bad") : css("--info"), 0.8);
-    ctx.fillRect(x, h - 30 + (i % 3) * 5, ww, 3);
+    const x = left + p.window[0] * cw, ww = (p.window[1] - p.window[0] + 1) * cw, recent = i >= log.length - 4;
+    g.fillStyle = alpha(p.mismatch ? css("--bad") : css("--info"), recent ? 0.22 : 0.06); g.fillRect(x, top, ww, rh * rows.length);
+    g.fillStyle = alpha(p.mismatch ? css("--bad") : css("--info"), 0.85); g.fillRect(x, h - 34 + (i % 4) * 5, Math.max(1.5, ww), 3);
   });
-  rows.forEach((r, k) => {
-    ctx.fillStyle = css("--muted"); ctx.textAlign = "left";
-    ctx.fillText(r, 6, top + k * rh + rh / 2);
-  });
-  ctx.textAlign = "center";
+  g.font = `10px ${css("--f-mono")}`; g.textBaseline = "middle";
+  rows.forEach((r, k) => { g.fillStyle = css("--muted"); g.textAlign = "left"; g.fillText(r, 8, top + k * rh + rh / 2); });
+  g.textAlign = "center";
   for (let cy = 0; cy < n; cy++) {
-    const occ = STATIC.occupancy[cy];
+    const occ = ST.occupancy[cy];
     for (let k = 0; k < 5; k++) {
-      const pc = occ[k];
       const x = left + cy * cw, y = top + k * rh;
-      ctx.strokeStyle = css("--trace"); ctx.lineWidth = 0.5; ctx.strokeRect(x, y, cw, rh);
-      if (pc !== null && cw >= 9) { ctx.fillStyle = css("--ink"); ctx.fillText(String(pc), x + cw / 2, y + rh / 2); }
+      g.strokeStyle = css("--wire"); g.lineWidth = 0.5; g.strokeRect(x, y, cw, rh);
+      if (occ[k] !== null && cw >= 9) { g.fillStyle = css("--board-ink"); g.fillText(String(occ[k]), x + cw / 2, y + rh / 2); }
     }
-    if (cy % 5 === 0) { ctx.fillStyle = css("--faint"); ctx.fillText(String(cy), left + cy * cw + cw / 2, 7); }
+    if (cy % 10 === 0) { g.fillStyle = css("--faint"); g.fillText(String(cy), left + cy * cw + cw / 2, 7); }
   }
-  // failure and frontier
-  const fc = STATIC.brief.first_bad_cycle ?? null;
-  if (fc !== null && fc !== undefined) {
-    ctx.strokeStyle = css("--bad"); ctx.lineWidth = 2;
-    ctx.strokeRect(left + fc * cw, top, cw, rh * rows.length);
-    ctx.fillStyle = css("--bad"); ctx.textAlign = "left"; ctx.font = "600 10px " + css("--f-ui");
-    ctx.fillText("fails here", Math.min(w - 60, left + fc * cw + cw + 3), top - 6 < 8 ? 8 : top - 6);
-  }
-  (FRAME?.frontier || []).forEach(([b, cy]) => {
-    const x = left + cy * cw + cw / 2;
-    ctx.fillStyle = css("--front");
-    ctx.beginPath(); ctx.moveTo(x - 4, h - 34); ctx.lineTo(x + 4, h - 34); ctx.lineTo(x, h - 30); ctx.fill();
-  });
-  $("#wvInfo").textContent = `${STATIC.brief.test}: ${n} cycles · bands = checked windows (red: caught a mismatch) · ▾ next on the back-trace`;
+  for (const [b, cy] of ST.starts) { const x = left + cy * cw + cw / 2; g.fillStyle = css("--bad"); g.beginPath(); g.arc(x, top + rh * 4.5, 3, 0, 7); g.fill(); }
+  ((F && F.frontier) || []).forEach(([b, cy]) => { const x = left + cy * cw + cw / 2; g.fillStyle = css("--front"); g.beginPath(); g.moveTo(x - 4, h - 40); g.lineTo(x + 4, h - 40); g.lineTo(x, h - 35); g.fill(); });
+  g.textBaseline = "alphabetic";
+  $("#wvInfo").textContent = `${n} cycles · bands: checked windows (red: a mismatch) · ▾ next on the back-trace · red dot: wrong final value`;
   c.onmousemove = (e) => {
-    const r = c.getBoundingClientRect();
-    const cy = Math.floor((e.clientX - r.left - left) / cw);
+    const r = c.getBoundingClientRect(), cy = Math.floor((e.clientX - r.left - left) / cw);
     if (cy < 0 || cy >= n) return;
-    const occ = STATIC.occupancy[cy];
-    const txt = rows.map((s, k) => `${s} ${occ[k] === null ? "-" : (STATIC.brief.program[occ[k]] || `${occ[k]}: NOP`).replace(/^\s*\d+: /, `${occ[k]} `)}`).join(" | ");
-    $("#wvHover").textContent = `cycle ${cy}: ${txt}`;
+    const occ = ST.occupancy[cy];
+    $("#wvHover").textContent = `cycle ${cy}: ` + rows.map((s, k) => `${s} ${occ[k] === null ? "-" : (ST.brief.program[occ[k]] || `${occ[k]}: NOP`).replace(/^\s*\d+: /, `${occ[k]} `)}`).join(" | ");
   };
 }
 
 /* ---------------------------------------------------------------------------------------------- controls */
-$("#bPause").addEventListener("click", () => api("/api/cmd", { action: FRAME?.paused ? "resume" : "pause" }));
-$("#bStep").addEventListener("click", () => api("/api/cmd", { action: "step" }));
-$("#speed").addEventListener("input", (e) => {
-  $("#speedVal").textContent = e.target.value;
-  api("/api/cmd", { action: "set", cfg: { speed: Number(e.target.value) } });
+$("#playBtn").onclick = () => api("/api/cmd", { action: F && F.paused ? "resume" : "pause" });
+$("#stepBtn").onclick = () => api("/api/cmd", { action: "step" });
+$("#speed").oninput = (e) => { const s = Math.pow(10, Number(e.target.value)); $("#speedVal").textContent = `${s.toFixed(1)}/s`; api("/api/cmd", { action: "set", cfg: { speed: s } }); };
+$("#tTruth").onchange = async () => {
+  if ($("#tTruth").checked && !SECRET) { const s = await api("/api/secret"); if (!s.error) SECRET = { ...s, liars: s.liars || [] }; }
+  if (F && F.mode === "leader") renderRoster();
+};
+$("#newRun").onclick = goLaunch;
+$("#showResult").onclick = () => { $("#endBanner").hidden = false; $("#showResult").hidden = true; };
+$("#presentBtn").onclick = () => { document.body.classList.toggle("present"); BASES.clear(); };
+document.addEventListener("keydown", (e) => {
+  if ($("#dash").hidden || ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+  if (e.key === " ") { e.preventDefault(); $("#playBtn").click(); }
+  else if (e.key === "ArrowRight") $("#stepBtn").click();
+  else if (e.key === "r" || e.key === "R") { $("#tTruth").checked = !$("#tTruth").checked; $("#tTruth").onchange(); }
+  else if (e.key === "p" || e.key === "P") $("#presentBtn").click();
 });
-$("#bNew").addEventListener("click", goLaunch);
-$("#tTruth").addEventListener("change", () => { if ($("#tTruth").checked && !SECRET) api("/api/secret").then((s) => { if (!s.error) SECRET = s; }); });
 function goLaunch() {
-  if (ES) { ES.close(); ES = null; }
-  $("#dash").hidden = true; $("#launch").hidden = false;
+  if (es) es.close();
+  $("#dash").hidden = true; $("#launch").hidden = false; $("#endBanner").hidden = true;
+  document.body.classList.remove("present");
   initLaunch();
 }
-function redrawAll() { drawPreview(); drawWave(); }
-window.addEventListener("resize", redrawAll);
-function loop(now) { drawSchem(now); requestAnimationFrame(loop); }
+window.addEventListener("resize", () => { BASES.clear(); drawPreview(); drawWave(); drawSeries(); });
+setupMap();
+function loop(now) { drawMap(now); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
-
-initLaunch();
+// ?watch opens the running (or last) case straight away; ?theme=dark|light forces a theme
+const QS = new URLSearchParams(location.search);
+if (QS.get("theme")) { document.documentElement.dataset.theme = QS.get("theme"); themeLabels(); }
+if (QS.has("watch")) initLaunch().then(startDash); else initLaunch();

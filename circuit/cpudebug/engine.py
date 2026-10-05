@@ -285,6 +285,8 @@ class Engine:
              "answer": g.answer if g.answer and g.answer.get("fixes") else None,
              "result": self.result if self.ended else None, "guesses": self.guesses, "errors": self.errors[-3:]}
         f.update(v)
+        f["family_cfg"] = {k: self.cfg[k] for k in ("solo_policy", "holmes", "boy_policy", "swarm_policy", "wiggins",
+                                                    "n_boys", "n_agents", "comm_range", "probe_budget", "quorum_frac")}
         if self.ended:
             f["secret"] = self.case.secret()
             f["liars"] = g.liars() if hasattr(g, "liars") else []
@@ -306,6 +308,13 @@ class Engine:
                 "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "window": c.window,
                 "src": c.test["src"], "mode": self.mode, "setting": self.setting, "deadline": self.deadline,
                 "cfg": {k: v for k, v in self.cfg.items() if not k.endswith("_key")}}
+
+    def agent_detail(self, i):
+        g = self.game
+        d = g.detail(int(i)) if hasattr(g, "detail") else None
+        if d is not None and self.ended and hasattr(g, "liars"):
+            d["liar"] = int(i) in g.liars()
+        return d
 
     def inspect(self, block, cycle):
         """Viewer-only: a free look at one block's values over a window (does not count as a probe)."""

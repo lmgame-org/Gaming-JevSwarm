@@ -6,7 +6,7 @@
 <title>Circuit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -15,29 +15,30 @@
 <section id="launch">
   <header class="topbar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span> Circuit
-      <span class="brand-sub">debugging a pipelined CPU: solo, Baker Street, or a swarm</span></div>
+      <span class="brand-sub">debugging a pipelined CPU: one debugger, Holmes and his street boys, or a leaderless swarm</span></div>
     <span class="grow"></span>
     <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
   </header>
 
   <div class="launch-grid">
-    <main class="launch-main">
+    <main>
       <div class="intro">
-        <h1>Who finds a hardware bug: one debugger, Holmes with his street boys, or a leaderless swarm?</h1>
-        <p>The CPU is an 8-bit, 5-stage pipeline built from <b>96 blocks</b>. Each bug number hides one bug (sometimes
-          two) in one block: a stuck-at wire, swapped mux inputs, a wrong forwarding path or an off-by-one, some of them
-          rare-trigger. The investigators only learn which registers end up wrong. Every probe costs 15 minutes of bench
-          time, about one reading in twenty is glitched, and some boys and Irregulars are bribed. Someone must name the
-          broken block, the signal, the bug type and the fix; the fix is graded by re-running every test.</p>
+        <h1>Who finds a hardware bug: one debugger, Holmes with his boys, or a leaderless swarm?</h1>
+        <p>The CPU is an 8-bit, 5-stage pipeline of <b>96 blocks</b>. Each bug number hides one bug (sometimes two) in
+          one of the 49 logic blocks. The investigators only learn which registers end up wrong. Each probe costs 15
+          minutes of bench time, about one reading in twenty is glitched, and some boys and Irregulars are bribed.
+          Someone must name the broken block, the signal, the bug type and the fix; the fix is graded by re-running
+          every test.</p>
       </div>
 
       <section class="part">
         <div class="part-head"><span class="part-tag">Step 1</span><h2>Who debugs</h2><span class="meta">every family gets the same bug, clock and spend cap</span></div>
-        <div id="modes" class="modes" role="radiogroup" aria-label="Who debugs"></div>
+        <div id="tracks" class="tracks" role="tablist" aria-label="Who debugs"></div>
+        <div id="trackPanel" class="card track-panel" role="tabpanel"></div>
       </section>
 
       <section class="part">
-        <div class="part-head"><span class="part-tag">Step 2</span><h2>Settings</h2><span class="meta">the family&#39;s own knobs, then the bug and the clock</span></div>
+        <div class="part-head"><span class="part-tag">Step 2</span><h2>The bug</h2><span class="meta">same bug number, same bug, for every family</span></div>
         <div id="casePanel" class="card case-panel"></div>
       </section>
 
@@ -50,14 +51,17 @@
     <aside class="launch-side">
       <div class="card">
         <div class="card-head"><h3 id="pvTitle">The failing test</h3><span id="pvInfo" class="meta"></span></div>
-        <canvas id="preview" class="preview" aria-label="Schematic of the CPU"></canvas>
-        <div id="pvFail" class="small"></div>
-        <div id="pvTests" class="tests small"></div>
+        <canvas id="preview" aria-label="Schematic with the failure's back-trace"></canvas>
+        <div class="meta">Shading: how much of the failure's back-trace passes through each block. Red outline: where the wrong final values sit.</div>
+        <p id="pvFail" class="small"></p>
+        <div id="pvTests" class="tests"></div>
+        <h4 class="sub-h" style="margin-top:8px">Solvability check</h4>
+        <ul id="pvChecks" class="checks"></ul>
         <details><summary class="small">Program listing</summary><pre id="pvSrc" class="src small"></pre></details>
       </div>
       <div class="card">
-        <div class="card-head"><h3>Your setup</h3><span id="modeChip" class="chip"></span></div>
-        <div id="estimate" class="small"></div>
+        <div class="card-head"><h3>Your setup</h3><span id="setupChip" class="chip"></span></div>
+        <div id="estimate" class="estimate small"></div>
         <button id="launchBtn" class="primary big">Start debugging</button>
         <button id="rejoinBtn" class="big" hidden>Return to the running case</button>
         <div id="launchErr" class="err small"></div>
@@ -65,77 +69,122 @@
       <details class="card">
         <summary><h3>Model connections</h3></summary>
         <div id="keyStatus" class="small"></div>
-        <div class="row gap">
+        <div class="row gap" style="margin-top:8px">
           <button type="button" id="testJev">Check Jev</button>
           <button type="button" id="testChat">Check gpt-6-astra</button>
         </div>
-        <pre id="testOut" class="small out" hidden></pre>
+        <pre id="testOut" class="out" hidden></pre>
       </details>
       <details class="card">
         <summary><h3>Recent runs</h3></summary>
-        <div id="runsList" class="small runs"></div>
+        <div id="runsList" class="runs"></div>
       </details>
     </aside>
   </div>
 </section>
 
-<!-- ================================================================ live viewer -->
+<!-- ================================================================ viewer -->
 <section id="dash" hidden>
-  <header class="topbar">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span> Circuit
-      <span id="dTitle" class="brand-sub"></span></div>
+  <header class="topbar dashbar">
+    <div class="brand small-brand"><span class="brand-mark" aria-hidden="true">⌁</span> Circuit</div>
+    <span id="modeTag" class="chip"></span>
+    <span id="liveDot" class="live on">Live</span>
+    <div class="clock" title="Bench time: the clock on the lab wall, starting at 09:00">
+      <span class="meta">Bench time</span><span id="clock" class="mono">09:00</span>
+      <div class="prog" aria-hidden="true"><div id="progFill"></div></div>
+      <span id="progText" class="meta mono"></span>
+    </div>
+    <div class="controls">
+      <button id="playBtn" title="Pause or resume (space)"><span aria-hidden="true">❚❚</span> <span class="lbl">Pause</span></button>
+      <button id="stepBtn" title="Advance one tick (→)"><span aria-hidden="true">▸|</span> <span class="lbl">Step</span></button>
+      <label class="speed" title="Playback speed in ticks per second">Speed <input id="speed" type="range" min="-1" max="1.3" step="0.05"><span id="speedVal" class="mono meta"></span></label>
+      <label class="switch" title="Show the bug, its fix and the liars (spoilers, key R)"><input type="checkbox" id="tTruth"><span class="track" aria-hidden="true"></span> Reveal the bug</label>
+    </div>
     <span class="grow"></span>
-    <span id="dPhase" class="chip"></span>
-    <button type="button" id="bPause">Pause</button>
-    <button type="button" id="bStep">Step</button>
-    <label class="speed small">speed <input type="range" id="speed" min="0.2" max="20" step="0.2"><span id="speedVal" class="mono"></span></label>
-    <label class="small row gap"><input type="checkbox" id="tTruth"> show the bug</label>
-    <button type="button" class="primary" id="bNew">New case</button>
+    <button type="button" id="presentBtn" class="ghost" title="Presentation mode: big schematic and captions (key P)">Present</button>
     <button type="button" class="ghost theme-toggle" title="Switch light / dark">Dark</button>
+    <button type="button" id="showResult" class="ghost" hidden>Show result</button>
+    <button id="newRun" class="ghost" title="Back to the setup screen">New case</button>
   </header>
 
-  <div class="dash-grid">
-    <main class="dash-main">
-      <div class="card schem-card">
-        <div class="card-head"><h3>Schematic</h3>
-          <span class="meta">click a block to inspect it or name it as your suspect</span>
-          <span class="grow"></span>
-          <div id="legend" class="legend small"></div>
-        </div>
-        <div class="schem-wrap"><canvas id="schem" aria-label="CPU schematic with suspicion heat map and Irregulars"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><h3>Failing test, cycle by cycle</h3>
-          <span id="wvInfo" class="meta"></span></div>
-        <div class="wave-wrap"><canvas id="wave" aria-label="Pipeline diagram of the failing test with probed windows"></canvas></div>
-        <div id="wvHover" class="small muted mono">&nbsp;</div>
-      </div>
-    </main>
+  <div id="caseTitle" class="case-title"></div>
 
-    <aside class="dash-side">
-      <div id="resultCard" class="card result" hidden></div>
-      <div class="card">
-        <div id="metrics" class="metrics"></div>
+  <div class="views">
+    <div class="card map-card">
+      <canvas id="map" aria-label="Live schematic: blocks by pipeline stage, wires, investigators and the suspicion map"></canvas>
+      <div id="titleCard" class="titlecard" hidden></div>
+      <div id="stamp" class="stamp" hidden></div>
+      <div id="captions" class="captions" aria-live="polite"></div>
+      <div id="tip" class="tip" hidden></div>
+      <div class="meta" style="margin-top:6px">Scroll to zoom, drag to pan, double-click to reset. Click a block or an agent to inspect it.</div>
+      <div id="legend"></div>
+    </div>
+
+    <div class="side">
+      <!-- solo -->
+      <div class="card fam-solo">
+        <div class="card-head"><h3>What the debugger thinks</h3><span id="soloMeta" class="meta mono"></span></div>
+        <div id="belief"></div>
+        <div id="soloNote" class="small muted decision"></div>
       </div>
-      <div class="card">
-        <div class="card-head"><h3>The failure</h3><span id="fTest" class="meta mono"></span></div>
-        <p id="fText" class="small"></p>
+      <div class="card fam-solo">
+        <div class="card-head"><h3>Debugger's notebook</h3><span id="nbMeta" class="meta"></span></div>
+        <div id="notebook" class="notebook"></div>
       </div>
-      <div class="card">
-        <div class="card-head"><h3>Suspicion map</h3><span class="meta">Wiggins' notebook</span></div>
-        <div id="suspects" class="small"></div>
+      <!-- Baker Street -->
+      <div class="card fam-leader">
+        <div class="card-head"><h3>Holmes at 221B</h3><span id="hqMeta" class="meta"></span></div>
+        <div id="hq"></div>
       </div>
-      <div id="inspector" class="card" hidden></div>
-      <div class="card">
-        <div class="card-head"><h3>Your speculation</h3></div>
-        <div id="guesses" class="small muted">Click a block, then “I suspect this block”. You'll see at the end whether you beat the investigators.</div>
+      <div class="card fam-leader">
+        <div class="card-head"><h3>Latest reports</h3><span id="repMeta" class="meta"></span></div>
+        <div id="reports" class="reports"></div>
       </div>
-      <div class="card">
-        <div class="card-head"><h3>What happened</h3></div>
-        <div id="events" class="events small"></div>
+      <div class="card fam-leader">
+        <div class="card-head"><h3>The boys</h3><span class="meta">click one to follow him</span></div>
+        <div id="roster" class="roster"></div>
       </div>
-    </aside>
+      <!-- swarm -->
+      <div class="card fam-swarm">
+        <div class="card-head"><h3>Votes</h3><span id="voteMeta" class="meta"></span></div>
+        <div id="tally"></div>
+        <canvas id="series" aria-label="Top vote count against the quorum over time"></canvas>
+      </div>
+      <!-- any selection -->
+      <div class="card" id="selCard">
+        <div class="card-head"><h3 id="selTitle">Selection</h3><span id="selMeta" class="meta">click a block or an agent on the schematic</span></div>
+        <div id="selBody" class="detail"></div>
+      </div>
+    </div>
   </div>
+
+  <div class="lower">
+    <div class="card span2">
+      <div class="card-head"><h3>Timeline: the failing test, cycle by cycle</h3><span id="wvInfo" class="meta"></span></div>
+      <div class="wave-wrap"><canvas id="wave" aria-label="Pipeline diagram of the failing test with the probed windows"></canvas></div>
+      <div id="wvHover" class="small muted mono"></div>
+    </div>
+    <div class="card span2">
+      <div class="card-head"><h3>Case file</h3><span class="meta">what every investigator is told at the start</span></div>
+      <div id="brief" class="brief"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Your guess</h3><span class="meta">scored when the case closes</span></div>
+      <div class="guess-form"><label class="sr" for="gBlock">Block</label><select id="gBlock"></select><button id="gGo" class="primary">Lock in</button></div>
+      <div id="guesses" class="small"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Model usage</h3><span class="meta">calls and cost so far</span></div>
+      <div id="infCards" class="metric-cards"></div>
+      <div id="errors" class="small err"></div>
+    </div>
+    <div class="card span2">
+      <div class="card-head"><h3>What happened</h3><span class="meta">newest at the bottom</span></div>
+      <div id="events" class="events"></div>
+    </div>
+  </div>
+
+  <div id="endBanner" class="end" hidden role="status"></div>
 </section>
 
 <script src="/app.js"></script>
