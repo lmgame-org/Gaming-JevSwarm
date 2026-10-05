@@ -493,7 +493,9 @@ function chapBaker(u) {
   B.ticks.forEach((t, i) => { if (i > ft) return; t.new.forEach((n) => { found[n.part] = (found[n.part] || 0) + 1; }); });
   B.ticks.forEach((t, i) => { if (!t.new.length) return;
     const ua = CH.a + (CH.b - CH.a) * invEase(i / T); if (ua - lastShown < 1.2) return; lastShown = ua;
-    const al = Math.min(prog(u, ua, ua + 0.3), 1 - prog(u, ua + 2.2, ua + 2.6)); popup(t.new[0].part, bx + 120, by - 40, al); });
+    const al = Math.min(prog(u, ua, ua + 0.3), 1 - prog(u, ua + 2.2, ua + 2.6));
+    const rank = {motive: 0, hideout: 1, culprit: 2}, pick = t.new.map((x) => x.part).sort((a, b) => rank[a] - rank[b])[0];  // the rarest kind first
+    popup(pick, bx + 120, by - 40, al); });
   const minute = Math.min(B.minute, w.a.minute + ((w.b.minute || w.a.minute) - w.a.minute) * w.k);
   tray(found, prog(u, CH.a, CH.a + 0.4));
   miniClock(minute, w.a.wall + ((w.b.wall || w.a.wall) - w.a.wall) * w.k, prog(u, CH.a, CH.a + 0.4));

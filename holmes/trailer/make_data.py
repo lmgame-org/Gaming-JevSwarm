@@ -77,7 +77,7 @@ def baker(run_dir):
     ticks = [{"boys": [b[:2] for b in t["boys"]], "w": t["w"], "reports": t["reports"], "wall": t["wall"],
               "minute": t["minute"],
               "new": [{"text": short(r["text"]), "at": r["address"], "part": PART[r["kind"]]} for r in t["new"]
-                      if r["kind"] in KEY and not r.get("fake")][:3]}
+                      if r["kind"] in KEY and not r.get("fake")]}
              for t in track]
     o = summ["outcome"]
     return {"ticks": ticks, "orders": orders, "solved": summ["solved"], "ok": o["ok"], "minute": o["minute"],
