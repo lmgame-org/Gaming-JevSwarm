@@ -93,20 +93,63 @@ const M = D.map, IDX = Object.fromEntries(M.ids.map((id, i) => [id, i]));
 const MX = (W - 1440) / 2, MY = 30, MS = 1.44;            // map 1000x700 -> 1440x1008
 const P = ([x, y]) => [MX + x * MS, MY + y * MS];
 const A = (id) => P(M.addresses[IDX[id]]);
+const PARKS = [["Hyde Park", 175, 255, 62, 34], ["Regent's Park", 305, 95, 48, 30], ["St James's Park", 395, 395, 30, 14],
+  ["Victoria Park", 905, 160, 36, 22]];                         // approximate, for atmosphere only
 function baseMap() {
   g.fillStyle = "#0b0d10"; g.fillRect(0, 0, W, H);
   paper(MX, MY, 1440, 1008, 9);
-  g.strokeStyle = "rgba(70,110,150,0.55)"; g.lineWidth = 22; g.lineCap = "round"; g.beginPath();
-  M.thames.forEach((p, i) => { const [x, y] = P(p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
-  g.strokeStyle = "rgba(90,65,35,0.35)"; g.lineWidth = 1.6; g.beginPath();
-  for (const [a, b] of M.edges) { const [ax, ay] = A(a), [bx, by] = A(b); g.moveTo(ax, ay); g.lineTo(bx, by); }
-  g.stroke();
-  g.fillStyle = "rgba(70,50,30,0.6)"; for (const a of M.addresses) { const [x, y] = P(a); g.fillRect(x - 3, y - 3, 6, 6); }
-  for (const d of M.districts) { const [x, y] = P([d.x, d.y]); text(d.name.toUpperCase(), x, y - 52, {size: 19, color: "rgba(80,60,35,0.6)", spacing: 3}); }
-  const [bx, by] = A(M.baker); star(bx, by, 18, INK); text("221B", bx, by - 30, {size: 24, color: INK, style: "bold"});
-  text(`map: the real benchmark runs of case ${D.seed} (gpt-6-astra alone \u00b7 gpt-6-astra with 12 Jev boys \u00b7 100 Jev boys)`, MX + 1420, MY + 990, {size: 18, color: "rgba(42,29,18,0.55)", align: "right", style: "italic"});
-  const [cx, cy] = A(M.scene); g.strokeStyle = RED; g.lineWidth = 6;
+  g.save(); g.beginPath(); g.rect(MX, MY, 1440, 1008); g.clip();
+  // faint survey grid
+  g.strokeStyle = "rgba(120,90,50,0.08)"; g.lineWidth = 1;
+  for (let x = MX; x < MX + 1440; x += 72) { g.beginPath(); g.moveTo(x, MY); g.lineTo(x, MY + 1008); g.stroke(); }
+  for (let y = MY; y < MY + 1008; y += 72) { g.beginPath(); g.moveTo(MX, y); g.lineTo(MX + 1440, y); g.stroke(); }
+  // districts: soft washes of colour behind their streets
+  const tints = ["rgba(176,132,82,0.10)", "rgba(140,120,90,0.09)"];
+  M.districts.forEach((d, i) => { const [x, y] = P([d.x, d.y]), r = 150;
+    const gr = g.createRadialGradient(x, y, 10, x, y, r); gr.addColorStop(0, tints[i % 2]); gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); });
+  // parks
+  for (const [n, x0, y0, rx, ry] of PARKS) { const [x, y] = P([x0, y0]);
+    g.fillStyle = "rgba(112,140,88,0.28)"; g.beginPath(); g.ellipse(x, y, rx * MS, ry * MS, 0.15, 0, 7); g.fill();
+    g.strokeStyle = "rgba(80,104,62,0.35)"; g.lineWidth = 1.5; g.stroke();
+    text(n, x, y, {size: 15, color: "rgba(60,80,45,0.75)"}); }
+  // the Thames: a band with darker banks, and its name along the water
+  const river = () => { g.beginPath(); M.thames.forEach((p, i) => { const [x, y] = P(p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); };
+  g.lineCap = "round"; g.lineJoin = "round";
+  river(); g.strokeStyle = "rgba(60,90,120,0.45)"; g.lineWidth = 34; g.stroke();
+  river(); g.strokeStyle = "rgba(150,186,210,0.95)"; g.lineWidth = 28; g.stroke();
+  river(); g.strokeStyle = "rgba(255,255,255,0.18)"; g.lineWidth = 6; g.stroke();
+  { const [x1, y1] = P(M.thames[2]), [x2, y2] = P(M.thames[3]); g.save(); g.translate((x1 + x2) / 2, (y1 + y2) / 2 + 2); g.rotate(Math.atan2(y2 - y1, x2 - x1));
+    text("RIVER  THAMES", 0, 0, {size: 16, color: "rgba(40,70,100,0.8)", spacing: 6}); g.restore(); }
+  // streets: a pale casing under a fine ink line
+  g.lineCap = "round";
+  g.beginPath(); for (const [a, b] of M.edges) { const [ax, ay] = A(a), [bx, by] = A(b); g.moveTo(ax, ay); g.lineTo(bx, by); }
+  g.strokeStyle = "rgba(250,242,222,0.9)"; g.lineWidth = 5; g.stroke();
+  g.strokeStyle = "rgba(110,82,48,0.45)"; g.lineWidth = 1.4; g.stroke();
+  // houses
+  for (const a of M.addresses) { const [x, y] = P(a); g.fillStyle = "rgba(92,66,40,0.75)"; g.beginPath(); g.arc(x, y, 3.2, 0, 7); g.fill(); }
+  // district names, engraved
+  for (const d of M.districts) { const [x, y] = P([d.x, d.y]); text(d.name.toUpperCase(), x, y - 56, {size: 20, color: "rgba(78,56,32,0.62)", font: SERIF, spacing: 4}); }
+  g.restore();
+  // frame: a double rule
+  g.strokeStyle = "rgba(60,42,24,0.75)"; g.lineWidth = 3; g.strokeRect(MX + 10, MY + 10, 1420, 988);
+  g.lineWidth = 1; g.strokeRect(MX + 18, MY + 18, 1404, 972);
+  // cartouche and compass
+  { const x = MX + 1100, y = MY + 690; g.fillStyle = "rgba(244,234,208,0.92)"; g.fillRect(x, y, 300, 72); g.strokeStyle = "rgba(60,42,24,0.7)"; g.lineWidth = 2; g.strokeRect(x, y, 300, 72);
+    g.strokeRect(x + 5, y + 5, 290, 62); text("LONDON", x + 150, y + 28, {size: 30, color: INK, font: SERIF, spacing: 8});
+    text("the murder map · 1890", x + 150, y + 54, {size: 16, color: "rgba(42,29,18,0.7)", font: SERIF, style: "italic"}); }
+  { const x = MX + 1040, y = MY + 726; g.save(); g.translate(x, y); g.fillStyle = "rgba(60,42,24,0.75)";
+    g.beginPath(); g.moveTo(0, -36); g.lineTo(8, 0); g.lineTo(0, 36); g.lineTo(-8, 0); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(-26, 0); g.lineTo(0, 6); g.lineTo(26, 0); g.lineTo(0, -6); g.closePath(); g.fill();
+    text("N", 0, -50, {size: 18, color: INK, font: SERIF, style: "bold"}); g.restore(); }
+  // 221B and the scene of the crime
+  const [bx, by] = A(M.baker); g.fillStyle = "rgba(244,234,208,0.95)"; g.beginPath(); g.arc(bx, by, 20, 0, 7); g.fill();
+  star(bx, by, 16, INK); text("221B", bx, by - 34, {size: 24, color: INK, style: "bold"});
+  text(`map: the real benchmark runs of case ${D.seed} (gpt-6-astra alone · gpt-6-astra with 12 Jev boys · 100 Jev boys)`, MX + 1340, MY + 990 - 4, {size: 14, color: "rgba(42,29,18,0.55)", align: "right"});
+  const [cx, cy] = A(M.scene); g.fillStyle = "rgba(163,23,29,0.15)"; g.beginPath(); g.arc(cx, cy, 24, 0, 7); g.fill();
+  g.strokeStyle = RED; g.lineWidth = 6; g.lineCap = "round";
   g.beginPath(); g.moveTo(cx - 12, cy - 12); g.lineTo(cx + 12, cy + 12); g.moveTo(cx + 12, cy - 12); g.lineTo(cx - 12, cy + 12); g.stroke();
+  text("the murder", cx, cy + 34, {size: 16, color: RED, style: "bold"});
 }
 function star(x, y, r, col) { g.fillStyle = col; g.beginPath();
   for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
@@ -342,7 +385,8 @@ function partIcon(part, x, y, r, col) {
 }
 function tray(found, alpha) {                         // what has been found so far: culprit, motive, hideout
   if (alpha <= 0) return;
-  g.save(); g.globalAlpha = alpha * 0.88; g.fillStyle = "rgba(6,8,11,0.88)"; g.fillRect(40, 40, 520, 150); g.restore();
+  g.save(); g.globalAlpha = alpha * 0.92; g.fillStyle = "rgba(6,8,11,0.9)"; g.fillRect(40, 40, 520, 150);
+  g.strokeStyle = "rgba(224,179,87,0.5)"; g.lineWidth = 2; g.strokeRect(40, 40, 520, 150); g.restore();
   text("clues found", 300, 66, {size: 22, color: DIM, alpha});
   ["culprit", "motive", "hideout"].forEach((p, i) => {
     const x = 125 + i * 175, n = found[p] || 0, col = n ? GOLD : "rgba(239,230,207,0.25)";
@@ -496,21 +540,23 @@ function chapSwarm(u) {
   const px = 1240, pw = 640;
   g.fillStyle = "rgba(20,17,13,1)"; g.fillRect(px, 220, pw, 820); g.strokeStyle = "rgba(224,179,87,0.4)"; g.lineWidth = 2; g.strokeRect(px, 220, pw, 820);
   miniClock(A0.minute + (A1.minute - A0.minute) * k, A0.wall + (A1.wall - A0.wall) * k, prog(u, CH.a, CH.a + 0.4), px + pw - 370);
-  text("Votes: each colour is one answer", px + pw / 2, 262, {size: 28, alpha: prog(u, CH.a, CH.a + 0.4)});
+  text("Votes for the leading answer", px + pw / 2, 262, {size: 28, alpha: prog(u, CH.a, CH.a + 0.4)});
   const x0 = px + 90, x1 = px + pw - 40, y0 = 700, y1 = 320, maxM = run[T].minute || 1;
   const X = (mm) => x0 + (x1 - x0) * mm / maxM, Y = (v) => y0 - (y0 - y1) * v / 100;
   g.strokeStyle = "rgba(239,230,207,0.4)"; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y1); g.lineTo(x0, y0); g.lineTo(x1, y0); g.stroke();
-  [0, 50, 100].forEach((v) => text(String(v), x0 - 16, Y(v), {size: 22, color: DIM, align: "right"}));
+  [0, 30, 100].forEach((v) => text(String(v), x0 - 16, Y(v), {size: 22, color: DIM, align: "right"}));
   text("boys", x0 - 16, y1 - 30, {size: 22, color: DIM, align: "right"});
+  text("all other answers", x1 - 60, y0 + 34, {size: 20, color: "rgba(239,230,207,0.6)", align: "right"});
   text("case time", x1, y0 + 34, {size: 22, color: DIM, align: "right"});
   g.setLineDash([10, 8]); g.strokeStyle = "#e4836f"; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, Y(30)); g.lineTo(x1, Y(30)); g.stroke(); g.setLineDash([]);
   text("30 alike: case closed", x1, Y(30) - 18, {size: 22, color: "#e4836f", align: "right"});
   const n = Math.max(1, Math.floor(ft) + 1);
-  SW.answers.forEach((_, i) => {
-    const pts = run.slice(0, n).map((t) => [X(t.minute), Y(t.vote.filter((v) => v === i).length)]);
-    g.strokeStyle = ANS[i]; g.lineWidth = 6; g.beginPath(); pts.forEach(([x, y], j) => j ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
-    const [lx, ly] = pts[pts.length - 1]; g.fillStyle = ANS[i]; g.beginPath(); g.arc(lx, ly, 8, 0, 7); g.fill();
-  });
+  const line = (fn, col, w) => { const pts = run.slice(0, n).map((t) => [X(t.minute), Y(fn(t))]);
+    g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach(([x, y], j) => j ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
+    const [lx, ly] = pts[pts.length - 1]; g.fillStyle = col; g.beginPath(); g.arc(lx, ly, w + 2, 0, 7); g.fill(); return [lx, ly]; };
+  line((t) => t.vote.filter((v) => v !== 0 && v !== -2).length, "rgba(239,230,207,0.45)", 4);
+  const [lx, ly] = line((t) => t.vote.filter((v) => v === 0).length, ANS[0], 7);
+  text("the leading answer", lx - 14, ly - 26, {size: 22, color: ANS[0], align: "right"});
   // legend: the answers (culprit · motive · hideout) and the truth
   SW.answers.forEach((A, i) => { const y = 790 + i * 44; g.fillStyle = ANS[i]; g.beginPath(); g.arc(px + 50, y, 12, 0, 7); g.fill();
     text(A.parts.join(" · "), px + 76, y, {size: 22, align: "left"}); });
