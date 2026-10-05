@@ -563,7 +563,7 @@ function chapSwarm(u) {
   g.strokeStyle = "rgba(60,45,30,0.9)"; g.lineWidth = 2.5; g.beginPath(); g.arc(px + 50, 790 + SW.answers.length * 44, 8, 0, 7); g.stroke();
   text("no full answer yet", px + 76, 790 + SW.answers.length * 44, {size: 22, color: DIM, align: "left"});
   const tr = D.truth || {};
-  text(`truth: ${(tr.culprit || "").split(",")[0]} \u00b7 ${(tr.motive || "").split(":")[0]} \u00b7 ${(tr.hideout || "").split(", ").slice(1).join(", ")}`, px + pw / 2, 1010, {size: 22, color: "#7fd18b", alpha: prog(u, 12.6, 13.0)});
+  text(`truth: ${(tr.culprit || "").split(",")[0]} \u00b7 ${(tr.motive || "").split(":")[0].split(" for ")[0].replace("a stolen secret", "stolen papers")} \u00b7 ${(tr.hideout || "").split(", ").slice(1).join(", ")}`, px + pw / 2, 1010, {size: 22, color: "#7fd18b", alpha: prog(u, 12.6, 13.0)});
   stamp(SW.solved, u, 13.2, 470, 900);
   caption(["A hundred boys, no leader. Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
   caption(["They agree fast. But agreeing is not the same as being right."], u, 8.0, 13.0);
