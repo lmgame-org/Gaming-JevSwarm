@@ -18,7 +18,7 @@
    footage is the real benchmark runs of one case; every number is from the 100-case benchmark. System fonts only. */
 const D = window.DATA;
 const cv = document.getElementById("c"), g = cv.getContext("2d");
-const W = 1920, H = 1080, DUR = 100;
+const W = 1920, H = 1080, DUR = 95;
 const SERIF = "Baskerville, 'Libre Baskerville', Georgia, serif";
 const SANS = "'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif";   // small text: clearer than an italic serif
 const INK = "#2a1d12", CREAM = "#efe6cf", DIM = "#9c937e", RED = "#a3171d", GOLD = "#e0b357", PAPER = "#efe2c2";
@@ -211,7 +211,7 @@ const local = (fn, s0) => (t) => fn(t - s0);
 const SCENES = [[0, 5, stretch(night, 0, 5, 0, 4.6)], [5, 10.5, stretch(irregularsQuote, 5, 10.5, 4.6, 9.0)],
   [10.5, 16, stretch(minskyQuote, 10.5, 16, 9.0, 13.0)], [16, 25, local(experiment, 16)],
   [25, 43, local(chapLone, 25)], [43, 61, local(chapBaker, 43)], [61, 77, local(chapSwarm, 61)],
-  [77, 84, local(casebook2, 77)], [84, 96, local(frameup, 84)], [96, 100.01, stretch(endCard, 96, 100, 43.0, 45.0)]];
+  [77, 82.5, local(casebook2, 77)], [82.5, 92.5, local(frameup, 82.5)], [92.5, 95.01, stretch(endCard, 92.5, 95, 43.2, 45.0)]];
 
 function skyline(y, col, seed) {   // London rooftops: chimneys, a dome and a clock tower
   const r = rng(seed); g.fillStyle = col; g.beginPath(); g.moveTo(0, H);
@@ -596,7 +596,7 @@ function casebook2(u) {
 }
 function frameup(u) {                          // the same three methods when somebody lies
   fog(u + 84, 0.5, false);
-  const al = Math.min(prog(u, 0, 0.5), 1 - prog(u, 11.5, 12.0)), F = TB.frameup || {};
+  const al = Math.min(prog(u, 0, 0.5), 1 - prog(u, 9.6, 10.0)), F = TB.frameup || {};
   text("Then somebody lies.", W / 2, 150, {size: 76, alpha: al});
   text("100 more murders. Each time the murderer bribes his servants to frame an innocent man.", W / 2, 240, {size: 32, color: DIM, alpha: al * prog(u, 0.5, 1.0)});
   const rows = [["The Lone Genius (GPT6-Astra)", F.solo, CREAM], ["Holmes (GPT6-Astra) + Jev Swarm", F.baker, GOLD], ["Jev Swarm", F.swarm, CREAM],

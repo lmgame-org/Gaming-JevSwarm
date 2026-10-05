@@ -24,10 +24,13 @@ LINES = [
     (45.8, "07_holmes", "Next, Holmes and his Irregulars. Holmes thinks. Twelve small, quick boys run the errands."),
     (56.9, "08_solved", "Solved."),
     (63.8, "09_swarm", "Finally, the Jev swarm. A hundred boys, no leader. They vote."),
-    (74.3, "10_wrong", "Unsolved. The wrong man."),
-    (78.0, "11_casebook", "Across a hundred cases, Holmes and his Irregulars solve ninety-six."),
-    (84.3, "12_lies", "Then somebody lies. Astra, leading the Jev swarm, sees through it. Replace Astra with a counting heuristic, and almost none are solved."),
+    (73.9, "10_wrong", "Unsolved. The wrong man."),
+    (77.4, "11_casebook", "Across a hundred cases, Holmes and his Irregulars solve ninety-six."),
+    (82.8, "12_lies", "Then somebody lies. Astra, leading the Jev swarm, sees through it. Replace Astra with a counting heuristic, and almost none are solved."),
 ]
+
+
+TEMPO = {"11_casebook": 1.05, "12_lies": 1.1}  # lines played slightly faster so they finish before the next scene
 
 
 def tts(text, out):
@@ -50,9 +53,10 @@ def main():
         out = os.path.join(HERE, "voice", stem + ".wav")
         if not os.path.exists(out):
             tts(text, out)
-        d = duration(out)
-        nxt = LINES[i + 1][0] if i + 1 < len(LINES) else 100.0
-        meta.append({"t": t, "file": out, "dur": round(d, 2), "fits": t + d <= nxt - 0.2})
+        tempo = TEMPO.get(stem)
+        d = duration(out) / (tempo or 1)
+        nxt = LINES[i + 1][0] if i + 1 < len(LINES) else 95.0
+        meta.append({"t": t, "file": out, "dur": round(d, 2), "fits": t + d <= nxt - 0.2, "tempo": tempo})
         print(f"{t:5.1f}s {d:4.1f}s {'ok ' if t + d <= nxt - 0.2 else 'LONG'} {text}")
     with open(os.path.join(HERE, "voice", "lines.json"), "w") as f:
         json.dump(meta, f, indent=1)

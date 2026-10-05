@@ -8,7 +8,7 @@ import struct
 import sys
 import wave
 
-SR, DUR = 44100, 100.0
+SR, DUR = 44100, 95.0
 N = int(SR * DUR)
 buf = [0.0] * N
 rnd = random.Random(7)
@@ -100,9 +100,9 @@ def section(t0, t1, chords, waltz=True, harp=False, tunes=None, level=1.0):
 section(0.0, 16.0, MINOR, waltz=False, harp=True, level=0.8)                  # Baker Street, the quotes
 section(16.0, 25.0, MINOR, waltz=True, level=0.8)                             # the experiment
 section(25.0, 77.0, MINOR, waltz=True, tunes=[TUNE_A, TUNE_B], level=0.9)      # the three chapters
-section(77.0, 96.0, MAJOR, waltz=True, harp=True, tunes=[TUNE_M], level=1.0)   # the results
-pad([50, 54, 57, 62], 96.0, 3.6)                                              # a final D major chord
-add(96.0, pluck(50, 2.0, 0.7), 0.2)
+section(77.0, 92.5, MAJOR, waltz=True, harp=True, tunes=[TUNE_M], level=1.0)   # the results
+pad([50, 54, 57, 62], 92.5, 2.4)                                              # a final D major chord
+add(92.5, pluck(50, 2.0, 0.7), 0.2)
 for t in (25.0, 43.0, 61.0, 77.0):
     timp(t, 0.12)
 
