@@ -27,7 +27,6 @@ LINES = [
     (74.3, "10_wrong", "Unsolved. The wrong man."),
     (78.0, "11_casebook", "Across a hundred cases, Holmes and his Irregulars solve ninety-six."),
     (84.3, "12_lies", "Then somebody lies. Only Holmes and his Irregulars see through it, and cover the ground."),
-    (92.6, "13_elementary", "Elementary."),
 ]
 
 

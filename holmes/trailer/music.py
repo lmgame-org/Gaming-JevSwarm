@@ -80,7 +80,7 @@ def section(t0, t1, chords, waltz=True, harp=False, tunes=None, level=1.0):
         ch = chords[bar % 4]
         pad(ch, t, min(BAR, t1 - t))
         if waltz:
-            add(t, pluck(ch[0] - 12, 1.8, 0.55), 0.32 * level)                   # bass on one
+            add(t, pluck(ch[0], 0.8, 0.7), 0.16 * level)                         # a light bass on one
             for b in (1, 2):
                 for m in ch:
                     add(t + b * BEAT, pluck(m, 0.9, 0.35), 0.10 * level)          # chord on two and three
@@ -102,9 +102,9 @@ section(16.0, 25.0, MINOR, waltz=True, level=0.8)                             # 
 section(25.0, 77.0, MINOR, waltz=True, tunes=[TUNE_A, TUNE_B], level=0.9)      # the three chapters
 section(77.0, 92.0, MAJOR, waltz=True, harp=True, tunes=[TUNE_M], level=1.0)   # the results
 pad([50, 54, 57, 62], 92.0, 3.6)                                              # a final D major chord
-add(92.0, pluck(38, 3.5, 0.5), 0.4)
-for t in (25.0, 43.0, 61.0, 77.0, 92.0):
-    timp(t, 0.45)
+add(92.0, pluck(50, 2.0, 0.7), 0.2)
+for t in (25.0, 43.0, 61.0, 77.0):
+    timp(t, 0.12)
 
 # fade out the last second
 for k in range(int(SR * 1.2)):
