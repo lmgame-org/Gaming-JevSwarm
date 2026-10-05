@@ -546,7 +546,6 @@ function chapSwarm(u) {
   g.strokeStyle = "rgba(239,230,207,0.4)"; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y1); g.lineTo(x0, y0); g.lineTo(x1, y0); g.stroke();
   [0, 30, 100].forEach((v) => text(String(v), x0 - 16, Y(v), {size: 22, color: DIM, align: "right"}));
   text("boys", x0 - 16, y1 - 30, {size: 22, color: DIM, align: "right"});
-  text("all other answers", x1 - 60, y0 + 34, {size: 20, color: "rgba(239,230,207,0.6)", align: "right"});
   text("case time", x1, y0 + 34, {size: 22, color: DIM, align: "right"});
   g.setLineDash([10, 8]); g.strokeStyle = "#e4836f"; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, Y(30)); g.lineTo(x1, Y(30)); g.stroke(); g.setLineDash([]);
   text("30 alike: case closed", x1, Y(30) - 18, {size: 22, color: "#e4836f", align: "right"});
@@ -554,7 +553,8 @@ function chapSwarm(u) {
   const line = (fn, col, w) => { const pts = run.slice(0, n).map((t) => [X(t.minute), Y(fn(t))]);
     g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach(([x, y], j) => j ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
     const [lx, ly] = pts[pts.length - 1]; g.fillStyle = col; g.beginPath(); g.arc(lx, ly, w + 2, 0, 7); g.fill(); return [lx, ly]; };
-  line((t) => t.vote.filter((v) => v !== 0 && v !== -2).length, "rgba(239,230,207,0.45)", 4);
+  const [gx, gy] = line((t) => t.vote.filter((v) => v !== 0 && v !== -2).length, "rgba(239,230,207,0.45)", 4);
+  text("all other answers", gx - 14, gy + 24, {size: 20, color: "rgba(239,230,207,0.7)", align: "right"});
   const [lx, ly] = line((t) => t.vote.filter((v) => v === 0).length, ANS[0], 7);
   text("the leading answer", lx - 14, ly - 26, {size: 22, color: ANS[0], align: "right"});
   // legend: the answers (culprit · motive · hideout) and the truth
