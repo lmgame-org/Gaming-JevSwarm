@@ -145,7 +145,7 @@ function baseMap() {
   // 221B and the scene of the crime
   const [bx, by] = A(M.baker); g.fillStyle = "rgba(244,234,208,0.95)"; g.beginPath(); g.arc(bx, by, 20, 0, 7); g.fill();
   star(bx, by, 16, INK); text("221B", bx, by - 34, {size: 24, color: INK, style: "bold"});
-  text(`map: the real benchmark runs of case ${D.seed} (gpt-6-astra alone · gpt-6-astra with 12 Jev boys · 100 Jev boys)`, MX + 1340, MY + 990 - 4, {size: 14, color: "rgba(42,29,18,0.55)", align: "right"});
+  text(`map: the real benchmark runs of case ${D.seed}: gpt-6-astra alone · gpt-6-astra with 12 Jev boys · 100 Jev boys`, MX + 1340, MY + 990 - 4, {size: 14, color: "rgba(42,29,18,0.55)", align: "right"});
   const [cx, cy] = A(M.scene); g.fillStyle = "rgba(163,23,29,0.15)"; g.beginPath(); g.arc(cx, cy, 24, 0, 7); g.fill();
   g.strokeStyle = RED; g.lineWidth = 6; g.lineCap = "round";
   g.beginPath(); g.moveTo(cx - 12, cy - 12); g.lineTo(cx + 12, cy + 12); g.moveTo(cx + 12, cy - 12); g.lineTo(cx - 12, cy + 12); g.stroke();
