@@ -293,7 +293,9 @@ function minskyQuote(t) {
   text("“The power of intelligence stems from our vast diversity,", W / 2, 440, {size: 62, alpha: prog(t, 9.4, 9.9) * al});
   text("not from any single, perfect principle.”", W / 2, 530, {size: 62, alpha: prog(t, 9.8, 10.3) * al});
   text("Marvin Minsky, The Society of Mind (1986)", W / 2, 630, {size: 32, color: DIM, style: "italic", alpha: prog(t, 10.5, 10.9) * al});
-  text("One genius, or many minds?", W / 2, 840, {size: 62, color: GOLD, style: "italic", alpha: prog(t, 11.4, 11.8) * al});
+  text("One genius, or many minds?", W / 2, 790, {size: 62, color: GOLD, style: "italic", alpha: prog(t, 10.9, 11.2) * al});
+  text("One genius: gpt-6-astra, a large language model.   Many minds: Jev, a swarm of small, fast models.", W / 2, 880, {size: 34, alpha: prog(t, 11.3, 11.6) * al});
+  text("Which is better?", W / 2, 950, {size: 40, color: GOLD, alpha: prog(t, 11.7, 12.0) * al});
   vignette(0.7);
 }
 function window221(t, al) {
@@ -599,8 +601,8 @@ function frameup(u) {                          // the same three methods when so
   const al = Math.min(prog(u, 0, 0.5), 1 - prog(u, 7.5, 8.0)), F = TB.frameup || {};
   text("Then somebody lies.", W / 2, 150, {size: 76, alpha: al});
   text("100 more murders. Each time the murderer bribes his servants to frame an innocent man.", W / 2, 240, {size: 32, color: DIM, alpha: al * prog(u, 0.5, 1.0)});
-  const rows = [["The Lone Genius", F.solo, CREAM], ["Holmes & the Irregulars", F.baker, GOLD], ["The Swarm", F.swarm, CREAM],
-    ["A Holmes who only counts clues", F.counting, "#e4836f"]];
+  const rows = [["The Lone Genius", F.solo, CREAM], ["Holmes (gpt-6-astra) + Jev boys", F.baker, GOLD], ["The Swarm", F.swarm, CREAM],
+    ["Counting Holmes + Jev boys", F.counting, "#e4836f"]];
   rows.forEach(([who, n, col], i) => {
     const y = 380 + i * 120, r = al * ease(prog(u, 1.2 + i * 0.5, 2.6 + i * 0.5));
     text(who, 880, y, {size: i === 3 ? 38 : 48, align: "right", alpha: al * prog(u, 1.0 + i * 0.5, 1.4 + i * 0.5), color: i === 3 ? "#e4836f" : CREAM});
@@ -609,7 +611,8 @@ function frameup(u) {                          // the same three methods when so
     text(`${Math.round((n || 0) * r)}`, 1550, y, {size: 50, color: col, align: "left", alpha: r > 0 ? al : 0});
   });
   text("solved, out of 100", 1220, 320, {size: 24, color: DIM, alpha: al});
-  text("Reasoning sees through the lie. Helpers cover the ground. Holmes & the Irregulars do both.", W / 2, 920, {size: 38, color: GOLD, alpha: al * prog(u, 4.6, 5.2)});
+  text("Only gpt-6-astra leading the Jev boys sees through the lie.", W / 2, 900, {size: 40, color: GOLD, alpha: al * prog(u, 4.6, 5.2)});
+  text("Holmes counting the clues instead of reasoning: 0 correct.", W / 2, 960, {size: 36, color: "#e4836f", alpha: al * prog(u, 5.2, 5.8)});
   vignette();
 }
 function render(t) {

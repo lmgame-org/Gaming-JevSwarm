@@ -17,7 +17,7 @@ STYLE = ("Narrate a film trailer for a Victorian detective mystery. Deep, calm, 
 LINES = [
     (0.6, "01_london", "London. Eighteen ninety."),
     (5.3, "02_secret", "Holmes's secret was never one mind."),
-    (10.8, "03_ai", "A century later, AI asks: one genius, or many minds?"),
+    (10.8, "03_ai", "One genius, or many minds? Astra, or a swarm of Jev?"),
     (16.9, "04_setup", "We sent AI to Baker Street. A hundred murders. Find the culprit, the motive, and the hideout."),
     (27.8, "05_lone", "First, the lone genius. One brilliant model, one door at a time."),
     (38.9, "06_unsolved", "Unsolved."),
@@ -26,7 +26,7 @@ LINES = [
     (63.8, "09_swarm", "Finally, the swarm. A hundred boys, no leader. They vote."),
     (74.3, "10_wrong", "Unsolved. The wrong man."),
     (78.0, "11_casebook", "Across a hundred cases, Holmes and his Irregulars solve ninety-six."),
-    (84.3, "12_lies", "Then somebody lies. Only Holmes and his Irregulars see through it, and cover the ground."),
+    (84.3, "12_lies", "Then somebody lies. Only Astra, leading Jev, sees through it. Counting gets none right."),
 ]
 
 
