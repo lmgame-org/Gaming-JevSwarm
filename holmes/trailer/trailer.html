@@ -416,7 +416,7 @@ function experiment(u) {
   });
   text("Solved means all three right, within twelve hours.", W / 2, 490, {size: 32, color: DIM, alpha: al * prog(u, 2.8, 3.3)});
   const rows = [["I.", "The Lone Genius", "gpt-6-astra, a large language model, alone"], ["II.", "Holmes & the Irregulars", "gpt-6-astra leads twelve Jev boys (a small, fast model)"],
-    ["III.", "The Swarm", "a hundred Jev boys, no leader"]];
+    ["III.", "The Jev Swarm", "a hundred Jev boys, no leader"]];
   rows.forEach(([n, who, how], i) => {
     const r = al * ease(prog(u, 3.8 + i * 0.7, 4.4 + i * 0.7)), y = 610 + i * 110;
     text(n, 500, y, {size: 44, color: GOLD, align: "right", alpha: r});
@@ -568,31 +568,31 @@ function chapSwarm(u) {
   const tr = D.truth || {};
   text(`truth: ${(tr.culprit || "").split(",")[0]} \u00b7 ${(tr.motive || "").split(":")[0].split(" for ")[0].replace("a stolen secret", "stolen papers")} \u00b7 ${(tr.hideout || "").split(", ").slice(1).join(", ")}`, px + pw / 2, 1010, {size: 22, color: "#7fd18b", alpha: prog(u, 12.6, 13.0)});
   stamp(SW.solved, u, 13.2, 470, 900);
-  caption(["A hundred boys, no leader. Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
-  caption(["They agree fast. But agreeing is not the same as being right."], u, 8.0, 13.0);
-  titleCard("III.", "The Swarm", "a hundred Jev boys, no leader", u);
+  caption(["The Jev swarm: a hundred boys, no leader. Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
+  caption(["The Jev swarm agrees fast. But agreeing is not the same as being right."], u, 8.0, 13.0);
+  titleCard("III.", "The Jev Swarm", "a hundred Jev boys, no leader", u);
 }
 function casebook2(u) {
   fog(u + 67, 0.5, false);
   const al = prog(u, 0, 0.5), R = (TB.rows || {});
   g.save(); g.globalAlpha = al; paper(260, 90, 1400, 800, 31); g.restore();
   text(`${TB.n || 100} murders: who cracked them?`, W / 2, 175, {size: 58, color: INK, style: "italic", alpha: al});
-  const cols = {bar: 960, sim: 1440, wall: 1580};
-  text(`solved, out of ${TB.n || 100}`, cols.bar + 170, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
+  const cols = {bar: 1050, sim: 1440, wall: 1575};
+  text(`solved, out of ${TB.n || 100}`, cols.bar + 100, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
   text("case time", cols.sim, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
   text("real time", cols.wall, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
-  const rows = [["The Lone Genius", R.solo, INK], ["Holmes & the Irregulars", R.baker, RED], ["The Swarm", R.swarm, INK]];
+  const rows = [["The Lone Genius (GPT6-Astra)", R.solo, INK], ["Holmes (GPT6-Astra) + Jev Swarm", R.baker, RED], ["Jev Swarm", R.swarm, INK]];
   rows.forEach(([who, v, col], i) => {
     if (!v) return;
     const y = 400 + i * 170, r = ease(prog(u, 0.8 + i * 0.6, 2.6 + i * 0.6));
-    text(who, 320, y, {size: 48, color: INK, align: "left", alpha: prog(u, 0.6 + i * 0.6, 1.0 + i * 0.6)});
-    g.fillStyle = "rgba(42,29,18,0.12)"; g.fillRect(cols.bar, y - 26, 340, 52);
-    g.fillStyle = col; g.fillRect(cols.bar, y - 26, 340 * v.solved / (TB.n || 100) * r, 52);
+    text(who, 320, y, {size: 40, color: INK, align: "left", alpha: prog(u, 0.6 + i * 0.6, 1.0 + i * 0.6)});
+    g.fillStyle = "rgba(42,29,18,0.12)"; g.fillRect(cols.bar, y - 26, 270, 52);
+    g.fillStyle = col; g.fillRect(cols.bar, y - 26, 270 * v.solved / (TB.n || 100) * r, 52);
     text(`${Math.round(v.solved * r)}`, cols.bar - 20, y, {size: 56, color: col, align: "right", alpha: r > 0 ? 1 : 0});
     text(v.sim, cols.sim, y, {size: 40, color: INK, alpha: r});
     text(v.wall, cols.wall, y, {size: 40, color: INK, alpha: r});
   });
-  text("median per case · 12 hours allowed", (cols.sim + cols.wall) / 2, 300, {size: 20, color: "rgba(42,29,18,0.55)", style: "italic", alpha: al});
+  text("median per case", (cols.sim + cols.wall) / 2, 300, {size: 20, color: "rgba(42,29,18,0.55)", style: "italic", alpha: al});
   text("The genius thinks. The Irregulars look. Together, they solve it.", W / 2, 980, {size: 50, style: "italic", alpha: prog(u, 5.0, 5.6)});
   vignette(0.5);
 }
@@ -601,18 +601,18 @@ function frameup(u) {                          // the same three methods when so
   const al = Math.min(prog(u, 0, 0.5), 1 - prog(u, 7.5, 8.0)), F = TB.frameup || {};
   text("Then somebody lies.", W / 2, 150, {size: 76, alpha: al});
   text("100 more murders. Each time the murderer bribes his servants to frame an innocent man.", W / 2, 240, {size: 32, color: DIM, alpha: al * prog(u, 0.5, 1.0)});
-  const rows = [["The Lone Genius", F.solo, CREAM], ["Holmes (gpt-6-astra) + Jev boys", F.baker, GOLD], ["The Swarm", F.swarm, CREAM],
-    ["Counting Holmes + Jev boys", F.counting, "#e4836f"]];
+  const rows = [["The Lone Genius (GPT6-Astra)", F.solo, CREAM], ["Holmes (GPT6-Astra) + Jev Swarm", F.baker, GOLD], ["Jev Swarm", F.swarm, CREAM],
+    ["Holmes (heuristic) + heuristic Swarm", F.counting, "#e4836f"]];
   rows.forEach(([who, n, col], i) => {
     const y = 380 + i * 120, r = al * ease(prog(u, 1.2 + i * 0.5, 2.6 + i * 0.5));
-    text(who, 880, y, {size: i === 3 ? 38 : 48, align: "right", alpha: al * prog(u, 1.0 + i * 0.5, 1.4 + i * 0.5), color: i === 3 ? "#e4836f" : CREAM});
+    text(who, 880, y, {size: i === 3 ? 36 : 42, align: "right", alpha: al * prog(u, 1.0 + i * 0.5, 1.4 + i * 0.5), color: i === 3 ? "#e4836f" : CREAM});
     g.fillStyle = "rgba(239,230,207,0.12)"; g.fillRect(920, y - 24, 600, 48);
     g.fillStyle = col; g.fillRect(920, y - 24, 600 * (n || 0) / 100 * r, 48);
     text(`${Math.round((n || 0) * r)}`, 1550, y, {size: 50, color: col, align: "left", alpha: r > 0 ? al : 0});
   });
   text("solved, out of 100", 1220, 320, {size: 24, color: DIM, alpha: al});
-  text("Only gpt-6-astra leading the Jev boys sees through the lie.", W / 2, 900, {size: 40, color: GOLD, alpha: al * prog(u, 4.6, 5.2)});
-  text("Holmes counting the clues instead of reasoning: 0 correct.", W / 2, 960, {size: 36, color: "#e4836f", alpha: al * prog(u, 5.2, 5.8)});
+  text("Holmes (GPT6-Astra) + Jev Swarm sees through the lie and solves the most cases.", W / 2, 900, {size: 40, color: GOLD, alpha: al * prog(u, 4.6, 5.2)});
+  text(`Holmes (heuristic) + heuristic Swarm counts the clues and solves ${(TB.frameup || {}).counting} of 100.`, W / 2, 960, {size: 36, color: "#e4836f", alpha: al * prog(u, 5.2, 5.8)});
   vignette();
 }
 function render(t) {
