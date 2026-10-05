@@ -550,7 +550,7 @@ function chapSwarm(u) {
   text("boys", x0 - 16, y1 - 30, {size: 22, color: DIM, align: "right"});
   text("case time", x1, y0 + 34, {size: 22, color: DIM, align: "right"});
   g.setLineDash([10, 8]); g.strokeStyle = "#e4836f"; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, Y(30)); g.lineTo(x1, Y(30)); g.stroke(); g.setLineDash([]);
-  text("30 alike: case closed", x1, Y(30) - 18, {size: 22, color: "#e4836f", align: "right"});
+  text("30 agree: case closed", x1, Y(30) - 18, {size: 22, color: "#e4836f", align: "right"});
   const n = Math.max(1, Math.floor(ft) + 1);
   const line = (fn, col, w) => { const pts = run.slice(0, n).map((t) => [X(t.minute), Y(fn(t))]);
     g.strokeStyle = col; g.lineWidth = w; g.beginPath(); pts.forEach(([x, y], j) => j ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
