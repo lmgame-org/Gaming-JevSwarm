@@ -14,9 +14,9 @@
   td.best { font-weight: 700; }
   .ci { color: #555; font-size: 21px; }
   .note { font-size: 21px; color: #333; margin-top: 18px; line-height: 1.5; }
-</style></head><body>
+</style></head><body style="width:2040px">
 <style>th, td { padding: 11px 12px; font-size: 22px; } th.sep, td:nth-child(6), td:nth-child(9) { border-left: 1px solid #bbb; }</style>
-<div class="cap"><b>Table 3.</b> Solo detectives with twice the time and visits. Solved out of 100, median case time to answer (h) and median real time per case (s),
+<div class="cap"><b>Table 3.</b> The Lone Genius with twice the time and visits. Solved out of 100, median case time to answer (h) and median real time per case (s),
 at the standard budget (12 case hours, 20 visits) and a doubled budget (24 case hours, 40 visits). Seeds 1&ndash;100.</div>
 <table>
 <thead>
@@ -26,11 +26,11 @@ at the standard budget (12 case hours, 20 visits) and a doubled budget (24 case 
 <tr><th>Solved</th><th>Case h</th><th>Real s</th><th>Solved</th><th>Case h</th><th>Real s</th><th>Solved</th><th>Solved</th><th>Case h</th><th>Real s</th></tr>
 </thead>
 <tbody>
-<tr><td>Solo detective</td><td>gpt-6-astra</td><td>57 <span class='ci'>(47&ndash;66)</span></td><td>10.5</td><td>82.0</td><td><b>91</b> <span class='ci'>(84&ndash;95)</span></td><td>14.8</td><td>125.8</td><td>59 <span class='ci'>(49&ndash;68)</span></td><td><b>89</b> <span class='ci'>(81&ndash;94)</span></td><td>12.4</td><td>103.6</td></tr>
-<tr><td>Solo detective</td><td>Jev</td><td>25 <span class='ci'>(18&ndash;34)</span></td><td>11.8</td><td>4.5</td><td>47 <span class='ci'>(38&ndash;57)</span></td><td>23.8</td><td>9.7</td><td>14 <span class='ci'>(9&ndash;22)</span></td><td>35 <span class='ci'>(26&ndash;45)</span></td><td>23.6</td><td>10.3</td></tr>
-<tr><td>Solo detective</td><td>counting heuristic</td><td>61 <span class='ci'>(51&ndash;70)</span></td><td>9.0</td><td>&lt;0.1</td><td><b>99</b> <span class='ci'>(95&ndash;100)</span></td><td>11.7</td><td>&lt;0.1</td><td>4 <span class='ci'>(2&ndash;10)</span></td><td>6 <span class='ci'>(3&ndash;12)</span></td><td>14.5</td><td>&lt;0.1</td></tr>
-<tr><td>Solo detective</td><td>random</td><td>0</td><td>11.9</td><td>&lt;0.1</td><td>0</td><td>23.9</td><td>&lt;0.1</td><td>0</td><td>0</td><td>23.9</td><td>&lt;0.1</td></tr>
+<tr><td>The Lone Genius (GPT6-Astra)</td><td>GPT6-Astra</td><td>57 <span class='ci'>(47&ndash;66)</span></td><td>10.5</td><td>82.0</td><td><b>91</b> <span class='ci'>(84&ndash;95)</span></td><td>14.8</td><td>125.8</td><td>59 <span class='ci'>(49&ndash;68)</span></td><td><b>89</b> <span class='ci'>(81&ndash;94)</span></td><td>12.4</td><td>103.6</td></tr>
+<tr><td>The Lone Genius (Jev)</td><td>Jev</td><td>25 <span class='ci'>(18&ndash;34)</span></td><td>11.8</td><td>4.5</td><td>47 <span class='ci'>(38&ndash;57)</span></td><td>23.8</td><td>9.7</td><td>14 <span class='ci'>(9&ndash;22)</span></td><td>35 <span class='ci'>(26&ndash;45)</span></td><td>23.6</td><td>10.3</td></tr>
+<tr><td>The Lone Genius (heuristic)</td><td>counting heuristic</td><td>61 <span class='ci'>(51&ndash;70)</span></td><td>9.0</td><td>&lt;0.1</td><td><b>99</b> <span class='ci'>(95&ndash;100)</span></td><td>11.7</td><td>&lt;0.1</td><td>4 <span class='ci'>(2&ndash;10)</span></td><td>6 <span class='ci'>(3&ndash;12)</span></td><td>14.5</td><td>&lt;0.1</td></tr>
+<tr><td>The Lone Genius (random)</td><td>random</td><td>0</td><td>11.9</td><td>&lt;0.1</td><td>0</td><td>23.9</td><td>&lt;0.1</td><td>0</td><td>0</td><td>23.9</td><td>&lt;0.1</td></tr>
 </tbody></table>
 <div class="note">Solved = culprit, motive and hideout all correct; 95% Wilson intervals in brackets. The counting heuristic at 24 h with only 20 visits still solves 61/100:
-the gain comes from the extra visits, not the extra hours. For comparison, Holmes (gpt-6-astra) with 12 Jev boys solves 96/100 standard and 93/100 frame-up cases within 12 h. 0 model decisions fell back to the heuristic (30 s allowed per call).</div>
+the gain comes from the extra visits, not the extra hours. For comparison, Holmes (GPT6-Astra) + Jev Swarm (12 boys) solves 96/100 standard and 93/100 frame-up cases within 12 h. 0 model decisions fell back to the heuristic (30 s allowed per call).</div>
 </body></html>

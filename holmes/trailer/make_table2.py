@@ -10,20 +10,20 @@ sys.path.insert(0, os.path.dirname(HERE))
 from irregulars.report import rows_from, summarise  # noqa: E402
 
 ORDER = [  # (group, method, decision makers, report setting label without the " · Holmesian" suffix)
-    ("Single detective", "Solo detective", "gpt-6-astra", "Solo detective · gpt-6-astra"),
-    ("Single detective", "Solo detective", "Jev", "Solo detective · Jev"),
-    ("Single detective", "Solo detective", "counting heuristic", "Solo detective · heuristic"),
-    ("Lead with 12 helpers (Holmes &amp; the Irregulars)", "Holmes + boys", "gpt-6-astra + Jev",
+    ("The Lone Genius (single detective)", "The Lone Genius (GPT6-Astra)", "GPT6-Astra", "Solo detective · gpt-6-astra"),
+    ("The Lone Genius (single detective)", "The Lone Genius (Jev)", "Jev", "Solo detective · Jev"),
+    ("The Lone Genius (single detective)", "The Lone Genius (heuristic)", "counting heuristic", "Solo detective · heuristic"),
+    ("Holmes leading a 12-boy swarm (Holmes &amp; the Irregulars)", "Holmes (GPT6-Astra) + Jev Swarm", "GPT6-Astra + Jev",
      "Baker Street Irregulars · gpt-6-astra Holmes, Jev boys"),
-    ("Lead with 12 helpers (Holmes &amp; the Irregulars)", "Holmes + boys", "counting + Jev",
+    ("Holmes leading a 12-boy swarm (Holmes &amp; the Irregulars)", "Holmes (heuristic) + Jev Swarm", "counting + Jev",
      "Baker Street Irregulars · counting-heuristic Holmes, Jev boys"),
-    ("Lead with 12 helpers (Holmes &amp; the Irregulars)", "Holmes + boys", "counting + heuristic",
+    ("Holmes leading a 12-boy swarm (Holmes &amp; the Irregulars)", "Holmes (heuristic) + heuristic Swarm", "counting + heuristic",
      "Baker Street Irregulars · counting-heuristic Holmes, heuristic boys"),
-    ("Leaderless swarm (100 boys, 2 km range, closes at 30 identical votes)", "Swarm", "Jev",
+    ("Leaderless swarm (100 boys, 2 km range, closes when 30 agree)", "Jev Swarm", "Jev",
      "Swarm Detectives · Jev swarm · 2 km"),
-    ("Leaderless swarm (100 boys, 2 km range, closes at 30 identical votes)", "Swarm", "hybrid (Jev moves, counting votes)",
+    ("Leaderless swarm (100 boys, 2 km range, closes when 30 agree)", "Hybrid Swarm", "Jev moves, counting votes",
      "Swarm Detectives · hybrid · 2 km"),
-    ("Leaderless swarm (100 boys, 2 km range, closes at 30 identical votes)", "Swarm", "counting heuristic",
+    ("Leaderless swarm (100 boys, 2 km range, closes when 30 agree)", "heuristic Swarm", "counting heuristic",
      "Swarm Detectives · heuristic swarm · 2 km"),
 ]
 
