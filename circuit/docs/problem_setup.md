@@ -77,7 +77,7 @@ Each block's spec is a set of parameters. A bug changes one of them. The full ca
 - **Retry:** a seed is retried until some test fails.
 - **The waveform handed out:** the longest failing test's, preferring one whose back-trace reaches every bug.
 
-Over seeds 1-100: 25 two-bug cases, rare-trigger bugs in about 40%, test length 19-199 cycles (median 142).
+Over seeds 1-100: 25 two-bug cases, 32 cases with a rare-trigger bug, test length 19-199 cycles (median 142).
 
 ## 4. What an investigator sees at the start
 
