@@ -1,0 +1,901 @@
+setting,seed,solved,culprit,motive,hideout,sim_hours,ran_to_deadline,real_seconds,model_calls,tokens_in,tokens_out,cost_usd,decisions,fallbacks,concurrency,batch
+Solo detective · gpt-6-astra · Holmesian,1,0,1,0,1,12.0,1,86.8,19,70036,2551,0.37091,19,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,2,0,1,0,1,10.0,1,90.3,21,81099,2633,0.4228,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,3,1,1,1,1,11.28,1,83.1,21,79049,2709,0.41654,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,4,1,1,1,1,9.34,0,80.2,18,67953,2399,0.36634,18,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,5,1,1,1,1,11.96,1,104.7,21,79626,3352,0.44924,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,6,0,1,0,1,11.92,1,82.3,20,74206,2653,0.39557,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,7,0,1,0,1,11.81,1,95.1,20,75964,2914,0.41525,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,8,1,1,1,1,9.77,0,85.3,20,75455,2709,0.40504,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,9,1,1,1,1,9.81,0,66.9,17,63593,1946,0.32139,17,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,10,0,1,0,1,11.56,1,99.4,21,79654,3172,0.44304,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,11,1,1,1,1,11.15,1,112.7,21,80257,3002,0.43805,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,12,1,1,1,1,10.93,0,73.0,19,71421,2070,0.35779,19,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,13,0,1,0,1,8.07,0,59.9,15,55621,1898,0.29138,15,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,14,0,1,0,1,11.9,1,90.5,20,75338,2733,0.40371,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,15,1,1,1,1,11.72,1,93.7,20,75613,2658,0.39963,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,16,1,1,1,1,10.13,0,91.9,20,75764,2805,0.41088,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,17,1,1,1,1,11.92,1,93.5,21,79869,2631,0.41796,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,18,0,1,0,1,11.71,1,91.8,20,75046,2628,0.39502,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,19,1,1,1,1,11.91,1,88.2,20,75235,2655,0.39809,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,20,1,1,1,1,10.87,0,86.4,20,76373,2312,0.41471,20,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,21,0,1,0,1,11.96,1,91.8,21,79410,2756,0.41998,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,22,0,1,0,1,11.05,1,86.3,21,79274,2665,0.41515,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,23,0,1,1,0,10.92,1,86.2,21,79424,2420,0.40476,21,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,24,1,1,1,1,8.65,0,74.8,17,64171,2252,0.34261,17,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,25,1,1,1,1,10.61,0,81.6,18,67795,2072,0.34351,18,0,32,batch_20261004-163104_solo_30951
+Solo detective · gpt-6-astra · Holmesian,26,1,1,1,1,7.19,0,47.9,12,43829,1440,0.22834,12,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,27,0,0,1,1,11.97,1,87.1,20,75481,2641,0.3966,20,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,28,0,1,0,1,11.91,1,90.1,20,75622,2624,0.39768,20,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,29,0,1,0,1,11.73,1,82.3,19,72164,2465,0.38108,19,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,30,1,1,1,1,5.35,0,44.8,12,43696,1242,0.21929,12,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,31,1,1,1,1,10.03,0,64.2,17,64214,1885,0.32181,17,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,32,1,1,1,1,7.38,0,39.9,11,39941,1122,0.19964,11,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,33,0,1,0,1,10.64,1,88.5,21,78706,2677,0.40755,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,34,1,1,1,1,5.47,0,41.5,11,40162,1100,0.19994,11,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,35,1,1,1,1,11.27,0,92.8,20,75375,2905,0.41404,20,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,36,0,1,0,1,10.88,1,91.8,21,79987,3087,0.44032,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,37,0,1,0,1,11.31,1,105.6,21,79704,2943,0.43443,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,38,1,1,1,1,10.71,1,101.6,21,79876,2866,0.4251,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,39,1,1,1,1,10.54,0,72.2,18,68427,2043,0.34976,18,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,40,0,1,0,1,11.56,1,95.8,21,79708,2803,0.42531,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,41,1,1,1,1,8.27,0,57.7,14,51305,1688,0.26669,14,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,42,0,1,0,1,11.67,1,92.1,20,75421,2764,0.40438,20,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,43,1,1,1,1,4.55,0,28.3,8,28288,761,0.1427,8,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,44,1,1,1,1,8.33,0,53.1,14,51554,1613,0.26344,14,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,45,1,1,1,1,9.06,0,67.0,16,59237,2098,0.31482,16,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,46,1,1,1,1,10.52,1,97.6,21,79347,3056,0.43723,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,47,0,1,0,1,11.29,1,98.1,21,80332,2827,0.43113,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,48,0,1,0,1,10.03,1,94.2,21,79475,2468,0.40875,21,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,49,1,1,1,1,7.47,0,64.4,14,51404,1878,0.30241,14,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,50,1,1,1,1,5.06,0,38.2,10,35993,917,0.17663,10,0,32,batch_20261004-163104_solo_30955
+Solo detective · gpt-6-astra · Holmesian,51,1,1,1,1,8.69,0,63.1,16,59217,1864,0.27771,16,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,52,0,1,0,1,11.67,1,95.5,20,75394,2902,0.41357,20,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,53,0,1,0,1,11.83,1,87.2,21,80266,2640,0.42202,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,54,1,1,1,1,11.13,0,88.4,20,76074,2710,0.40479,20,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,55,0,1,0,1,11.53,1,86.0,21,79659,2692,0.41891,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,56,1,1,1,1,6.81,0,38.9,11,40296,1222,0.20477,11,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,57,0,1,0,1,9.87,1,91.5,21,79968,2654,0.4174,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,58,1,1,1,1,8.59,0,64.5,16,58791,1918,0.30406,16,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,59,1,1,1,1,8.99,0,73.9,18,67021,2106,0.34114,18,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,60,1,1,1,1,8.25,0,68.7,16,59726,1866,0.30473,16,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,61,1,1,1,1,11.33,1,88.5,21,78859,2645,0.41324,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,62,0,0,1,1,9.3,0,77.2,16,59345,2241,0.32048,16,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,63,0,1,0,1,11.76,1,84.9,19,70813,2244,0.36122,19,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,64,0,1,0,1,10.24,1,104.7,21,80467,2774,0.42749,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,65,1,1,1,1,9.16,0,70.1,17,63668,2191,0.33828,17,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,66,1,1,1,1,8.35,0,59.3,14,51494,1623,0.26311,14,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,67,1,1,1,1,8.65,0,60.0,15,55214,1674,0.27888,15,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,68,1,1,1,1,11.87,1,104.4,21,79323,3198,0.43923,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,69,0,0,1,1,11.89,1,95.9,19,71376,2818,0.3949,19,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,70,1,1,1,1,11.46,1,81.5,21,80172,2572,0.41354,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,71,0,0,1,1,9.79,0,80.0,19,70942,2459,0.37213,19,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,72,0,1,0,1,10.71,1,89.5,21,79722,2563,0.43682,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,73,1,1,1,1,11.06,1,90.7,21,79556,2555,0.41337,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,74,0,1,0,1,11.63,1,88.8,21,78910,2710,0.41466,21,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,75,1,1,1,1,10.83,0,84.6,18,67734,2263,0.35398,18,0,32,batch_20261004-163104_solo_30959
+Solo detective · gpt-6-astra · Holmesian,76,0,0,1,1,10.51,0,78.2,17,64183,2370,0.34662,17,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,77,1,1,1,1,11.75,1,104.7,20,74711,2995,0.41481,20,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,78,0,0,0,1,11.97,1,121.9,21,79029,3587,0.45754,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,79,0,1,0,1,11.4,1,119.1,21,79405,3483,0.4525,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,80,0,1,0,1,11.85,1,90.3,21,79411,2905,0.4251,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,81,1,1,1,1,8.16,0,70.9,18,66946,1794,0.32739,18,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,82,0,0,0,1,11.75,1,105.7,20,75614,3001,0.42141,20,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,83,1,1,1,1,8.1,0,64.6,15,55697,1765,0.28713,15,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,84,0,1,0,1,10.85,1,95.2,21,78666,2601,0.40623,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,85,1,1,1,1,11.48,1,106.7,21,79379,2934,0.42929,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,86,1,1,1,1,10.62,0,79.2,17,63887,2408,0.34887,17,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,87,1,1,1,1,8.9,0,80.1,17,63197,2361,0.34135,17,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,88,1,1,1,1,10.68,0,68.6,18,67009,1754,0.32832,18,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,89,0,1,0,1,11.91,1,98.7,21,79637,2989,0.43426,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,90,1,1,1,1,11.14,1,101.7,21,79949,2920,0.43285,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,91,1,1,1,1,8.96,0,66.9,18,67391,2067,0.3458,18,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,92,0,0,1,1,11.74,1,102.5,21,78850,3097,0.43071,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,93,1,1,1,1,11.88,1,102.0,21,79078,3142,0.43452,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,94,1,1,1,1,10.75,0,83.5,18,66881,2247,0.37508,18,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,95,1,1,1,1,7.88,0,74.6,15,55698,1883,0.29039,15,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,96,1,1,1,1,6.92,0,50.1,14,51554,1496,0.25724,14,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,97,1,1,1,1,11.96,1,72.5,18,66660,2167,0.33921,18,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,98,1,1,1,1,11.92,1,113.6,21,78638,3025,0.42931,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,99,1,1,1,1,11.34,0,70.2,19,71198,2212,0.35991,19,0,32,batch_20261004-163104_solo_30963
+Solo detective · gpt-6-astra · Holmesian,100,0,1,0,1,11.83,1,101.1,21,78431,2920,0.42235,21,0,32,batch_20261004-163104_solo_30963
+Solo detective · Jev · Holmesian,1,0,0,1,1,11.66,1,5.7,21,130810,27097,0.00549,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,2,0,1,0,1,11.29,1,5.1,21,133230,27324,0.0056,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,3,0,0,0,1,11.73,1,4.8,18,111930,23568,0.0047,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,4,0,0,1,1,11.1,1,5.0,21,131804,27324,0.00554,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,5,0,0,1,1,11.76,1,4.7,18,111947,23100,0.0047,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,6,0,1,0,1,11.95,1,5.0,20,123606,26016,0.00519,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,7,0,0,0,1,11.69,1,5.1,19,118302,24208,0.00497,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,8,1,1,1,1,10.29,1,5.0,21,131445,27324,0.00552,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,9,0,1,0,1,11.26,1,6.0,21,132716,27252,0.00557,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,10,0,0,0,1,11.95,1,5.1,20,123600,25364,0.00519,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,11,0,1,0,1,11.74,1,5.2,21,131945,27024,0.00554,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,12,0,0,1,0,11.99,1,5.7,21,128849,26438,0.00541,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,13,0,0,1,1,11.79,1,5.0,21,131402,27024,0.00552,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,14,0,1,0,1,11.78,1,5.0,20,122637,25100,0.00515,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,15,0,1,0,1,11.93,1,6.9,20,123563,25244,0.00519,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,16,0,1,0,1,11.9,1,5.1,21,129596,26527,0.00544,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,17,0,0,1,1,11.95,1,5.3,20,122720,25172,0.00515,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,18,0,0,1,1,11.73,1,4.2,18,110782,23088,0.00465,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,19,0,0,0,1,11.72,1,5.0,19,118493,24436,0.00498,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,20,0,0,1,1,11.86,1,5.1,21,130754,26917,0.00549,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,21,0,0,1,1,11.35,1,5.1,21,131770,27240,0.00553,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,22,0,0,0,1,11.99,1,5.2,21,130647,26856,0.00549,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,23,0,0,1,1,11.68,1,4.8,19,119598,24836,0.00502,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,24,0,1,0,1,11.66,1,5.3,21,133366,27313,0.0056,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,25,0,0,1,1,11.66,1,5.3,21,132745,27312,0.00558,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,26,0,0,1,0,11.6,1,5.4,21,131225,27249,0.00551,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,27,0,1,0,1,11.36,1,5.3,21,131459,27224,0.00552,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,28,0,0,0,1,11.68,1,5.3,20,125000,26084,0.00525,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,29,0,0,0,1,11.81,1,4.6,19,116092,23448,0.00488,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,30,1,1,1,1,11.15,1,5.7,21,131631,27144,0.00553,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,31,0,0,0,1,11.9,1,6.0,21,131007,26520,0.0055,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,32,1,1,1,1,11.74,1,4.8,20,123511,25448,0.00519,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,33,0,1,0,1,10.18,1,5.3,21,131694,27330,0.00553,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,34,0,0,1,1,10.94,1,5.2,21,132328,27324,0.00556,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,35,0,0,0,1,11.03,1,5.1,21,131740,27324,0.00553,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,36,0,0,1,1,11.98,1,5.0,21,129014,26034,0.00542,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,37,0,0,0,1,11.86,1,5.4,21,129893,26532,0.00546,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,38,1,1,1,1,11.6,1,5.1,21,133106,27244,0.00559,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,39,0,0,0,1,11.69,1,4.6,18,110634,22860,0.00465,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,40,0,1,0,1,11.83,1,4.6,19,116832,23992,0.00491,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,41,0,0,1,1,11.91,1,4.4,18,109922,22740,0.00462,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,42,0,0,1,1,12.0,1,4.6,20,124861,25520,0.00524,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,43,0,0,1,1,11.67,1,4.8,20,124745,26084,0.00524,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,44,0,0,1,1,11.81,1,4.3,18,109627,22896,0.0046,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,45,0,0,1,1,11.9,1,5.2,21,130250,26964,0.00547,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,46,1,1,1,1,11.88,1,4.8,19,116568,23968,0.0049,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,47,0,1,0,1,11.65,1,4.7,20,125402,25940,0.00527,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,48,0,0,0,1,12.0,1,4.8,20,124578,25820,0.00523,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,49,0,0,1,1,12.0,1,5.5,20,122930,25261,0.00516,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,50,1,1,1,1,11.71,1,4.7,18,110170,22944,0.00463,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,51,1,1,1,1,11.66,1,6.8,21,130509,26811,0.00548,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,52,0,0,0,1,11.84,1,5.3,21,127795,25908,0.00537,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,53,0,0,1,1,11.62,1,5.7,21,132137,27096,0.00555,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,54,0,0,0,1,11.94,1,4.7,19,119073,24676,0.005,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,55,0,1,0,1,11.9,1,4.2,18,110446,22956,0.00464,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,56,0,1,0,1,11.98,1,4.4,19,117343,23743,0.00493,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,57,0,0,1,1,11.78,1,4.5,19,119572,24800,0.00502,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,58,1,1,1,1,8.25,0,4.8,15,95734,20760,0.00402,15,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,59,1,1,1,1,10.89,1,5.5,21,130699,27342,0.00549,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,60,1,1,1,1,11.7,1,6.3,21,129763,26634,0.00545,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,61,0,0,0,1,11.96,1,4.8,19,118096,24738,0.00496,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,62,1,1,1,1,11.92,1,4.8,20,124372,25940,0.00522,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,63,0,1,0,1,11.87,1,4.1,17,104179,21548,0.00438,17,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,64,0,0,0,1,11.93,1,4.8,20,126044,25808,0.00529,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,65,1,1,1,1,11.41,1,5.6,21,131946,27324,0.00554,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,66,0,0,0,1,11.78,1,4.2,19,116822,23829,0.00491,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,67,1,1,1,1,12.0,1,5.4,21,128547,26160,0.0054,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,68,0,1,0,1,11.87,1,4.2,18,111487,23220,0.00468,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,69,0,0,1,1,11.7,1,5.1,19,117428,24532,0.00493,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,70,0,0,0,1,11.94,1,4.5,19,115086,23431,0.00483,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,71,0,0,1,1,11.73,1,5.7,20,123521,25844,0.00519,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,72,0,0,0,1,10.22,1,5.1,21,132031,27327,0.00555,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,73,0,0,1,1,11.22,1,5.2,21,132267,27324,0.00556,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,74,0,1,0,1,10.68,1,6.7,21,131393,27324,0.00552,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,75,0,0,1,1,11.67,1,5.7,18,111988,23292,0.0047,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,76,0,0,1,1,11.81,1,5.3,21,131392,26556,0.00552,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,77,0,0,0,1,11.57,1,4.8,21,130908,27216,0.0055,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,78,0,0,0,1,11.06,1,4.9,21,132314,27324,0.00556,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,79,0,0,1,1,11.95,1,4.2,17,101489,20732,0.00426,17,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,80,0,0,1,1,10.72,1,5.0,21,132338,27324,0.00556,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,81,0,0,1,1,11.48,1,5.0,21,129610,26748,0.00544,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,82,0,0,1,1,11.8,1,4.6,19,116638,24040,0.0049,19,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,83,0,0,1,1,11.72,1,5.6,21,130684,26832,0.00549,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,84,1,1,1,1,11.34,1,5.1,21,130108,26882,0.00546,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,85,0,0,0,1,11.91,1,5.2,20,124468,25928,0.00523,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,86,0,0,1,1,11.28,1,4.9,21,131970,27324,0.00554,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,87,0,0,0,1,11.88,1,4.4,18,109981,22764,0.00462,18,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,88,0,1,1,0,11.81,1,5.1,20,124902,25940,0.00525,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,89,0,0,1,1,11.06,1,5.2,21,133017,27324,0.00559,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,90,0,0,1,1,11.23,1,5.8,21,132075,27331,0.00555,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,91,0,0,1,1,11.99,1,4.9,21,128593,26245,0.0054,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,92,0,0,1,1,11.99,1,5.0,21,128390,26112,0.00539,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,93,0,0,0,0,11.99,1,5.1,21,127757,26136,0.00537,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,94,0,0,1,1,11.34,1,5.2,21,131283,27258,0.00551,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,95,0,0,1,1,11.22,1,5.2,21,131940,27324,0.00554,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,96,0,0,1,1,11.98,1,5.2,20,123138,25337,0.00517,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,97,0,0,1,1,11.84,1,4.1,17,104019,21716,0.00437,17,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,98,0,0,1,1,11.41,1,5.1,21,132262,27324,0.00556,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,99,0,0,1,1,11.87,1,4.8,20,122819,25405,0.00516,20,0,32,batch_20261004-163104_solo_30970
+Solo detective · Jev · Holmesian,100,0,0,0,1,11.89,1,5.1,21,128903,26517,0.00541,21,0,32,batch_20261004-163104_solo_30970
+Solo detective · heuristic · Holmesian,1,0,0,1,1,9.01,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,2,0,0,1,1,10.19,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,3,0,0,0,1,8.26,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,4,0,0,1,1,9.37,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,5,0,1,0,1,9.9,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,6,0,0,1,1,7.96,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,7,0,0,1,1,9.17,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,8,0,0,0,1,9.32,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,9,0,0,0,1,9.22,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,10,0,0,1,1,9.49,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,11,0,0,1,1,10.0,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,12,0,0,1,0,9.88,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,13,0,0,0,1,9.1,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,14,0,0,0,1,9.79,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,15,0,0,1,1,9.7,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,16,0,0,1,1,7.33,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,17,0,0,1,1,9.9,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,18,0,0,1,1,8.74,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,19,0,0,1,1,8.95,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,20,0,0,1,1,10.19,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,21,0,0,0,1,10.66,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,22,0,0,1,1,9.23,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,23,1,1,1,1,7.29,0,0.0,0,0,0,0.0,17,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,24,0,0,1,1,10.15,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,25,0,0,1,1,11.09,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,26,0,0,1,1,9.17,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,27,0,0,1,1,9.57,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,28,0,0,1,1,7.67,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,29,0,0,1,1,9.8,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,30,0,0,1,1,6.12,0,0.0,0,0,0,0.0,15,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,31,0,0,1,1,9.0,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,32,0,0,1,1,8.95,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,33,0,0,1,1,8.78,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,34,0,0,1,1,8.01,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,35,0,0,0,1,9.04,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,36,0,0,0,1,9.51,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,37,0,0,1,1,8.62,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,38,0,0,0,1,8.31,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,39,0,0,1,0,9.8,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,40,0,0,0,0,9.03,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,41,0,0,1,1,10.18,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,42,0,0,1,1,9.29,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,43,0,0,1,1,9.64,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,44,0,0,1,1,9.5,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,45,0,0,1,1,9.26,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,46,0,0,0,1,9.22,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,47,0,0,0,1,8.93,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,48,0,0,1,1,10.72,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,49,0,0,1,1,8.93,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,50,0,0,1,1,10.08,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,51,0,0,1,1,9.24,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,52,0,0,1,1,10.9,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,53,0,0,1,1,8.63,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,54,0,0,0,1,11.71,1,0.0,0,0,0,0.0,20,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,55,0,0,1,1,11.08,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,56,1,1,1,1,9.71,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,57,0,0,0,1,10.44,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,58,0,0,1,1,9.1,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,59,0,0,1,1,9.53,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,60,0,0,0,1,10.06,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,61,0,0,1,1,8.99,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,62,0,0,1,1,9.54,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,63,0,0,1,1,9.25,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,64,0,0,1,1,9.45,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,65,0,0,1,1,10.23,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,66,0,0,1,1,9.67,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,67,0,0,1,1,8.87,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,68,0,0,0,1,8.89,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,69,0,0,1,1,8.57,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,70,0,0,1,1,9.63,0,0.0,0,0,0,0.0,18,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,71,0,0,1,1,8.74,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,72,0,0,1,1,7.96,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,73,0,0,1,1,9.35,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,74,0,0,1,1,6.17,0,0.0,0,0,0,0.0,16,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,75,0,0,1,0,9.21,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,76,0,0,1,1,10.31,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,77,0,0,1,1,7.8,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,78,0,0,1,1,8.67,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,79,0,0,1,1,4.37,0,0.0,0,0,0,0.0,11,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,80,0,0,1,1,9.4,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,81,0,0,1,1,9.56,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,82,0,0,1,1,8.97,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,83,1,1,1,1,9.28,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,84,0,0,1,1,8.47,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,85,0,0,1,1,9.75,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,86,0,0,1,1,8.02,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,87,0,1,0,1,9.62,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,88,0,0,1,1,11.36,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,89,0,0,1,1,8.08,0,0.0,0,0,0,0.0,19,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,90,0,0,1,1,9.87,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,91,0,0,1,1,8.98,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,92,0,0,1,1,10.13,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,93,0,0,1,1,10.49,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,94,1,1,1,1,6.25,0,0.0,0,0,0,0.0,15,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,95,0,0,0,1,9.07,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,96,0,0,1,1,9.78,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,97,0,0,1,1,10.63,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,98,0,0,1,1,9.88,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,99,0,0,1,1,9.15,1,0.0,0,0,0,0.0,21,0,32,batch_20261004-162526_solo_30537
+Solo detective · heuristic · Holmesian,100,0,0,1,1,8.46,0,0.0,0,0,0,0.0,20,0,32,batch_20261004-162526_solo_30537
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",1,1,1,1,1,11.25,0,99.8,120,131300,9822,0.5712,112,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",2,1,1,1,1,12.0,1,77.0,98,118727,7517,0.47392,89,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",3,0,1,0,1,12.0,1,107.2,115,157959,9886,0.79331,102,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",4,1,1,1,1,12.0,1,103.5,111,129068,9192,0.64535,102,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",5,1,1,1,1,10.5,0,83.1,80,84895,7241,0.39738,74,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",6,1,1,1,1,10.5,0,130.7,132,157319,10790,0.76497,121,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",7,1,1,1,1,12.0,1,77.1,85,90333,7437,0.39432,79,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",8,1,1,1,1,10.0,0,103.3,109,135812,9122,0.59075,99,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",9,1,1,1,1,11.75,0,132.9,133,170138,11292,0.88135,121,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",10,1,1,1,1,12.0,1,83.4,85,94566,7380,0.4246,78,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",11,1,1,1,1,12.0,1,87.4,97,107393,8297,0.49647,90,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",12,1,1,1,1,12.0,1,117.6,117,158024,10634,0.80173,104,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",13,1,1,1,1,10.25,0,131.6,137,160871,10964,0.77831,126,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",14,1,1,1,1,10.25,0,73.0,96,98550,7734,0.36401,90,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",15,1,1,1,1,11.5,0,135.9,132,168105,11391,0.85329,120,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",16,1,1,1,1,12.0,1,113.3,127,139584,10199,0.66449,118,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",17,1,1,1,1,12.0,1,122.8,102,139928,9938,0.78836,89,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",18,1,1,1,1,12.0,1,121.7,126,163918,10947,0.74845,113,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",19,1,1,1,1,9.75,0,109.3,100,126381,8790,0.64415,90,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",20,1,1,1,1,12.0,1,136.9,129,170505,11455,0.89765,116,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",21,1,1,1,1,12.0,1,91.8,102,122438,8694,0.6176,93,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",22,1,1,1,1,11.5,0,127.6,128,162438,11075,0.84989,116,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",23,1,1,1,1,10.25,0,54.1,77,77782,5848,0.3115,72,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",24,1,1,1,1,9.25,0,84.6,86,95882,7047,0.42352,79,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",25,1,1,1,1,10.25,0,82.6,99,102818,8279,0.44253,93,0,32,batch_20261004-163104_swarm_30952
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",26,1,1,1,1,10.5,0,114.7,123,153350,10429,0.71092,112,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",27,1,1,1,1,12.0,1,75.6,90,94285,7434,0.39725,84,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",28,1,1,1,1,10.0,0,107.0,117,142189,10308,0.73099,107,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",29,1,1,1,1,12.0,1,125.3,113,152499,10345,0.8021,100,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",30,1,1,1,1,7.5,0,87.2,95,106939,8106,0.52495,87,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",31,0,1,0,1,12.0,1,94.0,111,116906,9239,0.48344,104,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",32,1,1,1,1,12.0,1,91.9,99,105603,8448,0.48563,92,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",33,1,1,1,1,12.0,1,129.8,113,150015,10604,0.77348,100,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",34,1,1,1,1,12.0,1,99.1,114,129501,8715,0.58211,105,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",35,1,1,1,1,12.0,1,90.4,80,87465,7205,0.43427,74,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",36,1,1,1,1,12.0,1,96.3,116,135322,9226,0.6642,107,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",37,1,1,1,1,12.0,1,124.0,131,168928,10766,0.7547,119,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",38,1,1,1,1,12.0,1,146.4,119,162444,11449,0.88913,106,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",39,0,1,0,1,12.0,1,76.4,78,85320,6803,0.4019,72,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",40,1,1,1,1,12.0,1,77.4,93,101756,7855,0.46522,86,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",41,1,1,1,1,10.25,0,135.6,120,147666,10944,0.73515,109,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",42,1,1,1,1,12.0,1,106.0,113,131916,9476,0.69712,104,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",43,1,1,1,1,10.5,0,70.6,97,97875,7650,0.39157,91,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",44,0,1,0,1,12.0,1,101.0,112,131747,9440,0.58836,103,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",45,1,1,1,1,8.5,0,97.6,104,121641,9097,0.57501,95,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",46,1,1,1,1,11.0,0,96.9,114,126100,9363,0.60385,106,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",47,1,1,1,1,8.75,0,97.8,104,122014,8948,0.62753,95,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",48,1,1,1,1,10.75,0,104.6,118,127557,9829,0.61186,110,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",49,1,1,1,1,12.0,1,137.1,117,152069,11054,0.7399,104,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",50,1,1,1,1,10.25,0,86.5,108,110810,8702,0.41626,102,0,32,batch_20261004-163104_swarm_30956
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",51,1,1,1,1,10.0,0,78.3,101,103575,8369,0.42029,95,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",52,1,1,1,1,10.25,0,74.4,76,82114,6471,0.37377,70,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",53,1,1,1,1,12.0,1,126.8,126,161968,11201,0.77066,113,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",54,1,1,1,1,12.0,1,128.6,122,164739,10830,0.90178,109,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",55,0,1,0,1,12.0,1,110.5,110,130243,9351,0.66578,101,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",56,1,1,1,1,12.0,1,99.9,107,128158,9089,0.55744,98,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",57,1,1,1,1,12.0,1,126.0,107,149512,9721,0.73628,94,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",58,1,1,1,1,9.25,0,90.8,96,103060,8422,0.49897,89,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",59,1,1,1,1,12.0,1,107.9,113,133790,9814,0.63649,104,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",60,1,1,1,1,12.0,1,113.0,118,135419,9998,0.64639,109,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",61,1,1,1,1,12.0,1,104.0,120,138342,9852,0.65872,111,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",62,1,1,1,1,10.0,0,71.0,92,96643,7626,0.38548,86,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",63,1,1,1,1,11.5,0,147.4,124,156004,11723,0.81368,112,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",64,1,1,1,1,12.0,1,110.6,116,134742,10114,0.65938,107,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",65,1,1,1,1,12.0,1,89.9,112,119353,9204,0.57493,105,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",66,1,1,1,1,11.0,0,133.5,126,153639,11016,0.84101,115,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",67,0,1,0,1,12.0,1,82.4,90,101169,7662,0.50675,83,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",68,1,1,1,1,11.0,0,89.9,102,116702,8444,0.55744,94,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",69,1,1,1,1,11.0,0,91.0,106,120747,8607,0.54742,98,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",70,1,1,1,1,12.0,1,96.0,104,123256,8819,0.52265,95,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",71,1,1,1,1,11.5,0,125.1,123,158278,10524,0.78954,111,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",72,1,1,1,1,9.25,0,86.8,106,114261,8609,0.52363,99,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",73,1,1,1,1,9.25,0,80.8,101,108633,8352,0.51664,94,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",74,1,1,1,1,12.0,1,144.2,149,188995,12135,0.97382,136,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",75,1,1,1,1,12.0,1,147.1,136,177717,11473,0.91457,123,0,32,batch_20261004-163104_swarm_30960
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",76,0,1,0,1,12.0,1,56.0,65,69363,5617,0.31742,60,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",77,1,1,1,1,8.75,0,60.3,78,78761,6549,0.33431,73,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",78,1,1,1,1,12.0,1,108.2,114,133319,9359,0.6906,105,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",79,1,1,1,1,10.25,0,82.3,100,102811,8693,0.37907,94,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",80,1,1,1,1,12.0,1,96.2,107,126024,8965,0.53484,98,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",81,1,1,1,1,12.0,1,111.1,99,135339,8604,0.72561,86,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",82,1,1,1,1,11.75,0,122.8,140,174649,11520,0.86277,128,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",83,1,1,1,1,12.0,1,115.0,103,142711,9326,0.74953,90,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",84,1,1,1,1,12.0,1,131.0,145,186615,11489,0.90692,132,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",85,1,1,1,1,8.5,0,71.7,92,91296,7403,0.3524,87,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",86,1,1,1,1,12.0,1,71.7,79,86876,6684,0.4114,73,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",87,1,1,1,1,10.75,0,70.9,77,83465,6605,0.35773,71,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",88,1,1,1,1,12.0,1,99.5,127,140544,9707,0.66099,118,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",89,1,1,1,1,12.0,1,87.4,102,110404,8369,0.51165,95,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",90,1,1,1,1,12.0,1,106.6,125,142008,9941,0.63139,116,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",91,1,1,1,1,10.75,0,95.9,110,120330,9319,0.58145,102,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",92,1,1,1,1,10.25,0,83.4,90,92717,7732,0.39195,84,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",93,1,1,1,1,10.25,0,76.5,83,88024,6915,0.37286,77,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",94,1,1,1,1,7.75,0,66.3,68,75531,5851,0.34812,62,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",95,1,1,1,1,10.5,0,64.7,83,88261,6740,0.43496,77,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",96,1,1,1,1,12.0,1,90.9,92,101408,8111,0.4973,85,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",97,1,1,1,1,12.0,1,79.6,91,100619,7741,0.4412,84,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",98,1,1,1,1,10.0,0,90.2,72,99753,6774,0.51718,62,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",99,1,1,1,1,12.0,1,99.7,116,133355,9303,0.57673,107,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · gpt-6-astra Holmes, Jev boys · Holmesian",100,1,1,1,1,12.0,1,146.5,138,175317,11571,0.88478,125,0,32,batch_20261004-163104_swarm_30964
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",1,0,0,1,0,6.25,0,3.8,56,43471,3271,0.00183,56,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",2,0,0,1,1,12.0,1,7.7,101,72544,5329,0.00305,101,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",3,0,0,1,1,7.75,0,5.6,79,57147,4309,0.0024,79,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",4,0,0,1,1,6.25,0,2.7,49,35265,2618,0.00148,49,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",5,0,0,1,1,8.25,0,5.7,67,49444,3494,0.00208,67,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",6,0,0,1,1,3.5,0,3.3,52,37211,2906,0.00156,52,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",7,0,0,1,1,8.25,0,6.4,74,56508,4188,0.00237,74,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",8,0,0,0,1,12.0,1,8.3,118,84501,6348,0.00355,118,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",9,0,0,1,1,11.0,0,7.2,104,74958,5223,0.00315,104,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",10,0,0,1,1,9.75,0,6.8,90,65869,4731,0.00277,90,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",11,0,0,1,1,12.0,1,6.5,90,65096,4699,0.00273,90,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",12,0,0,1,1,4.75,0,4.0,59,43966,3286,0.00185,59,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",13,0,0,1,1,9.5,0,8.1,88,64420,4695,0.00271,88,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",14,0,0,1,1,12.0,1,6.5,78,59189,4231,0.00249,78,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",15,0,0,1,1,12.0,1,5.7,90,64350,4725,0.0027,90,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",16,0,0,1,1,6.5,0,4.1,66,47895,3720,0.00201,66,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",17,0,0,1,1,8.25,0,4.7,70,50038,3671,0.0021,70,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",18,0,0,1,1,12.0,1,7.8,93,69743,5060,0.00293,93,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",19,0,0,1,1,9.5,0,7.9,93,69577,5124,0.00292,93,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",20,0,0,1,1,5.25,0,3.2,50,35459,2772,0.00149,50,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",21,0,0,1,1,6.5,0,5.0,77,57088,4151,0.0024,77,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",22,0,0,1,1,12.0,1,11.2,116,83954,6255,0.00353,116,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",23,0,0,1,1,10.25,0,5.4,71,51803,3814,0.00218,71,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",24,0,0,1,1,6.25,0,3.3,69,49016,3579,0.00206,69,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",25,0,0,1,1,12.0,1,7.5,97,71225,5225,0.00299,97,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",26,0,0,1,1,4.5,0,4.9,58,42452,3229,0.00178,58,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",27,0,0,1,1,6.5,0,5.8,59,45482,3327,0.00191,59,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",28,0,0,1,1,12.0,1,6.9,93,66644,4864,0.0028,93,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",29,0,0,1,1,6.75,0,5.0,63,48553,3539,0.00204,63,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",30,0,0,1,1,6.25,0,5.8,69,49729,3602,0.00209,69,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",31,0,0,1,1,8.5,0,5.0,78,56789,4181,0.00239,78,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",32,0,0,1,1,8.5,0,3.1,66,46784,3397,0.00196,66,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",33,0,0,1,1,4.25,0,3.4,57,40577,3068,0.0017,57,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",34,0,0,1,1,6.25,0,3.2,51,36809,2727,0.00155,51,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",35,0,0,1,1,6.75,0,4.0,65,49234,3604,0.00207,65,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",36,0,0,1,1,12.0,1,2.6,60,42418,3099,0.00178,60,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",37,0,0,1,1,6.5,0,4.1,57,43158,3147,0.00181,57,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",38,0,0,1,1,4.75,0,5.5,61,44089,3369,0.00185,61,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",39,0,0,1,1,9.5,0,3.9,58,43753,3145,0.00184,58,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",40,0,0,1,1,3.25,0,2.8,32,24601,1807,0.00103,32,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",41,0,0,1,1,5.25,0,3.8,51,38347,2800,0.00161,51,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",42,0,0,1,1,11.0,0,5.2,87,62569,4507,0.00263,87,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",43,0,0,1,1,12.0,1,5.2,87,62042,4472,0.00261,87,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",44,0,0,1,1,12.0,1,6.6,99,71296,5123,0.00299,99,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",45,0,0,1,1,12.0,1,6.0,115,80928,5827,0.0034,115,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",46,0,0,1,1,5.0,0,3.4,52,39120,2915,0.00164,52,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",47,0,0,1,1,6.25,0,6.7,81,60629,4353,0.00255,81,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",48,0,0,1,1,6.5,0,3.8,55,39133,2953,0.00164,55,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",49,0,0,1,1,4.25,0,3.7,47,34709,2605,0.00146,47,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",50,0,0,1,1,12.0,1,8.4,100,77087,5529,0.00324,100,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",51,0,0,1,1,8.25,0,6.1,77,58481,4179,0.00246,77,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",52,0,0,1,1,7.0,0,4.3,61,44606,3306,0.00187,61,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",53,0,0,1,1,12.0,1,8.3,95,69367,5342,0.00291,95,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",54,0,0,1,1,5.25,0,4.0,56,42505,3113,0.00179,56,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",55,0,0,1,1,9.5,0,5.9,87,64212,4772,0.0027,87,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",56,0,0,1,1,12.0,1,8.0,113,81646,5640,0.00343,113,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",57,0,0,1,1,12.0,1,7.9,113,79553,5857,0.00334,113,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",58,0,0,1,1,8.0,0,4.5,71,52375,3829,0.0022,71,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",59,0,0,1,1,12.0,1,10.0,104,75010,5436,0.00315,104,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",60,0,0,1,1,9.25,0,4.6,84,59566,4141,0.0025,84,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",61,0,0,1,1,4.75,0,4.3,56,41912,3151,0.00176,56,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",62,0,0,1,1,8.5,0,5.3,70,51282,3757,0.00215,70,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",63,0,0,1,1,12.0,1,7.3,126,86101,6357,0.00362,126,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",64,0,0,1,1,12.0,1,7.8,100,72253,5492,0.00303,100,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",65,0,0,1,1,12.0,1,6.8,112,78000,5509,0.00328,112,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",66,0,0,1,1,12.0,1,5.0,92,64869,4738,0.00272,92,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",67,0,0,1,1,7.5,0,7.7,79,59786,4422,0.00251,79,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",68,0,0,1,1,11.0,0,6.7,99,75142,5640,0.00316,99,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",69,0,0,1,1,7.25,0,6.6,87,63272,4647,0.00266,87,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",70,0,0,1,1,12.0,1,6.4,98,70831,5199,0.00297,98,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",71,0,0,1,1,6.5,0,5.1,65,48584,3449,0.00204,65,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",72,0,0,1,1,5.5,0,4.2,70,50050,3691,0.0021,70,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",73,0,0,1,1,8.25,0,4.9,70,52016,3736,0.00218,70,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",74,0,0,1,1,6.25,0,4.9,70,50413,3707,0.00212,70,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",75,0,0,1,1,5.0,0,5.1,64,47236,3500,0.00198,64,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",76,0,0,0,1,12.0,1,7.3,80,61528,4397,0.00258,80,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",77,0,0,1,1,12.0,1,6.7,92,66827,4772,0.00281,92,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",78,0,0,1,1,6.5,0,5.8,74,54142,4059,0.00227,74,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",79,0,0,1,1,12.0,1,6.5,100,73104,5336,0.00307,100,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",80,0,0,1,1,5.5,0,2.3,40,28812,2151,0.00121,40,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",81,0,0,1,1,4.5,0,3.4,50,36564,2776,0.00154,50,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",82,0,0,1,1,12.0,1,9.3,115,83228,6133,0.0035,115,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",83,0,0,1,1,7.5,0,5.1,79,56941,4133,0.00239,79,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",84,0,0,1,1,12.0,1,7.4,102,74447,5653,0.00313,102,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",85,0,0,1,1,12.0,1,3.0,61,42543,3080,0.00179,61,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",86,0,0,1,1,6.25,0,3.5,56,42695,3079,0.00179,56,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",87,0,0,1,1,12.0,1,6.4,107,76821,5631,0.00323,107,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",88,0,0,1,1,8.0,0,6.4,83,60260,4514,0.00253,83,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",89,0,0,1,1,6.75,0,3.9,69,52156,3734,0.00219,69,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",90,0,0,1,1,12.0,1,6.6,93,68817,4760,0.00289,93,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",91,0,0,1,1,9.25,0,7.6,97,73041,5427,0.00307,97,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",92,0,0,1,1,11.5,0,7.8,110,78931,5774,0.00332,110,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",93,0,0,1,0,6.5,0,2.1,43,31194,2355,0.00131,43,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",94,0,0,1,1,12.0,1,8.8,103,75177,5860,0.00316,103,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",95,0,0,1,1,8.25,0,3.4,65,46631,3312,0.00196,65,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",96,0,0,1,1,6.5,0,4.0,65,47580,3307,0.002,65,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",97,0,0,1,1,5.25,0,2.7,37,27786,2044,0.00117,37,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",98,0,0,1,1,4.5,0,2.8,43,31226,2273,0.00131,43,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",99,0,0,1,1,12.0,1,5.9,85,61431,4539,0.00258,85,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, Jev boys · Holmesian",100,0,0,1,1,12.0,1,8.1,114,80018,6033,0.00336,114,0,32,batch_20261004-163933_swarm_32509
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",1,0,0,1,1,8.25,0,0.0,0,0,0,0.0,62,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",2,0,0,1,1,12.0,1,0.0,0,0,0,0.0,86,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",3,0,0,1,1,6.25,0,0.0,0,0,0,0.0,51,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",4,0,0,1,1,6.25,0,0.0,0,0,0,0.0,42,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",5,0,0,1,1,12.0,1,0.0,0,0,0,0.0,72,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",6,0,0,0,1,12.0,1,0.0,0,0,0,0.0,87,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",7,0,0,1,1,8.25,0,0.0,0,0,0,0.0,61,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",8,0,0,0,1,12.0,1,0.0,0,0,0,0.0,105,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",9,0,0,1,1,12.0,1,0.0,0,0,0,0.0,91,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",10,0,0,1,1,8.25,0,0.0,0,0,0,0.0,65,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",11,0,0,1,1,12.0,1,0.0,0,0,0,0.0,94,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",12,0,0,1,1,5.25,0,0.0,0,0,0,0.0,62,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",13,0,0,1,1,12.0,1,0.0,0,0,0,0.0,100,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",14,0,0,1,1,12.0,1,0.0,0,0,0,0.0,64,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",15,0,0,1,1,12.0,1,0.0,0,0,0,0.0,83,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",16,0,0,1,1,7.75,0,0.0,0,0,0,0.0,71,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",17,0,0,1,1,8.25,0,0.0,0,0,0,0.0,65,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",18,0,0,1,1,12.0,1,0.0,0,0,0,0.0,93,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",19,0,0,1,1,12.0,1,0.0,0,0,0,0.0,75,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",20,0,0,0,1,12.0,1,0.0,0,0,0,0.0,105,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",21,0,0,1,1,4.5,0,0.0,0,0,0,0.0,47,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",22,0,0,1,1,12.0,1,0.0,0,0,0,0.0,103,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",23,0,0,1,1,12.0,1,0.0,0,0,0,0.0,62,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",24,0,0,1,1,12.0,1,0.0,0,0,0,0.0,94,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",25,0,0,1,1,12.0,1,0.0,0,0,0,0.0,90,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",26,0,0,1,1,12.0,1,0.0,0,0,0,0.0,97,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",27,0,0,1,1,6.5,0,0.0,0,0,0,0.0,47,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",28,0,0,1,1,12.0,1,0.0,0,0,0,0.0,88,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",29,0,0,1,1,12.0,1,0.0,0,0,0,0.0,82,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",30,0,0,1,1,3.25,0,0.0,0,0,0,0.0,32,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",31,0,0,1,1,12.0,1,0.0,0,0,0,0.0,78,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",32,1,1,1,1,12.0,1,0.0,0,0,0,0.0,70,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",33,0,0,1,1,12.0,1,0.0,0,0,0,0.0,90,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",34,0,0,1,1,12.0,1,0.0,0,0,0,0.0,90,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",35,0,0,1,1,8.25,0,0.0,0,0,0,0.0,63,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",36,0,0,1,1,12.0,1,0.0,0,0,0,0.0,81,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",37,0,0,1,1,12.0,1,0.0,0,0,0,0.0,89,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",38,0,0,1,1,12.0,1,0.0,0,0,0,0.0,86,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",39,0,0,1,1,12.0,1,0.0,0,0,0,0.0,63,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",40,0,0,1,1,12.0,1,0.0,0,0,0,0.0,100,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",41,0,0,1,1,3.25,0,0.0,0,0,0,0.0,33,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",42,0,0,1,1,8.75,0,0.0,0,0,0,0.0,58,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",43,0,0,1,1,12.0,1,0.0,0,0,0,0.0,77,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",44,0,0,1,1,12.0,1,0.0,0,0,0,0.0,86,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",45,0,0,1,1,12.0,1,0.0,0,0,0,0.0,103,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",46,0,0,1,1,12.0,1,0.0,0,0,0,0.0,87,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",47,0,0,1,1,3.25,0,0.0,0,0,0,0.0,33,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",48,0,0,1,1,12.0,1,0.0,0,0,0,0.0,70,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",49,0,0,1,1,12.0,1,0.0,0,0,0,0.0,101,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",50,0,0,1,1,8.5,0,0.0,0,0,0,0.0,55,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",51,0,0,1,1,10.25,0,0.0,0,0,0,0.0,70,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",52,0,0,1,1,11.5,0,0.0,0,0,0,0.0,82,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",53,0,0,1,1,12.0,1,0.0,0,0,0,0.0,85,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",54,0,0,1,1,12.0,1,0.0,0,0,0,0.0,103,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",55,0,0,1,1,12.0,1,0.0,0,0,0,0.0,90,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",56,0,0,1,1,12.0,1,0.0,0,0,0,0.0,78,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",57,0,0,1,1,5.5,0,0.0,0,0,0,0.0,54,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",58,0,0,1,1,12.0,1,0.0,0,0,0,0.0,92,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",59,0,0,1,1,12.0,1,0.0,0,0,0,0.0,84,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",60,0,0,1,1,6.25,0,0.0,0,0,0,0.0,46,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",61,0,0,1,1,12.0,1,0.0,0,0,0,0.0,90,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",62,0,0,1,1,12.0,1,0.0,0,0,0,0.0,82,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",63,0,0,1,1,12.0,1,0.0,0,0,0,0.0,111,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",64,0,0,1,1,12.0,1,0.0,0,0,0,0.0,93,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",65,0,0,1,1,12.0,1,0.0,0,0,0,0.0,104,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",66,0,0,1,1,12.0,1,0.0,0,0,0,0.0,82,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",67,0,0,1,1,7.5,0,0.0,0,0,0,0.0,64,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",68,0,0,1,1,12.0,1,0.0,0,0,0,0.0,83,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",69,0,0,1,1,4.5,0,0.0,0,0,0,0.0,52,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",70,0,0,1,1,12.0,1,0.0,0,0,0,0.0,77,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",71,0,0,1,1,12.0,1,0.0,0,0,0,0.0,81,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",72,0,0,1,1,12.0,1,0.0,0,0,0,0.0,100,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",73,0,0,1,1,8.25,0,0.0,0,0,0,0.0,55,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",74,0,0,1,1,6.25,0,0.0,0,0,0,0.0,63,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",75,0,0,1,1,12.0,1,0.0,0,0,0,0.0,94,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",76,0,0,0,1,12.0,1,0.0,0,0,0,0.0,62,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",77,0,0,1,1,12.0,1,0.0,0,0,0,0.0,79,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",78,0,0,1,1,6.5,0,0.0,0,0,0,0.0,59,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",79,0,0,1,1,10.25,0,0.0,0,0,0,0.0,80,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",80,0,0,1,1,12.0,1,0.0,0,0,0,0.0,82,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",81,0,0,1,1,12.0,1,0.0,0,0,0,0.0,106,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",82,0,0,1,1,12.0,1,0.0,0,0,0,0.0,95,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",83,0,0,1,1,7.5,0,0.0,0,0,0,0.0,77,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",84,0,0,1,1,12.0,1,0.0,0,0,0,0.0,99,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",85,0,0,1,1,12.0,1,0.0,0,0,0,0.0,56,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",86,0,0,1,1,12.0,1,0.0,0,0,0,0.0,81,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",87,0,0,1,1,12.0,1,0.0,0,0,0,0.0,91,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",88,0,0,1,1,7.75,0,0.0,0,0,0,0.0,64,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",89,0,0,1,1,6.25,0,0.0,0,0,0,0.0,55,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",90,0,0,1,1,7.75,0,0.0,0,0,0,0.0,67,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",91,0,0,1,1,12.0,1,0.0,0,0,0,0.0,98,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",92,0,0,1,1,12.0,1,0.0,0,0,0,0.0,103,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",93,0,0,1,1,12.0,1,0.0,0,0,0,0.0,50,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",94,0,0,1,1,12.0,1,0.0,0,0,0,0.0,95,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",95,0,0,1,1,12.0,1,0.0,0,0,0,0.0,79,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",96,0,0,1,1,6.25,0,0.0,0,0,0,0.0,57,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",97,0,0,1,1,12.0,1,0.0,0,0,0,0.0,90,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",98,0,0,1,1,4.75,0,0.0,0,0,0,0.0,36,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",99,0,0,1,1,12.0,1,0.0,0,0,0,0.0,79,0,32,batch_20261004-162529_swarm_30541
+"Baker Street Irregulars · counting-heuristic Holmes, heuristic boys · Holmesian",100,0,0,1,1,12.0,1,0.0,0,0,0,0.0,99,0,32,batch_20261004-162529_swarm_30541
+Swarm Detectives · Jev swarm · 2 km · Holmesian,1,0,0,1,1,1.75,0,7.9,700,2113328,277901,0.08876,700,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,2,0,1,0,1,3.25,0,18.7,1291,4219529,515583,0.17722,1294,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,3,0,0,1,1,2.5,0,12.3,988,3193617,401895,0.13413,991,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,4,0,0,1,1,2.0,0,11.2,797,2513045,322223,0.10555,797,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,5,0,0,1,1,2.0,0,9.3,794,2485265,317526,0.10438,794,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,6,1,1,1,1,1.25,0,5.7,493,1375895,189306,0.05779,497,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,7,0,0,0,0,12.0,1,49.9,3703,12459566,1419100,0.5233,4758,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,8,1,1,1,1,2.25,0,8.7,849,2684288,343692,0.11274,900,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,9,1,1,1,1,1.5,0,7.1,588,1724583,228764,0.07243,590,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,10,0,0,1,1,2.25,0,9.3,889,2849997,359191,0.1197,893,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,11,0,0,1,1,1.25,0,6.3,486,1402890,188114,0.05892,491,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,12,1,1,1,1,1.5,0,6.4,597,1775252,235614,0.07456,597,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,13,1,1,1,1,1.25,0,5.2,500,1441233,192887,0.06053,500,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,14,0,0,0,0,12.0,1,49.0,3504,11914130,1381308,0.50039,4776,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,15,1,1,1,1,1.25,0,5.1,497,1436086,193009,0.06032,497,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,16,1,1,1,1,4.5,0,19.6,1733,5833177,704355,0.24499,1778,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,17,0,0,1,1,2.25,0,11.2,897,2849818,362622,0.11969,897,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,18,1,1,1,1,1.0,0,3.8,394,1088742,149122,0.04573,394,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,19,0,0,1,1,4.5,0,23.4,1791,6091868,720959,0.25586,1797,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,20,1,1,1,1,4.5,0,17.9,1718,5797588,695667,0.2435,1787,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,21,1,1,1,1,1.75,0,8.2,694,2131932,277624,0.08954,694,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,22,0,0,1,1,1.5,0,5.8,597,1768261,235671,0.07427,597,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,23,0,1,0,1,1.25,0,4.4,486,1393808,187707,0.05854,491,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,24,0,0,1,1,2.5,0,10.8,991,3203070,401930,0.13453,991,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,25,1,1,1,1,1.25,0,6.5,494,1425067,190435,0.05985,494,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,26,0,0,1,1,1.25,0,6.0,493,1406085,191097,0.05906,493,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,27,0,1,0,1,1.0,0,4.6,385,1055270,144788,0.04432,385,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,28,0,0,1,1,2.0,0,8.7,785,2427591,312924,0.10196,785,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,29,1,1,1,1,4.5,0,23.8,1755,5941963,707580,0.24956,1797,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,30,0,1,0,1,1.5,0,6.9,589,1721257,229136,0.07229,591,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,31,0,0,1,1,2.25,0,10.5,895,2818545,357479,0.11838,897,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,32,1,1,1,1,1.75,0,7.6,682,2047702,269313,0.086,682,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,33,0,1,0,1,1.25,0,5.6,494,1413359,190703,0.05936,494,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,34,0,0,1,1,3.0,0,13.0,1186,3907768,483721,0.16413,1194,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,35,1,1,1,1,5.5,0,22.3,1912,6412184,777241,0.26931,2195,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,36,0,0,0,0,12.0,1,36.7,2861,9665907,1117659,0.40597,4737,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,37,0,0,1,1,2.75,0,13.5,1093,3551561,445940,0.14917,1093,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,38,0,1,0,1,1.5,0,6.9,600,1814352,237155,0.0762,600,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,39,0,0,1,1,1.25,0,5.7,497,1424439,191232,0.05983,498,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,40,0,1,0,1,1.5,0,5.9,591,1756371,232864,0.07377,591,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,41,0,0,0,1,1.5,0,6.1,597,1758886,234377,0.07387,597,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,42,0,0,1,1,1.5,0,6.6,600,1812910,237468,0.07614,600,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,43,0,0,1,1,1.75,0,7.3,696,2093558,275286,0.08793,697,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,44,0,1,0,1,7.75,0,35.1,2868,9848989,1162278,0.41366,3061,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,45,0,0,0,0,12.0,1,45.9,3819,12864248,1479798,0.5403,4730,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,46,1,1,1,1,1.25,0,5.9,500,1427943,193659,0.05997,500,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,47,0,0,0,0,12.0,1,43.4,3704,12554416,1425828,0.52729,4731,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,48,0,0,1,1,1.75,0,6.7,693,2116246,274837,0.08888,694,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,49,0,0,1,1,2.25,0,9.3,862,2686041,344125,0.11281,894,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,50,0,0,1,1,2.75,0,14.5,1089,3446957,436158,0.14477,1097,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,51,0,0,0,0,12.0,1,50.2,4228,14825790,1701462,0.62268,4753,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,52,1,1,1,1,1.5,0,7.0,600,1780190,235545,0.07477,600,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,53,0,0,1,1,1.75,0,7.1,691,2070774,272266,0.08697,691,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,54,0,0,1,1,1.5,0,7.2,594,1777991,234117,0.07468,594,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,55,1,1,1,1,2.5,0,12.9,985,3114364,393575,0.1308,991,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,56,1,1,1,1,1.0,0,5.7,391,1091477,148032,0.04584,391,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,57,1,1,1,1,2.25,0,9.3,887,2744442,353723,0.11527,894,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,58,1,1,1,1,2.0,0,7.9,770,2403992,310614,0.10097,785,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,59,1,1,1,1,1.25,0,4.6,491,1406153,190120,0.05906,491,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,60,0,0,1,1,1.75,0,7.9,697,2055547,272679,0.08633,697,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,61,1,1,1,1,1.25,0,5.8,488,1410037,188878,0.05922,488,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,62,0,1,1,0,1.25,0,5.2,491,1404410,189114,0.05899,491,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,63,0,1,0,1,1.5,0,7.7,600,1783492,236419,0.07491,600,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,64,1,1,1,1,2.75,0,12.9,1095,3601341,446027,0.15126,1097,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,65,0,0,1,1,5.0,0,21.6,1728,5763319,702363,0.24206,1988,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,66,1,1,1,1,4.5,0,20.3,1683,5675705,682024,0.23838,1788,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,67,1,1,1,1,1.5,0,6.8,597,1749738,234275,0.07349,597,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,68,0,1,0,1,1.0,0,3.9,400,1104085,152216,0.04637,400,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,69,1,1,1,1,2.25,0,10.8,893,2761608,355781,0.11599,894,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,70,1,1,1,1,6.5,0,27.1,2551,8625288,1006783,0.36226,2585,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,71,1,1,1,1,2.0,0,9.8,795,2450010,318363,0.1029,797,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,72,0,0,1,1,2.75,0,12.8,1096,3518162,443500,0.14776,1097,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,73,1,1,1,1,7.0,0,29.3,2623,8831274,1019585,0.37091,2776,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,74,1,1,1,1,11.75,0,43.6,3912,13228026,1551629,0.55558,4649,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,75,0,0,1,1,1.0,0,4.1,397,1101233,150491,0.04625,397,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,76,1,1,1,1,2.5,0,10.6,988,3100414,391884,0.13022,991,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,77,1,1,1,1,7.25,0,24.8,2108,7232425,865068,0.30376,2893,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,78,0,0,1,1,2.5,0,10.4,993,3153954,400414,0.13247,1000,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,79,0,0,1,1,2.25,0,10.5,891,2755064,352253,0.11571,891,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,80,1,1,1,1,1.75,0,8.1,694,2090486,274675,0.0878,694,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,81,1,1,1,1,3.0,0,11.9,1190,3881003,487962,0.163,1190,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,82,1,1,1,1,9.5,0,40.3,3463,12000713,1407413,0.50403,3776,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,83,1,1,1,1,1.25,0,6.7,497,1437178,193223,0.06036,497,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,84,0,0,1,1,2.0,0,7.9,798,2465686,319254,0.10356,800,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,85,1,1,1,1,4.0,0,17.6,1574,5272168,640697,0.22143,1588,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,86,0,0,1,1,2.5,0,10.6,992,3203081,401148,0.13453,994,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,87,1,1,1,1,1.5,0,6.9,594,1774259,234051,0.07452,594,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,88,1,1,1,1,2.75,0,11.1,1094,3500730,445023,0.14703,1100,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,89,1,1,1,1,1.75,0,6.6,693,2110104,273545,0.08862,694,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,90,1,1,1,1,2.0,0,8.9,771,2359574,307275,0.0991,797,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,91,0,1,0,1,1.25,0,4.8,497,1401697,191326,0.05887,497,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,92,1,1,1,1,1.5,0,6.1,594,1738606,231176,0.07302,594,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,93,0,1,0,1,1.75,0,6.9,694,2141475,277598,0.08994,694,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,94,0,0,0,0,12.0,1,37.2,3244,10910383,1271512,0.45824,4767,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,95,0,0,0,1,2.25,0,9.8,894,2883682,362728,0.12111,894,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,96,0,0,1,1,1.75,0,8.6,699,2105372,276761,0.08843,700,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,97,0,0,1,1,2.0,0,9.5,797,2514265,322920,0.1056,797,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,98,0,0,1,1,1.25,0,6.2,491,1408326,190207,0.05915,497,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,99,0,1,0,1,2.75,0,11.8,1089,3556077,443028,0.14936,1089,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · Jev swarm · 2 km · Holmesian,100,0,0,1,1,1.75,0,8.6,688,2053611,270484,0.08625,688,0,32,batch_20261004-164849_swarm_32852
+Swarm Detectives · hybrid · 2 km · Holmesian,1,0,0,0,0,12.0,1,91.8,4645,12159879,513655,0.51071,4645,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,2,0,0,0,0,12.0,1,80.7,4352,11486937,470018,0.48245,4708,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,3,0,0,1,1,4.5,0,36.9,1788,4839038,245100,0.20324,1788,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,4,0,0,1,1,2.5,0,18.1,991,2529166,136001,0.10622,991,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,5,0,0,1,1,4.25,0,33.9,1688,4580246,230644,0.19237,1688,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,6,0,0,1,1,1.5,0,11.1,585,1292418,71068,0.05428,585,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,7,0,0,0,0,12.0,1,91.1,4358,11403397,467971,0.47894,4548,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,8,0,0,1,1,1.25,0,9.4,493,1062486,57234,0.04462,493,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,9,0,0,1,1,11.25,0,88.6,4367,11541694,489070,0.48475,4382,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,10,0,0,1,1,1.5,0,15.2,591,1361353,73341,0.05718,591,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,11,0,0,1,1,2.0,0,15.8,785,1938858,105283,0.08143,785,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,12,0,0,1,1,5.0,0,40.9,1988,5296798,255751,0.22247,1988,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,13,0,0,1,1,4.25,0,34.4,1691,4557265,233188,0.19141,1691,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,14,0,0,0,0,12.0,1,91.7,4627,12240346,515712,0.51409,4647,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,15,1,1,1,1,7.0,0,44.6,2763,7363362,331028,0.30926,2763,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,16,0,0,1,1,7.25,0,40.9,2882,7786062,367742,0.32701,2882,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,17,0,0,1,1,1.5,0,6.1,591,1369587,75577,0.05752,591,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,18,0,0,0,0,12.0,1,56.2,4711,12656432,539248,0.53157,4720,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,19,0,0,1,1,1.5,0,6.6,591,1398990,76575,0.05876,591,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,20,0,0,1,1,1.75,0,7.9,685,1630925,88586,0.0685,685,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,21,0,0,1,1,2.25,0,10.1,873,2214515,121455,0.09301,873,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,22,0,0,1,1,4.0,0,18.2,1594,4348604,231808,0.18264,1594,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,23,0,0,1,1,9.75,0,42.9,3818,10175048,423578,0.42735,3818,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,24,0,0,0,0,12.0,1,52.5,4418,11544165,480035,0.48485,4645,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,25,0,0,1,1,3.25,0,15.7,1288,3424420,178293,0.14383,1288,0,32,batch_20261004-171159_swarm_33827
+Swarm Detectives · hybrid · 2 km · Holmesian,26,0,0,1,1,3.25,0,27.1,1252,3226715,172601,0.13552,1253,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,27,0,0,0,0,12.0,1,90.6,4716,12420085,516724,0.52164,4722,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,28,0,0,1,1,2.5,0,16.3,985,2473360,130133,0.10388,985,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,29,0,0,1,1,4.75,0,34.5,1891,5225639,264501,0.21948,1891,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,30,0,0,1,1,9.5,0,67.8,3527,9231053,414800,0.3877,3697,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,31,0,0,0,0,12.0,1,92.8,4628,12260801,531147,0.51495,4649,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,32,0,0,0,0,12.0,1,95.8,4653,12145464,499695,0.51011,4681,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,33,0,0,1,1,7.25,0,61.2,2876,7916515,390542,0.33249,2876,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,34,0,0,1,1,1.5,0,12.8,585,1340769,73160,0.05631,585,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,35,0,0,0,0,12.0,1,87.6,4294,11323519,505894,0.47559,4713,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,36,0,0,0,0,12.0,1,87.6,4555,12055785,501558,0.50634,4684,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,37,0,0,1,1,2.5,0,17.8,988,2460837,130317,0.10336,988,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,38,0,0,1,1,9.5,0,53.8,3733,9984490,410598,0.41935,3736,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,39,0,0,1,1,4.0,0,18.3,1582,4169773,205832,0.17513,1582,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,40,0,0,0,0,12.0,1,53.7,4648,12320856,518243,0.51748,4677,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,41,0,0,1,1,5.0,0,23.3,1991,5345042,271955,0.22449,1991,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,42,0,0,1,1,2.75,0,12.3,1091,2864106,151351,0.12029,1091,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,43,0,0,1,1,5.75,0,27.2,2291,6091652,287607,0.25585,2291,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,44,0,0,0,0,12.0,1,54.5,4713,12702182,552283,0.53349,4713,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,45,0,0,1,1,1.5,0,7.4,585,1342293,73941,0.05638,585,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,46,0,0,1,1,1.25,0,5.3,492,1090726,59262,0.04581,492,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,47,0,0,0,0,12.0,1,46.9,4661,12283994,508638,0.51593,4678,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,48,0,0,1,1,1.25,0,4.2,488,1069480,57330,0.04492,488,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,49,0,0,1,1,1.75,0,6.0,681,1607630,88167,0.06752,681,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,50,0,0,1,1,1.75,0,6.6,691,1632050,89332,0.06855,691,0,32,batch_20261004-171159_swarm_33828
+Swarm Detectives · hybrid · 2 km · Holmesian,51,0,0,1,1,5.75,0,54.0,2288,6356131,319573,0.26696,2288,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,52,0,0,1,1,1.5,0,10.6,591,1349876,73572,0.05669,591,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,53,0,0,1,1,6.75,0,50.5,2684,7222008,333095,0.30332,2684,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,54,0,0,1,1,1.5,0,11.0,585,1358059,72971,0.05704,585,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,55,0,0,1,1,1.5,0,10.5,586,1349591,73004,0.05668,586,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,56,0,0,1,1,6.0,0,40.3,2376,6452351,306910,0.271,2376,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,57,0,0,1,1,3.25,0,24.9,1285,3411689,182985,0.14329,1285,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,58,0,0,1,1,1.25,0,7.8,485,1052590,56750,0.04421,485,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,59,0,0,1,1,1.75,0,14.1,685,1585171,85364,0.06658,685,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,60,0,0,1,1,2.0,0,11.7,791,1885033,102524,0.07917,791,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,61,0,0,1,1,2.75,0,22.8,1079,2793074,149259,0.11731,1079,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,62,0,0,1,1,1.75,0,11.7,688,1649775,91036,0.06929,688,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,63,0,0,1,1,6.0,0,45.9,2388,6538430,311837,0.27461,2388,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,64,0,0,1,1,1.25,0,10.3,494,1097255,58752,0.04608,494,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,65,0,0,0,0,12.0,1,86.4,4707,12449100,521356,0.52286,4711,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,66,0,0,1,1,6.5,0,51.9,2527,6853778,335903,0.28786,2531,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,67,0,0,1,1,1.75,0,14.9,688,1636895,90569,0.06875,688,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,68,0,0,0,0,12.0,1,95.3,4548,11744528,497671,0.49327,4705,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,69,0,0,1,1,3.75,0,33.1,1488,3913447,206212,0.16436,1488,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,70,0,0,1,1,1.5,0,11.3,585,1350645,73442,0.05673,585,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,71,0,0,1,1,2.75,0,19.8,1091,2858730,156719,0.12007,1091,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,72,0,0,0,0,12.0,1,72.5,4603,11936991,481193,0.50135,4687,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,73,0,0,1,1,2.0,0,10.0,797,1950302,106887,0.08191,797,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,74,0,0,1,1,1.75,0,9.5,679,1596864,86720,0.06707,679,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,75,0,0,1,1,2.5,0,11.8,973,2523272,137000,0.10598,973,0,32,batch_20261004-171159_swarm_33829
+Swarm Detectives · hybrid · 2 km · Holmesian,76,0,0,1,1,2.25,0,20.5,891,2270810,122879,0.09537,891,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,77,0,0,1,1,2.75,0,23.6,1088,2769583,146919,0.11632,1088,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,78,0,0,0,0,12.0,1,83.5,4400,11579473,502731,0.48634,4674,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,79,0,0,1,1,4.0,0,29.0,1552,4103946,209892,0.17237,1566,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,80,0,0,1,1,1.75,0,11.5,688,1644947,90940,0.06909,688,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,81,0,0,1,1,1.5,0,7.8,585,1337146,75063,0.05616,585,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,82,0,0,1,1,2.0,0,16.6,794,1946049,107116,0.08173,794,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,83,0,0,1,1,4.0,0,31.4,1588,4228720,217786,0.17761,1588,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,84,0,0,1,1,1.25,0,9.8,488,1074163,58613,0.04511,488,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,85,0,0,1,1,1.5,0,11.0,579,1329401,71979,0.05583,579,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,86,0,0,1,1,1.5,0,13.1,582,1356685,73553,0.05698,582,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,87,0,0,1,1,3.5,0,25.0,1388,3750724,196869,0.15753,1388,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,88,0,0,1,1,4.75,0,37.1,1894,5131244,265034,0.21551,1894,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,89,0,0,1,1,2.0,0,14.4,788,1938966,104558,0.08144,788,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,90,0,0,1,1,3.5,0,27.9,1350,3527148,186478,0.14814,1388,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,91,0,0,1,1,2.25,0,17.5,894,2169643,117470,0.09113,894,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,92,0,0,1,1,2.5,0,17.8,991,2518460,136313,0.10578,991,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,93,0,0,1,1,3.25,0,27.6,1288,3413294,179246,0.14336,1288,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,94,0,0,1,1,1.5,0,12.7,582,1329776,72618,0.05585,582,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,95,0,0,1,1,7.25,0,60.5,2887,7917801,361830,0.33255,2887,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,96,0,0,1,1,3.75,0,31.3,1491,3920895,198346,0.16468,1491,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,97,0,0,1,1,2.0,0,14.6,794,1963912,107673,0.08248,794,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,98,0,0,1,1,3.25,0,25.3,1288,3430125,181346,0.14407,1288,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,99,0,0,1,1,10.25,0,79.9,4054,10979992,497444,0.46116,4055,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · hybrid · 2 km · Holmesian,100,0,0,1,1,4.5,0,35.2,1782,4692515,234573,0.19709,1782,0,32,batch_20261004-171159_swarm_33830
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,1,0,0,0,0,12.0,1,0.5,0,0,0,0.0,4581,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,2,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2176,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,3,0,0,1,1,2.0,0,0.1,0,0,0,0.0,779,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,4,0,0,1,1,1.25,0,0.1,0,0,0,0.0,479,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,5,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2173,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,6,0,0,1,1,2.0,0,0.1,0,0,0,0.0,770,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,7,0,0,1,1,8.25,0,0.4,0,0,0,0.0,3255,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,8,0,0,1,1,3.25,0,0.2,0,0,0,0.0,1264,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,9,0,0,1,1,3.0,0,0.2,0,0,0,0.0,1179,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,10,0,0,1,1,1.5,0,0.1,0,0,0,0.0,579,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,11,0,0,1,1,2.25,0,0.1,0,0,0,0.0,876,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,12,0,0,0,0,12.0,1,0.6,0,0,0,0.0,4709,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,13,0,0,1,1,2.0,0,0.1,0,0,0,0.0,767,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,14,0,0,1,1,1.5,0,0.1,0,0,0,0.0,573,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,15,0,0,1,1,5.25,0,0.3,0,0,0,0.0,2082,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,16,0,0,1,1,2.0,0,0.1,0,0,0,0.0,773,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,17,0,0,1,1,1.25,0,0.1,0,0,0,0.0,482,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,18,0,0,1,1,4.75,0,0.2,0,0,0,0.0,1861,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,19,0,0,1,1,2.0,0,0.1,0,0,0,0.0,776,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,20,0,0,1,1,1.5,0,0.1,0,0,0,0.0,576,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,21,0,0,1,1,3.5,0,0.2,0,0,0,0.0,1373,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,22,0,0,1,1,5.25,0,0.3,0,0,0,0.0,2085,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,23,1,1,1,1,2.5,0,0.1,0,0,0,0.0,979,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,24,0,0,1,1,6.75,0,0.4,0,0,0,0.0,2676,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,25,0,0,1,1,3.25,0,0.2,0,0,0,0.0,1273,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,26,0,0,1,1,5.0,0,0.3,0,0,0,0.0,1976,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,27,0,0,1,1,2.0,0,0.1,0,0,0,0.0,776,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,28,0,0,1,1,1.25,0,0.1,0,0,0,0.0,474,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,29,0,0,1,1,6.5,0,0.3,0,0,0,0.0,2579,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,30,0,0,1,1,2.25,0,0.1,0,0,0,0.0,867,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,31,0,0,0,0,12.0,1,0.6,0,0,0,0.0,4653,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,32,0,0,1,1,2.75,0,0.1,0,0,0,0.0,1073,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,33,0,0,1,1,2.0,0,0.1,0,0,0,0.0,761,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,34,0,0,1,1,1.5,0,0.1,0,0,0,0.0,579,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,35,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2179,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,36,0,0,1,1,5.75,0,0.3,0,0,0,0.0,2279,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,37,0,0,1,1,1.5,0,0.1,0,0,0,0.0,579,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,38,0,0,1,1,2.0,0,0.1,0,0,0,0.0,773,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,39,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2182,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,40,0,0,1,1,6.5,0,0.3,0,0,0,0.0,2567,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,41,0,0,1,1,1.25,0,0.1,0,0,0,0.0,475,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,42,0,0,1,1,1.75,0,0.1,0,0,0,0.0,679,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,43,0,0,1,1,5.25,0,0.3,0,0,0,0.0,2079,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,44,0,0,0,0,12.0,1,0.6,0,0,0,0.0,4663,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,45,0,0,1,1,3.0,0,0.2,0,0,0,0.0,1179,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,46,0,0,1,1,1.25,0,0.1,0,0,0,0.0,473,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,47,0,0,1,1,6.25,0,0.3,0,0,0,0.0,2464,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,48,0,0,1,1,1.25,0,0.1,0,0,0,0.0,479,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,49,0,0,1,1,1.0,0,0.1,0,0,0,0.0,376,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,50,0,0,1,1,1.25,0,0.1,0,0,0,0.0,473,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,51,0,0,1,1,2.0,0,0.1,0,0,0,0.0,779,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,52,0,0,1,1,1.25,0,0.1,0,0,0,0.0,479,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,53,0,0,0,0,12.0,1,0.6,0,0,0,0.0,4644,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,54,0,0,1,1,1.5,0,0.1,0,0,0,0.0,576,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,55,0,0,1,1,3.0,0,0.2,0,0,0,0.0,1173,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,56,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2173,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,57,0,0,1,1,5.75,0,0.3,0,0,0,0.0,2276,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,58,0,0,1,1,1.25,0,0.1,0,0,0,0.0,479,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,59,0,0,1,1,2.0,0,0.1,0,0,0,0.0,773,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,60,0,0,1,1,1.0,0,0.1,0,0,0,0.0,379,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,61,0,0,1,1,2.0,0,0.1,0,0,0,0.0,770,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,62,0,0,1,1,2.0,0,0.1,0,0,0,0.0,782,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,63,0,0,1,1,2.25,0,0.1,0,0,0,0.0,867,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,64,0,0,1,1,1.5,0,0.1,0,0,0,0.0,576,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,65,0,0,1,1,1.0,0,0.1,0,0,0,0.0,379,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,66,0,0,1,1,5.75,0,0.3,0,0,0,0.0,2276,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,67,0,0,1,1,4.75,0,0.3,0,0,0,0.0,1876,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,68,0,0,1,1,2.25,0,0.1,0,0,0,0.0,873,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,69,0,0,1,1,2.0,0,0.1,0,0,0,0.0,776,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,70,0,0,1,1,2.25,0,0.1,0,0,0,0.0,879,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,71,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2182,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,72,0,0,1,1,1.0,0,0.1,0,0,0,0.0,370,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,73,0,0,1,1,1.75,0,0.1,0,0,0,0.0,688,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,74,0,0,1,1,1.75,0,0.1,0,0,0,0.0,676,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,75,0,0,1,1,3.5,0,0.2,0,0,0,0.0,1379,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,76,0,0,1,1,1.25,0,0.1,0,0,0,0.0,479,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,77,0,0,1,1,2.25,0,0.1,0,0,0,0.0,873,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,78,0,0,1,1,2.5,0,0.1,0,0,0,0.0,979,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,79,0,0,1,1,3.0,0,0.2,0,0,0,0.0,1176,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,80,0,0,1,1,3.0,0,0.2,0,0,0,0.0,1173,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,81,0,0,1,1,4.75,0,0.2,0,0,0,0.0,1876,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,82,0,0,1,1,2.0,0,0.1,0,0,0,0.0,773,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,83,0,0,1,1,5.0,0,0.3,0,0,0,0.0,1978,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,84,0,0,1,1,1.75,0,0.1,0,0,0,0.0,679,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,85,0,0,1,1,1.75,0,0.1,0,0,0,0.0,661,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,86,0,0,1,1,1.25,0,0.1,0,0,0,0.0,476,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,87,0,0,1,1,4.75,0,0.3,0,0,0,0.0,1882,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,88,0,0,1,1,4.75,0,0.3,0,0,0,0.0,1882,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,89,0,0,1,1,11.75,0,0.6,0,0,0,0.0,4599,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,90,0,0,1,1,5.5,0,0.3,0,0,0,0.0,2176,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,91,0,0,0,0,12.0,1,0.6,0,0,0,0.0,4678,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,92,0,0,1,1,1.75,0,0.1,0,0,0,0.0,673,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,93,0,0,1,1,1.75,0,0.1,0,0,0,0.0,682,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,94,0,0,1,1,1.25,0,0.1,0,0,0,0.0,471,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,95,0,0,1,1,3.25,0,0.2,0,0,0,0.0,1273,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,96,0,0,1,1,6.25,0,0.3,0,0,0,0.0,2476,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,97,0,0,1,1,1.75,0,0.1,0,0,0,0.0,679,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,98,0,0,1,1,5.25,0,0.3,0,0,0,0.0,2076,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,99,0,0,1,1,3.5,0,0.2,0,0,0,0.0,1379,0,32,batch_20261004-162533_swarm_30545
+Swarm Detectives · heuristic swarm · 2 km · Holmesian,100,0,0,1,1,5.25,0,0.3,0,0,0,0.0,2079,0,32,batch_20261004-162533_swarm_30545
