@@ -51,7 +51,7 @@ def main():
         if not os.path.exists(out):
             tts(text, out)
         d = duration(out)
-        nxt = LINES[i + 1][0] if i + 1 < len(LINES) else 96.0
+        nxt = LINES[i + 1][0] if i + 1 < len(LINES) else 100.0
         meta.append({"t": t, "file": out, "dur": round(d, 2), "fits": t + d <= nxt - 0.2})
         print(f"{t:5.1f}s {d:4.1f}s {'ok ' if t + d <= nxt - 0.2 else 'LONG'} {text}")
     with open(os.path.join(HERE, "voice", "lines.json"), "w") as f:
