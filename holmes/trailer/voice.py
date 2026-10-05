@@ -26,7 +26,7 @@ LINES = [
     (63.8, "09_swarm", "Finally, the Jev swarm. A hundred boys, no leader. They vote."),
     (74.3, "10_wrong", "Unsolved. The wrong man."),
     (78.0, "11_casebook", "Across a hundred cases, Holmes and his Irregulars solve ninety-six."),
-    (84.3, "12_lies", "Then somebody lies. Astra, leading the Jev swarm, sees through it. Counting gets almost none right."),
+    (84.3, "12_lies", "Then somebody lies. Astra, leading the Jev swarm, sees through it. Replace Astra with a counting heuristic, and almost none are solved."),
 ]
 
 

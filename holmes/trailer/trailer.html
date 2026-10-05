@@ -289,13 +289,11 @@ function minskyQuote(t) {
     if (d < link) { g.strokeStyle = `rgba(224,179,87,${0.45 * (1 - d / link) * al})`; g.beginPath(); g.moveTo(...pts[i]); g.lineTo(...pts[j]); g.stroke(); } }
   for (const [x, y] of pts) { g.fillStyle = `rgba(245,207,90,${0.7 * al})`; g.beginPath(); g.arc(x, y, 3.5, 0, 7); g.fill(); }
   { const sh = g.createRadialGradient(W / 2, 500, 100, W / 2, 500, 900); sh.addColorStop(0, `rgba(5,7,10,${0.85 * al})`); sh.addColorStop(1, "rgba(5,7,10,0)"); g.fillStyle = sh; g.fillRect(0, 0, W, H); }
-  text("A century later, the same idea in AI:", W / 2, 260, {size: 46, color: DIM, style: "italic", alpha: al});
-  text("“The power of intelligence stems from our vast diversity,", W / 2, 440, {size: 62, alpha: prog(t, 9.4, 9.9) * al});
-  text("not from any single, perfect principle.”", W / 2, 530, {size: 62, alpha: prog(t, 9.8, 10.3) * al});
-  text("Marvin Minsky, The Society of Mind (1986)", W / 2, 630, {size: 32, color: DIM, style: "italic", alpha: prog(t, 10.5, 10.9) * al});
-  text("One genius, or many minds?", W / 2, 790, {size: 62, color: GOLD, style: "italic", alpha: prog(t, 10.9, 11.2) * al});
-  text("One genius: gpt-6-astra, a large language model.   Many minds: Jev, a swarm of small, fast models.", W / 2, 880, {size: 34, alpha: prog(t, 11.3, 11.6) * al});
-  text("Which is better?", W / 2, 950, {size: 40, color: GOLD, alpha: prog(t, 11.7, 12.0) * al});
+  text("A century later, the same question for AI:", W / 2, 300, {size: 46, color: DIM, style: "italic", alpha: al});
+  text("One genius, or many minds?", W / 2, 470, {size: 96, color: GOLD, style: "italic", alpha: prog(t, 9.4, 9.9) * al});
+  text("One genius: gpt-6-astra, a large language model.", W / 2, 640, {size: 40, alpha: prog(t, 10.2, 10.6) * al});
+  text("Many minds: Jev, a swarm of small, fast models.", W / 2, 710, {size: 40, alpha: prog(t, 10.7, 11.1) * al});
+  text("Which is better?", W / 2, 860, {size: 52, color: GOLD, alpha: prog(t, 11.4, 11.8) * al});
   vignette(0.7);
 }
 function window221(t, al) {
