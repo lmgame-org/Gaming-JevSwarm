@@ -1,7 +1,7 @@
 """Render the trailer to an mp4: python3 trailer/render.py [--fps 30] [--only 12.5,30.3] [--jobs 8]
 
 Each frame is one headless-Chrome screenshot of trailer.html?t=<seconds> (render(t) is a pure function of t), then
-ffmpeg joins the frames and the synthesised soundtrack (sound.py)."""
+ffmpeg joins the frames and the soundtrack (mix.py: score, effects and narration)."""
 import argparse
 import concurrent.futures as cf
 import json
@@ -82,8 +82,8 @@ def main():
     if a.only:
         print("\n".join(paths))
         return
-    wav = os.path.join(HERE, "build", "sound.wav")
-    subprocess.run([sys.executable, os.path.join(HERE, "sound.py"), wav], check=True)
+    wav = os.path.join(HERE, "build", "mix.wav")
+    subprocess.run([sys.executable, os.path.join(HERE, "mix.py"), wav], check=True)
     out = os.path.join(HERE, "the_irregulars_trailer.mp4")
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-framerate", str(a.fps), "-i", os.path.join(frames, "f%05d.png"),
                     "-i", wav, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "slow",

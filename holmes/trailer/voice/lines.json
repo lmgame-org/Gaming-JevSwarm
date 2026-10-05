@@ -1,0 +1,80 @@
+[
+ {
+  "t": 0.6,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/01_london.wav",
+  "dur": 2.4,
+  "fits": true
+ },
+ {
+  "t": 5.3,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/02_secret.wav",
+  "dur": 3.85,
+  "fits": true
+ },
+ {
+  "t": 10.8,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/03_ai.wav",
+  "dur": 5.7,
+  "fits": true
+ },
+ {
+  "t": 16.9,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/04_setup.wav",
+  "dur": 7.3,
+  "fits": true
+ },
+ {
+  "t": 27.8,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/05_lone.wav",
+  "dur": 5.8,
+  "fits": true
+ },
+ {
+  "t": 38.9,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/06_unsolved.wav",
+  "dur": 1.85,
+  "fits": true
+ },
+ {
+  "t": 45.8,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/07_holmes.wav",
+  "dur": 7.1,
+  "fits": true
+ },
+ {
+  "t": 56.9,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/08_solved.wav",
+  "dur": 1.85,
+  "fits": true
+ },
+ {
+  "t": 63.8,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/09_swarm.wav",
+  "dur": 7.1,
+  "fits": true
+ },
+ {
+  "t": 74.3,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/10_wrong.wav",
+  "dur": 3.3,
+  "fits": true
+ },
+ {
+  "t": 78.0,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/11_casebook.wav",
+  "dur": 5.3,
+  "fits": true
+ },
+ {
+  "t": 84.3,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/12_lies.wav",
+  "dur": 7.6,
+  "fits": true
+ },
+ {
+  "t": 92.6,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/13_elementary.wav",
+  "dur": 1.9,
+  "fits": true
+ }
+]

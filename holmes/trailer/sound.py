@@ -3,6 +3,7 @@
 A low string-like drone, a clock that ticks through each chapter, telegraph clicks while the telegram types, a bell
 toll for each of the three chapters, a heartbeat under the twist and a closing chord. Times match trailer.html."""
 import math
+import os
 import random
 import struct
 import sys
@@ -90,10 +91,14 @@ def heartbeat(t, g=0.6):
     add(t + 0.16, tone(52, 0.25, decay=16, f_end=38), g * 0.7)
 
 
-pad(0.0, 16.0, [55, 82.4, 110, 130.8], 0.09)
-pad(16.0, 25.0, [61.7, 92.5, 123.5, 146.8], 0.07)
-pad(25.0, 77.0, [65.4, 98, 130.8, 155.6], 0.06)
-pad(77.0, 96.0, [65.4, 98, 130.8, 164.8, 196], 0.07)
+if not os.environ.get('NO_PAD'):
+    pad(0.0, 16.0, [55, 82.4, 110, 130.8], 0.09)
+if not os.environ.get('NO_PAD'):
+    pad(16.0, 25.0, [61.7, 92.5, 123.5, 146.8], 0.07)
+if not os.environ.get('NO_PAD'):
+    pad(25.0, 77.0, [65.4, 98, 130.8, 155.6], 0.06)
+if not os.environ.get('NO_PAD'):
+    pad(77.0, 96.0, [65.4, 98, 130.8, 164.8, 196], 0.07)
 for a, b in ((0.3, 5.0), (27.6, 38.8), (45.6, 56.8), (63.6, 73.4), (77.0, 92.0)):
     t = a
     while t < b:
