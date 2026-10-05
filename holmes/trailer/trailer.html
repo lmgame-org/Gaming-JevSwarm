@@ -568,7 +568,7 @@ function chapSwarm(u) {
   const tr = D.truth || {};
   text(`truth: ${(tr.culprit || "").split(",")[0]} \u00b7 ${(tr.motive || "").split(":")[0].split(" for ")[0].replace("a stolen secret", "stolen papers")} \u00b7 ${(tr.hideout || "").split(", ").slice(1).join(", ")}`, px + pw / 2, 1010, {size: 22, color: "#7fd18b", alpha: prog(u, 12.6, 13.0)});
   stamp(SW.solved, u, 13.2, 470, 900);
-  caption(["The Jev swarm: a hundred boys, no leader. Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
+  caption(["The Jev swarm: a hundred boys, no leader.", "Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
   caption(["The Jev swarm agrees fast. But agreeing is not the same as being right."], u, 8.0, 13.0);
   titleCard("III.", "The Jev Swarm", "a hundred Jev boys, no leader", u);
 }
