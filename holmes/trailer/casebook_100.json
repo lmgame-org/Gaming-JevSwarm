@@ -27,5 +27,11 @@
   "d_sim": "\u22123.2 h (\u221229%)",
   "d_wall": "\u221292 s (\u221295%)",
   "caveat": "But on planned murders, where servants are bribed to lie, counting solves 0 of 20; gpt-6-astra solves 17."
+ },
+ "frameup": {
+  "solo": 59,
+  "baker": 93,
+  "swarm": 42,
+  "counting": 0
  }
 }

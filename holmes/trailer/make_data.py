@@ -87,16 +87,34 @@ def baker(run_dir):
 def swarm(run_dir):
     track = jsonl(os.path.join(run_dir, "track.jsonl"))
     summ = json.load(open(os.path.join(run_dir, "summary.json")))
+    case = json.load(open(os.path.join(run_dir, "case.json")))
+    b, truth = case["brief"], case["secret"]["truth"]
     o = summ["outcome"]
     want = [o["culprit"], o["motive"], o["hideout"]]
+    # every full vote (culprit, motive, hideout) gets an index; answers ranked by how many boys hold them at the end
+    final = {}
+    for vt in track[-1]["votes"]:
+        if all(vt):
+            final[tuple(vt)] = final.get(tuple(vt), 0) + 1
+    answers = sorted(final, key=lambda k: -final[k])[:4]
+
+    def name(k, v):
+        if k == 0:
+            return b["suspects"][v].split(",")[0]
+        if k == 1:
+            return b["motives"][v].split(":")[0].replace("revenge for an old wrong done by the victim", "revenge").replace("a stolen secret", "stolen papers")
+        return b["possible_hideouts"][v].split(",")[1].split("(")[0].strip() + ", " + b["possible_hideouts"][v].split(", a ")[-1]
+
+    labels = [{"parts": [name(k, v) for k, v in enumerate(a)],
+               "ok": [a[0] == truth["culprit"], a[1] == truth["motive"], a[2] == truth["hideout"]]} for a in answers]
     ticks = []
     for t in track:
         parts = [sum(int(v == w) for v, w in zip(vt, want)) for vt in t["votes"]]
-        ticks.append({"boys": t["boys"], "parts": parts, "shares": t["shares"], "wall": t["wall"], "minute": t["minute"],
-                      "truth_votes": sum(1 for p in parts if p == 3),
-                      "per": [sum(1 for vt in t["votes"] if vt[k] == want[k]) for k in range(3)]})
-    return {"ticks": ticks, "solved": summ["solved"], "ok": o["ok"], "quorum": o["quorum"], "minute": o["minute"],
-            "wall": wall_of(run_dir) or track[-1]["wall"]}
+        vote = [answers.index(tuple(vt)) if tuple(vt) in answers else (-2 if not all(vt) else -1) for vt in t["votes"]]
+        ticks.append({"boys": t["boys"], "parts": parts, "vote": vote, "shares": t["shares"], "wall": t["wall"],
+                      "minute": t["minute"], "truth_votes": sum(1 for p in parts if p == 3)})
+    return {"ticks": ticks, "answers": labels, "solved": summ["solved"], "ok": o["ok"], "quorum": o["quorum"],
+            "minute": o["minute"], "wall": wall_of(run_dir) or track[-1]["wall"]}
 
 
 def main():

@@ -18,7 +18,7 @@
    footage is the real benchmark runs of one case; every number is from the 100-case benchmark. System fonts only. */
 const D = window.DATA;
 const cv = document.getElementById("c"), g = cv.getContext("2d");
-const W = 1920, H = 1080, DUR = 94.5;
+const W = 1920, H = 1080, DUR = 96;
 const SERIF = "Baskerville, 'Libre Baskerville', Georgia, serif";
 const SANS = "'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif";   // small text: clearer than an italic serif
 const INK = "#2a1d12", CREAM = "#efe6cf", DIM = "#9c937e", RED = "#a3171d", GOLD = "#e0b357", PAPER = "#efe2c2";
@@ -168,7 +168,7 @@ const local = (fn, s0) => (t) => fn(t - s0);
 const SCENES = [[0, 5, stretch(night, 0, 5, 0, 4.6)], [5, 10.5, stretch(irregularsQuote, 5, 10.5, 4.6, 9.0)],
   [10.5, 16, stretch(minskyQuote, 10.5, 16, 9.0, 13.0)], [16, 25, local(experiment, 16)],
   [25, 43, local(chapLone, 25)], [43, 61, local(chapBaker, 43)], [61, 77, local(chapSwarm, 61)],
-  [77, 84, local(casebook2, 77)], [84, 90.5, local(countingHolmes, 84)], [90.5, 94.51, stretch(endCard, 90.5, 94.5, 43.0, 45.0)]];
+  [77, 84, local(casebook2, 77)], [84, 92, local(frameup, 84)], [92, 96.01, stretch(endCard, 92, 96, 43.0, 45.0)]];
 
 function skyline(y, col, seed) {   // London rooftops: chimneys, a dome and a clock tower
   const r = rng(seed); g.fillStyle = col; g.beginPath(); g.moveTo(0, H);
@@ -397,10 +397,10 @@ function miniClock(minutes, wall, alpha = 1, x = W - 400) {
   g.fillStyle = "rgba(239,230,207,0.2)"; g.fillRect(x + 30, 150, 310, 6); g.fillStyle = GOLD; g.fillRect(x + 30, 150, 310 * m / 720, 6);
   text(`real time ${secs(wall)}`, xr, 176, {size: 22, color: CREAM, align: "right", alpha});
 }
-function stamp(solved, u, a, cx = W / 2 + 300) {
+function stamp(solved, u, a, cx = W / 2 + 300, cy = H / 2 - 60) {
   if (u < a) return;
   const p = prog(u, a, a + 0.25), sc = 1.6 - 0.6 * ease(p), col = solved ? GOLD : "#e4836f", word = solved ? "SOLVED" : "UNSOLVED";
-  g.save(); g.globalAlpha = clamp(p * 1.4); g.translate(cx, H / 2 - 60); g.rotate(-0.08); g.scale(sc, sc);
+  g.save(); g.globalAlpha = clamp(p * 1.4); g.translate(cx, cy); g.rotate(-0.08); g.scale(sc, sc);
   g.font = `bold 110px ${SERIF}`; g.letterSpacing = "8px"; const w = g.measureText(word).width + 90;
   g.fillStyle = "rgba(6,8,11,0.85)"; g.fillRect(-w / 2, -85, w, 170); g.strokeStyle = col; g.lineWidth = 8; g.strokeRect(-w / 2, -85, w, 170);
   g.fillStyle = col; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(word, 0, 6); g.restore();
@@ -458,31 +458,46 @@ function chapBaker(u) {
   caption(["Twelve boys run his errands and bring back what they find."], u, 8.2, 13.6);
   titleCard("II.", "Holmes & the Irregulars", "gpt-6-astra leads twelve Jev boys", u);
 }
-const AGREE = ["#7d4a3a", "#c0603c", "#e39a3c", "#f5cf5a"];
+const ANS = ["#f2c14e", "#4f8fd1", "#b07ad9", "#5aa469"], OTHER = "#8a7f6a";   // one colour per answer the boys vote for
+function answerCard(i, x, y, alpha) {               // what a cluster converged to: three icons, each marked right or wrong
+  if (alpha <= 0) return;
+  const A = D.swarm.answers[i], w = 560, h = 180;
+  x = clamp(x - w / 2, MX + 20, MX + 1440 - w - 20); y = clamp(y - h - 30, MY + 30, MY + 1008 - h - 30);
+  g.save(); g.globalAlpha = alpha; g.fillStyle = "rgba(6,8,11,0.92)"; g.fillRect(x, y, w, h); g.strokeStyle = ANS[i]; g.lineWidth = 5; g.strokeRect(x, y, w, h); g.restore();
+  ["culprit", "motive", "hideout"].forEach((p, k) => {
+    const yy = y + 30 + k * 45, ok = A.ok[k];
+    g.save(); g.globalAlpha = alpha; partIcon(p, x + 34, yy, 30, ANS[i]); g.restore();
+    text(A.parts[k], x + 66, yy, {size: 26, align: "left", alpha});
+    text(ok ? "✓" : "✗", x + w - 30, yy, {size: 32, color: ok ? "#7fd18b" : "#e4836f", alpha});
+  });
+}
 function chapSwarm(u) {
-  const run = D.swarm.ticks, T = run.length - 1, f = ease(prog(u, CH.a, 12.0)), ft = f * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
+  const SW = D.swarm, run = SW.ticks, T = run.length - 1, f = ease(prog(u, CH.a, 11.5)), ft = f * T, i0 = Math.floor(ft), i1 = Math.min(T, i0 + 1), k = ft - i0;
   const A0 = run[i0], A1 = run[i1];
-  // the map, scaled into the left of the screen; the vote chart on the right
   g.fillStyle = "#0b0d10"; g.fillRect(0, 0, W, H);
   const sc = 0.8, ox = 40 - MX * sc, oy = 110 - MY * sc;
   g.save(); g.translate(ox, oy); g.scale(sc, sc);
   baseMap();
-  g.strokeStyle = "rgba(163,57,46,0.22)"; g.lineWidth = 2;
+  g.strokeStyle = "rgba(163,57,46,0.2)"; g.lineWidth = 2;
   for (const s of (A0.shares || []).slice(0, 25)) { const [x, y] = P(s); g.beginPath(); g.arc(x, y, 200 * MS * (0.25 + 0.75 * k), 0, 7); g.stroke(); }
+  const cent = SW.answers.map(() => [0, 0, 0]);
   A0.boys.forEach((p, j) => {
     const q = A1.boys[j] || p, pos = P([p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k]);
-    const parts = k < 0.5 ? A0.parts[j] : A1.parts[j], r = parts === 3 ? 10 : 7;
-    if (parts === 3) { const gl = g.createRadialGradient(pos[0], pos[1], 0, pos[0], pos[1], 36);
-      gl.addColorStop(0, "rgba(245,207,90,0.5)"); gl.addColorStop(1, "rgba(245,207,90,0)"); g.fillStyle = gl; g.fillRect(pos[0] - 50, pos[1] - 50, 100, 100); }
-    g.fillStyle = AGREE[parts]; g.beginPath(); g.arc(pos[0], pos[1], r, 0, 7); g.fill();
+    const v = k < 0.5 ? A0.vote[j] : A1.vote[j];
+    if (v >= 0) { cent[v][0] += pos[0]; cent[v][1] += pos[1]; cent[v][2]++; }
+    if (v === -2) { g.strokeStyle = "rgba(60,45,30,0.7)"; g.lineWidth = 2.5; g.beginPath(); g.arc(pos[0], pos[1], 6, 0, 7); g.stroke(); return; }
+    g.fillStyle = v >= 0 ? ANS[v] : OTHER; g.beginPath(); g.arc(pos[0], pos[1], 9, 0, 7); g.fill();
+    g.strokeStyle = "rgba(20,14,8,0.6)"; g.lineWidth = 1.5; g.stroke();
   });
+  // at the end: what each cluster converged to
+  SW.answers.forEach((_, i) => { if (cent[i][2] >= 5) answerCard(i, cent[i][0] / cent[i][2], cent[i][1] / cent[i][2], prog(u, 12.0 + i * 0.5, 12.4 + i * 0.5)); });
   g.restore();
-  // right panel
+  // right panel: votes for each answer over case time
   const px = 1240, pw = 640;
   g.fillStyle = "rgba(20,17,13,1)"; g.fillRect(px, 220, pw, 820); g.strokeStyle = "rgba(224,179,87,0.4)"; g.lineWidth = 2; g.strokeRect(px, 220, pw, 820);
   miniClock(A0.minute + (A1.minute - A0.minute) * k, A0.wall + (A1.wall - A0.wall) * k, prog(u, CH.a, CH.a + 0.4), px + pw - 370);
-  text("Votes: how many boys share the swarm's answer", px + pw / 2, 262, {size: 26, alpha: prog(u, CH.a, CH.a + 0.4)});
-  const x0 = px + 90, x1 = px + pw - 40, y0 = 760, y1 = 330, maxM = run[T].minute || 1;
+  text("Votes: each colour is one answer", px + pw / 2, 262, {size: 28, alpha: prog(u, CH.a, CH.a + 0.4)});
+  const x0 = px + 90, x1 = px + pw - 40, y0 = 700, y1 = 320, maxM = run[T].minute || 1;
   const X = (mm) => x0 + (x1 - x0) * mm / maxM, Y = (v) => y0 - (y0 - y1) * v / 100;
   g.strokeStyle = "rgba(239,230,207,0.4)"; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y1); g.lineTo(x0, y0); g.lineTo(x1, y0); g.stroke();
   [0, 50, 100].forEach((v) => text(String(v), x0 - 16, Y(v), {size: 22, color: DIM, align: "right"}));
@@ -491,18 +506,21 @@ function chapSwarm(u) {
   g.setLineDash([10, 8]); g.strokeStyle = "#e4836f"; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, Y(30)); g.lineTo(x1, Y(30)); g.stroke(); g.setLineDash([]);
   text("30 alike: case closed", x1, Y(30) - 18, {size: 22, color: "#e4836f", align: "right"});
   const n = Math.max(1, Math.floor(ft) + 1);
-  [[2, AGREE[2]], [3, AGREE[3]]].forEach(([key, col]) => {
-    const pts = run.slice(0, n).map((t) => [X(t.minute), Y(t.parts.filter((v) => v >= key).length)]);
-    g.strokeStyle = col; g.lineWidth = 6; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
-    const [lx, ly] = pts[pts.length - 1]; g.fillStyle = col; g.beginPath(); g.arc(lx, ly, 8, 0, 7); g.fill();
+  SW.answers.forEach((_, i) => {
+    const pts = run.slice(0, n).map((t) => [X(t.minute), Y(t.vote.filter((v) => v === i).length)]);
+    g.strokeStyle = ANS[i]; g.lineWidth = 6; g.beginPath(); pts.forEach(([x, y], j) => j ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
+    const [lx, ly] = pts[pts.length - 1]; g.fillStyle = ANS[i]; g.beginPath(); g.arc(lx, ly, 8, 0, 7); g.fill();
   });
-  // legend: what the colours mean
-  const lg = [[3, "all 3 match: culprit, motive and hideout"], [2, "2 of the 3 match"], [1, "1 of the 3 matches"], [0, "none match"]];
-  lg.forEach(([c, l], i) => { const y = 850 + i * 42; g.fillStyle = AGREE[c]; g.beginPath(); g.arc(px + 60, y, 11, 0, 7); g.fill();
-    text(l, px + 86, y, {size: 24, align: "left"}); });
-  stamp(D.swarm.solved, u, 12.4, 640);
+  // legend: the answers (culprit · motive · hideout) and the truth
+  SW.answers.forEach((A, i) => { const y = 790 + i * 44; g.fillStyle = ANS[i]; g.beginPath(); g.arc(px + 50, y, 12, 0, 7); g.fill();
+    text(A.parts.join(" · "), px + 76, y, {size: 22, align: "left"}); });
+  g.strokeStyle = "rgba(60,45,30,0.9)"; g.lineWidth = 2.5; g.beginPath(); g.arc(px + 50, 790 + SW.answers.length * 44, 8, 0, 7); g.stroke();
+  text("no full answer yet", px + 76, 790 + SW.answers.length * 44, {size: 22, color: DIM, align: "left"});
+  const tr = D.truth || {};
+  text(`truth: ${(tr.culprit || "").split(",")[0]} \u00b7 ${(tr.motive || "").split(":")[0]} \u00b7 ${(tr.hideout || "").split(", ").slice(1).join(", ")}`, px + pw / 2, 1010, {size: 22, color: "#7fd18b", alpha: prog(u, 12.6, 13.0)});
+  stamp(SW.solved, u, 13.2, 470, 900);
   caption(["A hundred boys, no leader. Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
-  caption(["They agree fast. But agreeing is not the same as being right."], u, 8.0, 12.6);
+  caption(["They agree fast. But agreeing is not the same as being right."], u, 8.0, 13.0);
   titleCard("III.", "The Swarm", "a hundred Jev boys, no leader", u);
 }
 function casebook2(u) {
@@ -529,23 +547,22 @@ function casebook2(u) {
   text("The genius thinks. The Irregulars look. Together, they solve it.", W / 2, 980, {size: 50, style: "italic", alpha: prog(u, 5.0, 5.6)});
   vignette(0.5);
 }
-function countingHolmes(u) {                    // what if Holmes only counts the clues?
-  fog(u + 75.5, 0.5, false);
-  const al = Math.min(prog(u, 0, 0.5), 1 - prog(u, 6.5, 7.0)), C = TB.counting || {};
-  text("And if Holmes simply counts the clues?", W / 2, 170, {size: 64, alpha: al});
-  text("Same twelve Jev boys; Holmes replaced by a simple counting rule.", W / 2, 245, {size: 32, color: DIM, alpha: al * prog(u, 0.6, 1.0)});
-  const cols = [760, 1120, 1480], heads = ["solved", "case time", "real time"];
-  heads.forEach((h, i) => text(h, cols[i], 360, {size: 30, color: DIM, alpha: al}));
-  const rows = [["Holmes: gpt-6-astra", (TB.rows || {}).baker || {}], ["Holmes: counting", C]];
-  rows.forEach(([who, v], i) => {
-    const y = 470 + i * 130, r = al * prog(u, 1.0 + i * 0.8, 1.5 + i * 0.8);
-    text(who, 200, y, {size: 44, align: "left", alpha: r});
-    [String(v.solved), v.sim, v.wall].forEach((x, j) => text(x || "?", cols[j], y, {size: 56, color: i ? GOLD : CREAM, alpha: r}));
+function frameup(u) {                          // the same three methods when somebody lies
+  fog(u + 84, 0.5, false);
+  const al = Math.min(prog(u, 0, 0.5), 1 - prog(u, 7.5, 8.0)), F = TB.frameup || {};
+  text("Then somebody lies.", W / 2, 150, {size: 76, alpha: al});
+  text("100 more murders. Each time the murderer bribes his servants to frame an innocent man.", W / 2, 240, {size: 32, color: DIM, alpha: al * prog(u, 0.5, 1.0)});
+  const rows = [["The Lone Genius", F.solo, CREAM], ["Holmes & the Irregulars", F.baker, GOLD], ["The Swarm", F.swarm, CREAM],
+    ["A Holmes who only counts clues", F.counting, "#e4836f"]];
+  rows.forEach(([who, n, col], i) => {
+    const y = 380 + i * 120, r = al * ease(prog(u, 1.2 + i * 0.5, 2.6 + i * 0.5));
+    text(who, 880, y, {size: i === 3 ? 38 : 48, align: "right", alpha: al * prog(u, 1.0 + i * 0.5, 1.4 + i * 0.5), color: i === 3 ? "#e4836f" : CREAM});
+    g.fillStyle = "rgba(239,230,207,0.12)"; g.fillRect(920, y - 24, 600, 48);
+    g.fillStyle = col; g.fillRect(920, y - 24, 600 * (n || 0) / 100 * r, 48);
+    text(`${Math.round((n || 0) * r)}`, 1550, y, {size: 50, color: col, align: "left", alpha: r > 0 ? al : 0});
   });
-  const d = al * prog(u, 3.0, 3.6);
-  [C.d_solved, C.d_sim, C.d_wall].forEach((x, j) => text(x || "", cols[j], 720, {size: 34, color: GOLD, alpha: d}));
-  text("as accurate on these cases, and far faster", W / 2, 820, {size: 40, alpha: al * prog(u, 3.8, 4.3)});
-  text(C.caveat || "", W / 2, 900, {size: 32, color: "#e4836f", alpha: al * prog(u, 4.8, 5.3)});
+  text("solved, out of 100", 1220, 320, {size: 24, color: DIM, alpha: al});
+  text("Reasoning sees through the lie. Helpers cover the ground. Holmes & the Irregulars do both.", W / 2, 920, {size: 38, color: GOLD, alpha: al * prog(u, 4.6, 5.2)});
   vignette();
 }
 function render(t) {
