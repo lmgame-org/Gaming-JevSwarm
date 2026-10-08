@@ -1,41 +1,49 @@
-# Publishing the interactive site on GitHub Pages (free)
+# Publishing the site at https://snyhlx.github.io/the_irregulars_detective_game/
 
-The site in `release/site/` is plain static files (HTML, CSS, JS and JSON traces, about 30 MB with the trailer), so GitHub Pages can host it for free.
-GitHub Pages is free for **public** repositories. `jev-swarm` is private, so publish the site from a separate public repository.
+GitHub Pages does not hand out subdomains like `something.snyhlx.github.io`. Everything under your account is served as a
+**path** on `snyhlx.github.io`, so the address will be:
 
-## 1. Create a public repository
-On github.com: New repository → name it e.g. `irregulars` → **Public** → Create (no README needed).
+    https://snyhlx.github.io/the_irregulars_detective_game/          (replays)
+    https://snyhlx.github.io/the_irregulars_detective_game/blog.html (blog + trailer)
 
-## 2. Push the site folder to it
-From the `jev-swarm/holmes` folder:
+Your user site (`snyhlx/snyhlx.github.io`, branch `main`, root folder) is already live, so either option below works.
+The site is static (HTML/CSS/JS + JSON traces + the trailer, ~30 MB).
 
-```bash
-cp -R release/site /tmp/irregulars-site
-cd /tmp/irregulars-site
-touch .nojekyll                      # serve files as-is
-git init -b main
-git add .
-git commit -m "The Irregulars: interactive case replays"
-git remote add origin https://github.com/<your-user>/irregulars.git
-git push -u origin main
-```
-
-## 3. Turn on Pages
-Repository → **Settings** → **Pages** → *Build and deployment* → Source: **Deploy from a branch** → Branch: **main**, folder **/ (root)** → Save.
-After a minute the site is live at `https://<your-user>.github.io/irregulars/`.
-
-- Replays: `https://<your-user>.github.io/irregulars/`
-- Blog (with the trailer embedded): `https://<your-user>.github.io/irregulars/blog.html`
-
-## 4. Updating
-Re-run the exporters, copy the folder again, commit and push:
+## Option A (recommended): a project repo with the same name
+A repository called `the_irregulars_detective_game` with Pages turned on is served automatically at
+`snyhlx.github.io/the_irregulars_detective_game/`, and it keeps the 30 MB of traces out of your main site's repo.
 
 ```bash
-python3 release/export_traces.py     # rebuild site/data from the benchmark runs
-python3 release/build_blog.py        # rebuild site/blog.html from blog.md
+cd jev-swarm/holmes
+rm -rf /tmp/the_irregulars_detective_game && cp -R release/site /tmp/the_irregulars_detective_game
+cd /tmp/the_irregulars_detective_game
+touch .nojekyll
+git init -b main && git add . && git commit -m "The Irregulars detective game: replays, blog, trailer"
+gh repo create snyhlx/the_irregulars_detective_game --public --source . --push
+gh api -X POST repos/snyhlx/the_irregulars_detective_game/pages -f "source[branch]=main" -f "source[path]=/"
 ```
 
-## Notes
-- Files must be under 100 MB each (the trailer is ~20 MB); the whole site is ~30 MB, well within Pages limits.
-- Test locally first: `cd release/site && python3 -m http.server 8790`, then open http://localhost:8790.
-- If you prefer, host the trailer on YouTube and replace `media/the_irregulars_trailer.mp4` links with the YouTube URL.
+(Or in the browser: create the repo, push, then Settings → Pages → Deploy from a branch → `main` / root.)
+Pages from a private repo also works on your plan; drop `--public` if you want the source private.
+
+## Option B: a folder inside snyhlx.github.io
+Everything in the user-site repo is served as-is, so a folder becomes a path:
+
+```bash
+git clone https://github.com/snyhlx/snyhlx.github.io.git /tmp/userpage
+cp -R jev-swarm/holmes/release/site /tmp/userpage/the_irregulars_detective_game
+cd /tmp/userpage && git add the_irregulars_detective_game && git commit -m "Add The Irregulars detective game" && git push
+```
+
+If that repo builds with Jekyll (it does unless it has a `.nojekyll`), the folder is still copied through unchanged.
+
+## A real subdomain
+Only with your own domain: add a `CNAME` file (e.g. `irregulars.example.com`) to the project repo, set the domain under
+Settings → Pages, and create a DNS CNAME record `irregulars → snyhlx.github.io`.
+
+## Updating
+```bash
+python3 release/export_traces.py   # rebuild site/data from the benchmark runs
+python3 release/build_blog.py      # rebuild site/blog.html from blog.md
+```
+then copy `release/site` again, commit and push. Test locally first: `cd release/site && python3 -m http.server 8790`.
