@@ -16,6 +16,7 @@ from swarmcore.web import Broadcaster, redact
 
 from . import kb
 from .case import Case
+from .chip import ChipCase
 from .config import LIVE_KEYS, coerce
 from .leader import BakerStreet
 from .solo import Solo
@@ -30,6 +31,10 @@ class Stop(Exception):
 
 
 def setting_name(c):
+    return ("v3_" if c.get("tier") == "v3" else "") + _setting(c)
+
+
+def _setting(c):
     if c["mode"] == "solo":
         return f"solo_{c['solo_policy']}"
     if c["mode"] == "leader":
@@ -44,7 +49,9 @@ class Engine:
         self.realtime = realtime
         self.mode = c["mode"]
         self.setting = setting_name(c)
-        self.case = Case(c)
+        self.case = ChipCase(c) if c["tier"] == "v3" else Case(c)
+        self.v3 = c["tier"] == "v3"
+        self.bench = []             # v3: ticks at which busy bench slots free up
         self.deadline = max(1, int(round(c["deadline_hours"] * 60 / c["tick_min"])))
         self.prng = random.Random(f"probe-{c['seed']}")
         self.pool = ThreadPoolExecutor(max_workers=max(1, c["concurrency"]))
@@ -127,10 +134,27 @@ class Engine:
                 out.append(None)
         return out
 
+    def bench_free(self):
+        """v3: is a bench slot free this tick?"""
+        if not self.v3:
+            return True
+        t = self.game_tick()
+        self.bench = [x for x in self.bench if x > t]
+        return len(self.bench) < self.cfg["bench_slots"]
+
+    def drive_cost(self):
+        """Extra ticks a bench drive takes beyond the first (v3), and the slot it holds."""
+        return self.cfg["drive_ticks"] - 1 if self.v3 else 0
+
     def probe(self, who, spec, quiet=False):
         rng = random.Random(self.prng.random())
-        p = self.case.check(spec["block"], spec["cycle"], rng) if spec["type"] == "check" else \
-            self.case.drive(spec["block"], spec["kind"], rng)
+        if spec["type"] == "check":
+            p = self.case.check(spec["block"], spec["cycle"], rng)
+        elif self.v3:
+            self.bench.append(self.game_tick() + self.cfg["drive_ticks"])
+            p = self.case.drive(spec["block"], spec["kind"], rng, spec.get("cycle"))
+        else:
+            p = self.case.drive(spec["block"], spec["kind"], rng)
         where = f"cycles {p['window'][0]}-{p['window'][1]}" if p["type"] == "check" else f"bench, {p['kind']}"
         self.log_probe(who, p, f"#{who} {'checks' if p['type'] == 'check' else 'drives'} {p['block']} ({where})"
                        + (": MISMATCH" if p["mismatch"] else ""), quiet=quiet)

@@ -2,6 +2,13 @@
 from swarmcore.keys import CHAT_KEY_CANDIDATES, JEV_KEY_CANDIDATES, first_key
 
 DEFAULTS = {
+    # difficulty tier: easy and v2 are the single 96-block CPU; v3 is the 12-core chip
+    "tier": "v2",                # easy | v2 | v3
+    "n_cores": 12,
+    "wire_frac": 0.35,           # v3: share of bugs on a wire between two blocks (delay or bus convention)
+    "rare_mod": 4,               # v3: a rare-trigger bug fires for one input pattern in this many
+    "bench_slots": 2,            # v3: bench drives that can run at the same time, for the whole team
+    "drive_ticks": 3,            # v3: ticks one bench drive takes
     # run
     "mode": "leader",            # solo | leader (Baker Street) | swarm
     "seed": 1,
@@ -75,9 +82,12 @@ PRESETS = {
     "solo_rule": {"label": "Solo rule (cone tracing)", "overrides": {"mode": "solo"}},
     "swarm_rule": {"label": "Swarm: 100 rule Irregulars", "overrides": {"mode": "swarm"}},
     "swarm_jev": {"label": "Swarm: 100 Jev Irregulars", "overrides": {"mode": "swarm", "swarm_policy": "jev"}},
-    "easy": {"label": "The original easy setting (first wrong instruction, no noise, no liars)",
-             "overrides": {"failure_info": "first", "test_pick": "shortest", "window": 4, "noise": 0.0,
+    "easy": {"label": "Easy: the original setting (first wrong instruction, no noise, no liars)",
+             "overrides": {"tier": "easy", "failure_info": "first", "test_pick": "shortest", "window": 4, "noise": 0.0,
                            "rare_frac": 0.0, "double_frac": 0.0, "liar_frac": 0.0, "probe_budget": 40}},
+    "v2": {"label": "v2: hardened single CPU (96 blocks)", "overrides": {"tier": "v2"}},
+    "v3": {"label": "v3: 12-core chip (1,187 blocks), wire bugs, scarce bench, innocent fixes penalised",
+           "overrides": {"tier": "v3"}},
 }
 
 SCHEMA = [
@@ -85,6 +95,15 @@ SCHEMA = [
         ("mode", "Who debugs", "choice", MODES),
         ("seed", "Bug number (same number, same bug)", "int", {"min": 0}),
         ("speed", "Playback speed (ticks per second)", "float", {"min": 0.1, "max": 30}),
+    ]),
+    ("Difficulty tier", [
+        ("tier", "Tier", "choice", {"easy": "easy: the original single CPU", "v2": "v2: hardened single CPU",
+                                    "v3": "v3: 12-core chip with wire bugs"}),
+        ("n_cores", "v3: cores on the chip", "int", {"min": 2, "max": 16}),
+        ("wire_frac", "v3: wire bugs (share, 0-1)", "float", {"min": 0, "max": 1}),
+        ("rare_mod", "v3: a rare trigger fires 1 time in", "int", {"min": 2, "max": 16}),
+        ("bench_slots", "v3: bench slots shared by the team", "int", {"min": 1, "max": 20}),
+        ("drive_ticks", "v3: ticks per bench drive", "int", {"min": 1, "max": 10}),
     ]),
     ("The bug (hardening)", [
         ("bug_type", "Kind of bug", "choice", BUG_TYPES),
@@ -143,8 +162,15 @@ SCHEMA = [
 LIVE_KEYS = {"speed"}
 
 
+# v3 changes these defaults unless the caller sets them (a bigger chip needs a wider window, a longer clock and a
+# quorum the scattered swarm can reach)
+V3_DEFAULTS = {"window": 4, "deadline_hours": 8.0, "quorum_frac": 0.12, "probe_budget": 32}
+
+
 def coerce(cfg):
     out = dict(DEFAULTS)
+    if (cfg or {}).get("tier") == "v3" or ((cfg or {}).get("preset") == "v3"):
+        out.update({k: v for k, v in V3_DEFAULTS.items() if k not in (cfg or {})})
     pre = (cfg or {}).get("preset")
     if pre in PRESETS:
         out.update(PRESETS[pre]["overrides"])
@@ -164,7 +190,8 @@ def coerce(cfg):
         except (TypeError, ValueError):
             pass
     for k, opts in (("mode", MODES), ("solo_policy", SOLO_POLICIES), ("holmes", HOLMES), ("boy_policy", BOYS),
-                    ("swarm_policy", SWARM_POLICIES), ("bug_type", BUG_TYPES)):
+                    ("swarm_policy", SWARM_POLICIES), ("bug_type", BUG_TYPES),
+                    ("tier", {"easy": 1, "v2": 1, "v3": 1})):
         if out[k] not in opts:
             out[k] = DEFAULTS[k]
     return out

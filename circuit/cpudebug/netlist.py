@@ -405,10 +405,25 @@ def trig_active(inp, m):
     return h % m == 0
 
 
+def wire_xform(kind, now, prev, width):
+    """What a faulty wire delivers: `delay` = last cycle's value (a load-timing bug); `convention` = the receiver
+    reads the bus with the other bit order (multi-bit) or polarity (one bit) (an interface mismatch)."""
+    if kind == "delay":
+        return prev
+    if width <= 1:
+        return 1 - (now & 1)
+    out = 0
+    for i in range(width):
+        if (now >> i) & 1:
+            out |= 1 << (width - 1 - i)
+    return out
+
+
 class CPU:
-    def __init__(self, blocks, fault=None):
+    def __init__(self, blocks, fault=None, wires=None):
         self.blocks = blocks
         self.by = {b.name: b for b in blocks}
+        self.wires = dict(wires or {})   # (receiver block, port) -> "delay" | "convention"
         self.faults = list(fault) if isinstance(fault, list) else ([fault] if fault else [])
         self.fault = self.faults[0] if self.faults else None
         self.trig = {f["block"]: f.get("trigger") for f in self.faults if f.get("trigger")}
@@ -453,11 +468,22 @@ class CPU:
         state["dmem"] = mem
         P = {b.name: self.params(b) for b in self.blocks}
         SP = {name: self.by[name].eff(None) for name in self.trig}
-        vals, states, halted = [], [], None
+        vals, states, halted, wired = [], [], None, []
+        W = self.wires
+        wb = {}
+        for (blk, port) in W:
+            d, dp = self.drivers[self.by[blk].ins[port]]
+            wb.setdefault(blk, []).append((port, self.by[d].outs[dp]))
+        prev = {}
         for c in range(max_cycles):
             v = {}
+            over = {}
             for b in self.order:
                 inp = {port: v.get(n, 0) for port, n in b.ins.items()}
+                for port, width in wb.get(b.name, ()):
+                    net = b.ins[port]
+                    inp[port] = wire_xform(W[(b.name, port)], v.get(net, 0), prev.get(net, 0), width)
+                    over[(b.name, port)] = inp[port]
                 if b.name in SP and not trig_active(inp, self.trig[b.name]):
                     out = b.eval(SP[b.name], inp, state.get(b.name))
                 else:
@@ -465,30 +491,43 @@ class CPU:
                 for port, x in out.items():
                     v[b.net(port)] = x
             vals.append(v)
+            wired.append(over)
             states.append({k: (tuple(s) if isinstance(s, list) else s) for k, s in state.items() if k != "imem"})
             for b in self.blocks:
                 if b.seq:
                     inp = {port: v[n] for port, n in b.ins.items()}
+                    for port, width in wb.get(b.name, ()):
+                        inp[port] = over[(b.name, port)]
                     state[b.name] = b.nxt(P[b.name], inp, state[b.name])
+            prev = v
             if v["memwb_halt.q"] and v["memwb_valid.q"]:
                 halted = c
                 break
         final = {b.name: (list(s) if isinstance(s, list) else s) for b in self.blocks if b.seq
                  for s in [state[b.name]]}
-        return Trace(self, prog, vals, states, halted, final)
+        tr = Trace(self, prog, vals, states, halted, final)
+        tr.wired = wired
+        return tr
 
 
 class Trace:
     def __init__(self, cpu, prog, vals, states, halted, final):
         self.cpu, self.prog, self.vals, self.states, self.halted = cpu, prog, vals, states, halted
+        self.wired = None
         self.regs = [final[f"r{k}"] for k in range(8)]
         self.regs[0] = 0 if self.regs[0] is None else self.regs[0]
         self.mem = final["dmem"]
         self.n = len(vals)
 
     def inputs(self, block, c):
+        """What the block actually received (a faulty wire may deliver something other than the driver sent)."""
         b = self.cpu.by[block]
-        return {port: self.vals[c][n] for port, n in b.ins.items()}
+        out = {port: self.vals[c][n] for port, n in b.ins.items()}
+        if self.wired:
+            for (blk, port), x in self.wired[c].items():
+                if blk == block:
+                    out[port] = x
+        return out
 
     def outputs(self, block, c):
         b = self.cpu.by[block]

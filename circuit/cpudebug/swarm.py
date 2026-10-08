@@ -96,25 +96,63 @@ class Swarm:
         R = self.cfg["comm_range"]
         return [x for x in self.agents if x is not a and d.get(x.pos, 99) <= R]
 
+    def checkables(self, a):
+        """What an Irregular standing on a block can probe: the block itself, and on the v3 chip also the wires that
+        arrive at it and its own core's signature."""
+        out = [a.pos]
+        case = self.case
+        if getattr(case, "tier", "") == "v3":
+            k = case.core_of(a.pos)
+            if k is not None:
+                out.append(f"SIG:c{k}")
+                loc = case.local(a.pos)
+                base = case.core_by.get(loc)
+                if base is not None:
+                    out += [f"L:c{k}:{loc}.{p}" for p in base.ins]
+        return out
+
     def cand_cycles(self, a):
-        b = a.pos
-        if self.case.by[b].trusted:
-            return []
-        sl = self.case.slice_cycles().get(b) or []
-        if not sl or a.checked[b] >= 6 or (a.checked[b] >= 3 and not a.nb.block_view(b)["bad"]):
-            return []
-        if self.cfg["liar_defence"] and not a.nb.verified(b):
-            bad = [k for k in a.nb.block_view(b)["bad"] if not isinstance(k, tuple)]
-            if bad and a.checked[b] < 6:
-                return bad[:1]  # reproduce a mismatch here (heard or my own) before anything else
-        cleared = a.nb.block_view(b)["cleared"]
-        done = a.done_cycles.get(b, set())
-        out = [c for c in sl if c not in cleared and c not in done]
-        if not out:
-            return []
-        # spread: the latest few, plus a random earlier one
-        pick = out[-2:] + ([a.rng.choice(out[:-2])] if len(out) > 2 else [])
-        return sorted(set(pick))
+        """[(name, cycle)] worth probing from here, best first."""
+        out = []
+        for b in self.checkables(a):
+            if self.case.by[b].trusted:
+                continue
+            if b.startswith("SIG:"):
+                if not a.nb.rows.get(b) and a.checked[b] < 2:
+                    out.append((b, self.case.n - 1))
+                continue
+            sl = self.case.slice_cycles().get(b) or []
+            if getattr(self.case, "tier", "") == "v3":
+                k = self.case.core_of(b)
+                if k is None or b.endswith("sig_mix"):
+                    sl = [self.case.n - 1]                     # the signature fabric: look at the end of the run
+                elif not a.nb.block_view(f"SIG:c{k}")["bad"]:
+                    continue                                   # nobody has told me this core went wrong
+            if not sl or a.checked[b] >= 6 or (a.checked[b] >= 3 and not a.nb.block_view(b)["bad"]):
+                continue
+            if self.cfg["liar_defence"] and not a.nb.verified(b):
+                bad = [k for k in a.nb.block_view(b)["bad"] if not isinstance(k, tuple)]
+                if bad:
+                    out.insert(0, (b, bad[0]))  # reproduce a mismatch here (heard or my own) before anything else
+                    continue
+            cleared = a.nb.block_view(b)["cleared"]
+            done = a.done_cycles.get(b, set())
+            todo = [c for c in sl if c not in cleared and c not in done]
+            if not todo:
+                continue
+            # spread: the latest few, plus a random earlier one
+            pick = todo[-2:] + ([a.rng.choice(todo[:-2])] if len(todo) > 2 else [])
+            out += [(b, c) for c in sorted(set(pick))]
+        sig = [x for x in out if x[0].startswith("SIG:")]
+        return sig + [x for x in out if not x[0].startswith("SIG:")]
+
+    def anchor(self, name):
+        """The real block where a wire or a core signature can be probed from."""
+        if name.startswith("L:"):
+            return self.case.by[name].dst[0]
+        if name.startswith("SIG:"):
+            return f"c{self.case.by[name].core}.sig_mix"
+        return name
 
     def moves(self, a):
         """Neighbouring blocks, best first: unexplored back-trace blocks, then towards suspects, then the rest."""
@@ -152,7 +190,7 @@ class Swarm:
             return ("SHARE", None)
         cc = self.cand_cycles(a)
         if cc:
-            return ("CHECK", cc[-1])
+            return ("CHECK", cc[0] if cc[0][0].startswith("SIG:") or cc[0][0] != a.pos else cc[-1])
         tgt = self.target(a) if chase else None
         if tgt and tgt != a.pos:
             d = self.case.hops_from(tgt)
@@ -172,7 +210,7 @@ class Swarm:
                 continue
             if d.get(b, 99) <= 8 and (best is None or d.get(b, 99) < d.get(best, 99)):
                 best = b
-        return best
+        return self.anchor(best) if best else None
 
     def rule_vote(self, a):
         defence = self.cfg["liar_defence"]
@@ -207,7 +245,8 @@ class Swarm:
             state = "measured bad twice by others" if v["confirmed"] else "measured bad once (glitch or bug?)"
             here = b == a.pos
             opts[f"GO_{b}"] = ((f"measure {b} here yourself" if here else
-                                f"go to {b} ({d.get(b, '?')} wires away; {state}) and measure it yourself"), ("GO", b))
+                                f"go to {b} ({d.get(b, '?')} wires away; {state}) and measure it yourself"),
+                               ("GO", self.anchor(b)))
         opts["TRACE"] = ("ignore it for now and keep tracing the failure back from where you are", ("TRACE", None))
         if a.unshared:
             opts["SHARE"] = (f"share your {len(a.unshared)} newest measurements with Irregulars in range", ("SHARE", None))
@@ -253,7 +292,7 @@ class Swarm:
                 a.plan = None
             return ("MOVE", nxt)
         if kind == "CHECKS":
-            todo = [c for c in arg if c not in a.done_cycles.get(a.pos, set())]
+            todo = [x for x in arg if x[1] not in a.done_cycles.get(x[0], set())]
             if not todo:
                 a.plan = None
                 return ("WAIT", None)
@@ -325,11 +364,12 @@ class Swarm:
         kind, arg = act
         a.action = kind
         if kind == "CHECK":
-            p = self.eng.probe(a.id, {"type": "check", "block": a.pos, "cycle": arg}, quiet=True)
+            name, cyc = arg if isinstance(arg, tuple) else (a.pos, arg)
+            p = self.eng.probe(a.id, {"type": "check", "block": name, "cycle": cyc}, quiet=True)
             a.pid += 1
             a.nb.add_probe(p, a.id, a.pid)
-            a.checked[a.pos] += 1
-            a.done_cycles.setdefault(a.pos, set()).add(arg)
+            a.checked[name] += 1
+            a.done_cycles.setdefault(name, set()).add(cyc)
             a.unshared.append(p)
             a.unshared = a.unshared[-4:]
         elif kind == "MOVE" and arg:

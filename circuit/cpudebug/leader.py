@@ -87,13 +87,14 @@ class BakerStreet:
         self.post = 6
         self.new_reports = 0
         self.report_log = []       # viewer: (tick, boy, block, mismatch)
+        self.pending = {}          # v3: block -> tick it was last sent out (not re-sent while its report is on the way)
         self.calls = 0
         self.pid = 0
         self.plans = 0
         self.wiggins = c["wiggins"]
         if c["holmes"] == "chat":
             self.chat = LLMClient("openai", c["chat_model"], c["chat_key"], timeout=180, temperature=0.2)
-            self.system = HOLMES_SYSTEM.format(primer=kb.CPU_PRIMER, netlist=kb.netlist_text(self.case))
+            self.system = HOLMES_SYSTEM.format(primer=kb.primer(self.case), netlist=kb.netlist_text(self.case))
         if c["boy_policy"] == "jev":
             self.jev = JevClient(c["jev_provider"], c["jev_model"], c["jev_key"], timeout=c["request_timeout_s"])
 
@@ -137,6 +138,7 @@ class BakerStreet:
             self.pid += 1
             self.nb.add_probe(p, bid, self.pid, first_hand=False)
             self.report_log.append({"tick": self.tick, "boy": bid, "block": p["block"], "bad": bool(p["mismatch"])})
+            self.pending.pop(p["block"], None)
             self.eng.event("report", f"boy #{bid}: {p['block']} " + ("does NOT match its spec" if p["mismatch"]
                                                                        else "matches its spec"), block=p["block"])
         self.new_reports += 1
@@ -173,6 +175,8 @@ class BakerStreet:
 
     def rule_errands(self, n):
         tasks, taken = [], {it[0] for b in self.boys if b.busy() for it in b.errand["items"]}
+        if self.eng.v3:
+            taken |= {b for b, t in self.pending.items() if self.tick - t < 6}
         for b, v in self.nb.suspects():
             if v["confirmed"] or b in taken:
                 continue
@@ -268,9 +272,11 @@ class BakerStreet:
                 continue
             e = self.queue.pop(idx)
             boy.errand, boy.done_items, boy.notes, boy.rechecked = e, set(), [], set()
+            for it in e["items"]:
+                self.pending[it[0]] = self.tick
             first = e["items"][0][0]
             boy.travel = 1 if (self.wiggins and abs(self.case.col(first) - self.post) <= 3) else 2 if self.case.col(first) > 5 else 1
-            boy.pos, boy.status, boy.last = first, "walking", e["why"]
+            boy.pos, boy.status, boy.last = self.anchor(first), "walking", e["why"]
         if self.wiggins:
             busy = [self.case.col(it[0]) for b in self.boys if b.busy() for it in b.errand["items"]]
             if busy:
@@ -284,6 +290,8 @@ class BakerStreet:
                 opts[f"C{i}"] = (f"check {b} at cycle {c}: {self.case.by[b].spec}", {"type": "check", "block": b, "cycle": c})
         for p in boy.notes:
             if p["mismatch"] and p["block"] not in boy.rechecked:
+                if p["type"] != "check" and not self.eng.bench_free():
+                    continue
                 spec = {"type": "check", "block": p["block"], "cycle": p["cycle"]} if p["type"] == "check" else \
                     {"type": "drive", "block": p["block"], "kind": p["kind"]}
                 opts[f"R_{p['block']}"] = (f"re-measure {p['block']}: it mismatched once (glitch or bug?)", spec)
@@ -339,14 +347,25 @@ class BakerStreet:
                 continue
             spec = opts[act][1]
             p = self.eng.probe(boy.id, spec)
+            if spec["type"] == "drive":
+                boy.travel += self.eng.drive_cost()
             boy.notes.append(p)
-            boy.pos, boy.status, boy.last = spec["block"], "probing", opts[act][0]
+            boy.pos = spec["block"] if spec["block"] in self.case.by and not spec["block"].startswith(("L:", "SIG:")) else \
+                self.anchor(spec["block"])
+            boy.status, boy.last = "probing", opts[act][0]
             if act.startswith("C"):
                 boy.done_items.add(int(act[1:]))
             else:
                 boy.rechecked.add(spec["block"])
             if len(boy.done_items) == len(boy.errand["items"]) and not any(k.startswith("R_") for k in self.options(boy)):
                 self.send_back(boy)
+
+    def anchor(self, name):
+        if name.startswith("L:"):
+            return self.case.by[name].dst[0]
+        if name.startswith("SIG:"):
+            return f"c{self.case.by[name].core}.sig_mix"
+        return name
 
     def send_back(self, boy):
         rep = [self.lie(p) if boy.liar else p for p in boy.notes]

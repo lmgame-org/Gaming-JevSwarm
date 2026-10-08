@@ -22,6 +22,7 @@ DRIVE_KINDS = {
     "sweep": "drive it alone sweeping the select / opcode input through every value with distinct data on each input",
     "boundary": "drive it alone with boundary pairs (a = b, a = b +- 1, 0 and 255)",
     "random": "drive it alone with ten random input vectors",
+    "trace": "drive it alone replaying the inputs it saw around a cycle of the failing test (v3)",
 }
 
 
@@ -40,6 +41,7 @@ class Notebook:
         self.order = []           # (block, key, srcpid) in arrival order, for the memory cap
         self.distrust = set()
         self.strikes = Counter()
+        self._struck = {}
         self.version = 0
 
     # ------------------------------------------------------------------ input
@@ -78,6 +80,18 @@ class Notebook:
         if w[True] == w[False]:
             return
         maj = w[True] > w[False]
+        if getattr(self.case, "tier", "") == "v3":
+            # v3: a source is struck only when every reading it gave here was outvoted (one glitch among its own
+            # agreeing readings is noise, not a lie); each source is struck at most once per key
+            by_src = {}
+            for sp, r in live.items():
+                by_src.setdefault(sp[0], []).append(r["ok"] == maj)
+            done = self._struck.setdefault((b, key), set())
+            for src, agree in by_src.items():
+                if src != self.owner and not any(agree) and src not in done:
+                    done.add(src)
+                    self.strike(src)
+            return
         for sp, r in live.items():
             if r["ok"] != maj and sp[0] != self.owner:
                 self.strike(sp[0])
@@ -102,6 +116,8 @@ class Notebook:
 
     # ------------------------------------------------------------------ verdicts
     def tally(self, b, key):
+        if getattr(self.case, "tier", "") == "v3":
+            return self._tally_v3(b, key)
         ok = bad = 0
         srcs = set()
         for sp, r in self.rows.get(b, {}).get(key, {}).items():
@@ -112,6 +128,28 @@ class Notebook:
             else:
                 bad += 2 if r["first"] else 1
                 srcs.add(sp[0])
+        return ok, bad, srcs
+
+    def _tally_v3(self, b, key):
+        """v3: each source counts once per key. Its readings agree with each other except for glitches: a source that
+        read the key clean at least once, and never twice with the same wrong value, counts as clean."""
+        per = {}
+        for sp, r in self.rows.get(b, {}).get(key, {}).items():
+            if sp[0] in self.distrust:
+                continue
+            per.setdefault(sp[0], []).append(r)
+        ok = bad = 0
+        srcs = set()
+        for src, rs in per.items():
+            outs = [json.dumps(r["out"], sort_keys=True) for r in rs if not r["ok"]]
+            repeated = len(outs) > len(set(outs))
+            clean = any(r["ok"] for r in rs) and not repeated
+            w = 2 if any(r["first"] for r in rs) else 1
+            if clean:
+                ok += w
+            else:
+                bad += w
+                srcs.add(src)
         return ok, bad, srcs
 
     def block_view(self, b):
@@ -168,7 +206,44 @@ class Notebook:
         return list(self.rows)
 
     def cleared(self):
-        return {b: v["cleared"] for b in self.rows for v in [self.block_view(b)] if v["cleared"]}
+        out = {b: v["cleared"] for b in self.rows for v in [self.block_view(b)] if v["cleared"]}
+        if getattr(self.case, "tier", "") == "v3":
+            for name, cyc in self.implied_links():
+                out.setdefault(name, set()).add(cyc)
+        return out
+
+    def implied_links(self):
+        """v3 cross-block reasoning: a wire is cleared at a cycle when its driver's measured output and its receiver's
+        measured input agree there (both ends observed, from trusted sources)."""
+        case = self.case
+        seen_out, seen_in = {}, {}
+        for b, slots in self.rows.items():
+            if b.startswith(("L:", "SIG:")):
+                continue
+            for key, slot in slots.items():
+                if isinstance(key, tuple):
+                    continue
+                for sp, r in slot.items():
+                    if sp[0] in self.distrust:
+                        continue
+                    seen_out.setdefault((b, key), r["out"])
+                    seen_in.setdefault((b, key), r["in"])
+                    break
+        out = []
+        for (b, c), inp in seen_in.items():
+            k = case.core_of(b)
+            if k is None:
+                continue
+            loc = case.local(b)
+            for port, val in inp.items():
+                lk = case.by.get(f"L:c{k}:{loc}.{port}")
+                if lk is None:
+                    continue
+                d, dp = lk.src
+                o = seen_out.get((d, c))
+                if o is not None and o.get(dp) == val:
+                    out.append((lk.name, c))
+        return out
 
     def suspects(self):
         """[(block, view)] for blocks with bad keys, confirmed first, then most bad keys."""
@@ -211,11 +286,11 @@ class Notebook:
             fs = self.fits(b)
             if fs:
                 return {"fixes": [fault_answer(b, fs[0])]}
-        fr = self.frontier(limit=1)
-        if fr:
-            b = fr[0][1]
-            f = next((f for f in self.case.by[b].faults if f["type"] != "stuck_at"), self.case.by[b].faults[0])
-            return {"fixes": [fault_answer(b, f)]}
+        for _, b, _c in self.frontier(limit=10):
+            fs = self.case.by[b].faults
+            if fs:
+                f = next((f for f in fs if f["type"] != "stuck_at"), fs[0])
+                return {"fixes": [fault_answer(b, f)]}
         return None
 
     def summary(self, b, limit=4):
@@ -325,7 +400,7 @@ def vote_options(case, nb, limit=6):
 
 
 def fix_label(a):
-    return f"{BUG_TYPES[a['type']]} in {a['block']}: {a['desc']}"
+    return f"{BUG_TYPES.get(a['type'], str(a['type']).replace('_', ' '))} in {a['block']}: {a['desc']}"
 
 
 def dumps(x):
@@ -339,6 +414,8 @@ def need_answer(ans):
 
 
 def netlist_text(case):
+    if getattr(case, "tier", "") == "v3":
+        return chip_text(case)
     lines = []
     for b in case.blocks:
         ins = ", ".join(f"{p}<-{n}" for p, n in b.ins.items())
@@ -350,6 +427,38 @@ def netlist_text(case):
             fk = "; ".join(keys + ["stuck:<port>:<bit>"])
         lines.append(f"{b.name} [{b.stage}] {b.spec} | {ins} | {outs} | {fk}")
     return "\n".join(lines)
+
+
+def chip_text(case):
+    """The 12-core chip, condensed: one core's netlist (shared by c0..c11), the signature fabric, and the naming."""
+    lines = [f"{case.n_cores} identical cores c0..c{case.n_cores - 1}. Inside core k every block below is named "
+             "c<k>.<name> and its nets c<k>.<net>. Per core: c<k>.sig_mix (logic: mixes the core's write-back and "
+             "store stream) feeds c<k>.sig_reg (verified register, s <- rotl(s) ^ m). An XOR tree tree0..treeN folds "
+             "the core signatures into the chip signature.",
+             "Wires: L:c<k>:<receiver>.<port> is the wire into that port inside core k; its fault keys are delay "
+             "(the receiver sees last cycle's value) and convention (bit-reversed, or inverted for 1 bit).",
+             "Core signatures: SIG:c<k> reads core k's signature against its golden value and its final-state "
+             "differences (no faults of its own).", "", "One core's netlist (name [stage] spec | inputs | outputs | fault keys):"]
+    for b in case.core_blocks:
+        ins = ", ".join(f"{p}<-{n}" for p, n in b.ins.items())
+        outs = ", ".join(f"{p}:{w}" for p, w in b.outs.items())
+        fk = "[verified]" if b.trusted else "; ".join([f"{f['key']}={f['value']}" for f in b.faults if f["type"] != "stuck_at"] + ["stuck:<port>:<bit>"])
+        lines.append(f"{b.name} [{b.stage}] {b.spec} | {ins} | {outs} | {fk}")
+    lines.append("sig_mix: rd_shift=4; mul=8; stuck:m:<bit>.  tree<i>: x = a XOR b; stuck:x:<bit>.")
+    return "\n".join(lines)
+
+
+V3_PRIMER = """
+This is the v3 chip: 12 cores, about 1,190 blocks. The failure only says the chip signature is wrong. Start by reading
+core signatures (SIG:c<k>, one probe each) to find which cores went wrong; then trace inside a bad core. Some bugs are
+on a wire, not in a block: both blocks then match their specs and only a link probe on that wire shows the fault
+(the receiver got something other than what the driver sent). Bench drives take 3 ticks, use one of 2 shared bench
+slots and cover only 4 vectors of one input region; the `trace` region replays the inputs a block saw at a cycle.
+Every fix that names an innocent block or wire makes the answer wrong: name only what you are sure of (at most 3)."""
+
+
+def primer(case):
+    return CPU_PRIMER + (V3_PRIMER if getattr(case, "tier", "") == "v3" else "")
 
 
 def parse_fix(case, a):

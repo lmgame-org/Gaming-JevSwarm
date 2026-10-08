@@ -25,11 +25,13 @@ GENIUS_TOOLS = """Tools, per turn (each costs one probe from your budget and 15 
   read    {"read": "<block>.<port>", "from": c0, "to": c1}: that net's values per cycle (at most 16 cycles)
   check   {"check": "<block>", "cycle": c}: for every cycle in a 2-cycle window at c, the block's inputs, measured
           outputs ("out") and spec outputs ("spec_out")
-  drive   {"drive": "<block>", "kind": "corner"|"sweep"|"boundary"|"random"}: the block alone on the bench
+  drive   {"drive": "<block>", "kind": "corner"|"sweep"|"boundary"|"random"|"trace", "cycle": c}: the block alone on
+          the bench (v3: 4 vectors of that region, 3 ticks; "trace" replays its inputs around cycle c)
+  On the v3 chip, "check" also takes a wire name L:c<k>:<receiver>.<port> or a core signature SIG:c<k>.
 The back-trace start points "<block>@<cycle>" are where the wrong final values came from (found by reading the
 final state; they are free). Reply with JSON only:
-{"thinking": "<short>", "probes": [...], "answer": null or {"fixes": [{"block": "...", "port": "...",
- "type": "stuck_at|swapped_mux|wrong_forwarding|off_by_one", "key": "<fault key>"}]}}
+{"thinking": "<short>", "probes": [...], "answer": null or {"fixes": [{"block": "<block or wire name>", "port": "...",
+ "type": "stuck_at|swapped_mux|wrong_forwarding|off_by_one|wire_timing|wire_interface", "key": "<fault key>"}]}}
 Give "answer" (one fix, or two if you found two broken blocks) once you are sure, or when told time is up.
 
 The netlist (name [stage] spec | inputs port<-net | outputs port:width | fault keys):
@@ -62,7 +64,7 @@ class Solo:
         if self.policy == "chat":
             self.chat = LLMClient("openai", self.cfg["chat_model"], self.cfg["chat_key"], timeout=180, temperature=0.2)
             self.system = ("You are an expert hardware debugger working alone with a small probe budget.\n\n" +
-                           kb.CPU_PRIMER + "\n\n" + GENIUS_TOOLS + kb.netlist_text(self.case))
+                           kb.primer(self.case) + "\n\n" + GENIUS_TOOLS + kb.netlist_text(self.case))
 
     # ------------------------------------------------------------------ mechanics
     def travel(self, b):
@@ -73,14 +75,14 @@ class Solo:
     def do(self, spec):
         """Run one probe; returns the stripped result."""
         b = spec.get("block")
-        self.tick += 1 + self.travel(b)
+        self.tick += 1 + self.travel(b) + (self.eng.drive_cost() if spec["type"] == "drive" else 0)
         self.used += 1
         if spec["type"] == "read":
             vals = self.case.read(spec["net"], spec["from"], spec["to"])
-            self.eng.log_probe(1, {"type": "read", "block": spec["net"].split(".")[0], "mismatch": False,
+            self.eng.log_probe(1, {"type": "read", "block": spec["net"].rsplit(".", 1)[0], "mismatch": False,
                                    "window": [min(vals), max(vals)] if vals else None},
                                f"reads {spec['net']} over cycles {min(vals) if vals else '-'}-{max(vals) if vals else '-'}")
-            self.pos = spec["net"].split(".")[0]
+            self.pos = spec["net"].rsplit(".", 1)[0]
             self.trail.append({"block": self.pos, "type": "read", "mismatch": False, "tick": self.tick,
                                "where": f"reads {spec['net']}"})
             return {"type": "read", "net": spec["net"], "values": vals}
@@ -191,8 +193,12 @@ class Solo:
             if not isinstance(key, tuple):
                 opts[f"R|{b}|{key}"] = (f"re-check {b} at cycle {key}: it mismatched there once",
                                         {"type": "check", "block": b, "cycle": key})
-            for k in ("sweep", "boundary"):
-                opts[f"D|{b}|{k}"] = (f"bench-drive {b}: " + kb.DRIVE_KINDS[k], {"type": "drive", "block": b, "kind": k})
+            if b.startswith(("L:", "SIG:")):
+                continue
+            kinds = ("sweep", "boundary") if not self.eng.v3 else ("trace", "sweep")
+            for k in kinds:
+                cyc = key if not isinstance(key, tuple) else self.case.n - 1
+                opts[f"D|{b}|{k}"] = (f"bench-drive {b}: " + kb.DRIVE_KINDS[k], {"type": "drive", "block": b, "kind": k, "cycle": cyc})
         crit = {k: v[0] for k, v in opts.items()}
         if nb.suspects():
             crit["ACCUSE"] = "accuse now: name the broken block and the fix"
@@ -275,11 +281,11 @@ class Solo:
                 return {"type": "check", "block": p["check"], "cycle": max(0, min(c.n - 1, int(p.get("cycle", 0))))}
             if p.get("drive") in c.by:
                 k = p.get("kind") if p.get("kind") in kb.DRIVE_KINDS else "corner"
-                return {"type": "drive", "block": p["drive"], "kind": k}
+                return {"type": "drive", "block": p["drive"], "kind": k, "cycle": int(p.get("cycle", c.n - 1))}
             if p.get("read") in c.drivers:
                 lo = int(p.get("from", 0))
                 return {"type": "read", "net": p["read"], "from": lo, "to": int(p.get("to", lo + 7)),
-                        "block": p["read"].split(".")[0]}
+                        "block": p["read"].rsplit(".", 1)[0]}
         except (TypeError, ValueError):
             return None
         return None
