@@ -87,7 +87,6 @@ class BakerStreet:
         self.post = 6
         self.new_reports = 0
         self.report_log = []       # viewer: (tick, boy, block, mismatch)
-        self.pending = {}          # v3: block -> tick it was last sent out (not re-sent while its report is on the way)
         self.calls = 0
         self.pid = 0
         self.plans = 0
@@ -138,7 +137,6 @@ class BakerStreet:
             self.pid += 1
             self.nb.add_probe(p, bid, self.pid, first_hand=False)
             self.report_log.append({"tick": self.tick, "boy": bid, "block": p["block"], "bad": bool(p["mismatch"])})
-            self.pending.pop(p["block"], None)
             self.eng.event("report", f"boy #{bid}: {p['block']} " + ("does NOT match its spec" if p["mismatch"]
                                                                        else "matches its spec"), block=p["block"])
         self.new_reports += 1
@@ -175,8 +173,6 @@ class BakerStreet:
 
     def rule_errands(self, n):
         tasks, taken = [], {it[0] for b in self.boys if b.busy() for it in b.errand["items"]}
-        if self.eng.v3:
-            taken |= {b for b, t in self.pending.items() if self.tick - t < 6}
         for b, v in self.nb.suspects():
             if v["confirmed"] or b in taken:
                 continue
@@ -272,8 +268,6 @@ class BakerStreet:
                 continue
             e = self.queue.pop(idx)
             boy.errand, boy.done_items, boy.notes, boy.rechecked = e, set(), [], set()
-            for it in e["items"]:
-                self.pending[it[0]] = self.tick
             first = e["items"][0][0]
             boy.travel = 1 if (self.wiggins and abs(self.case.col(first) - self.post) <= 3) else 2 if self.case.col(first) > 5 else 1
             boy.pos, boy.status, boy.last = self.anchor(first), "walking", e["why"]
