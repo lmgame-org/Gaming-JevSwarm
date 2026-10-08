@@ -45,3 +45,5 @@ h1, h2 { font-family: "Libre Baskerville", Georgia, serif; font-weight: 400; }
 .results tr.best td { color: var(--gold); }
 .note { color: var(--dim); font-size: 13px; max-width: 900px; }
 .foot { color: var(--dim); font-size: 12px; padding: 20px 16px 40px; }
+.tbl { margin: 22px 0; max-width: 1100px; } .tbl img { width: 100%; border-radius: 6px; background: #fff; display: block; }
+.tbl figcaption { color: var(--dim); font-size: 13px; margin-top: 6px; }

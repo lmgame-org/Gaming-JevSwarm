@@ -3,8 +3,10 @@
 GitHub Pages does not hand out subdomains like `something.snyhlx.github.io`. Everything under your account is served as a
 **path** on `snyhlx.github.io`, so the address will be:
 
-    https://snyhlx.github.io/the_irregulars_detective_game/             (the blog: trailer, three sections, clips, tables)
-    https://snyhlx.github.io/the_irregulars_detective_game/replay.html  (interactive replays of all 200 cases)
+    https://snyhlx.github.io/the_irregulars_detective_game/             (animated title page)
+    https://snyhlx.github.io/the_irregulars_detective_game/blog.html    (the blog)
+    https://snyhlx.github.io/the_irregulars_detective_game/trailer.html (the trailer and clips)
+    https://snyhlx.github.io/the_irregulars_detective_game/results.html (results tables and replays of all 200 cases)
 
 Your user site (`snyhlx/snyhlx.github.io`, branch `main`, root folder) is already live, so either option below works.
 The site is static (HTML/CSS/JS + JSON traces + the trailer, ~30 MB).
@@ -44,6 +46,6 @@ Settings → Pages, and create a DNS CNAME record `irregulars → snyhlx.github.
 ## Updating
 ```bash
 python3 release/export_traces.py   # rebuild site/data from the benchmark runs
-python3 release/build_blog.py      # rebuild site/index.html (the blog) from blog.md
+python3 release/build_blog.py      # rebuild site/blog.html and site/trailer.html from blog.md
 ```
 then copy `release/site` again, commit and push. Test locally first: `cd release/site && python3 -m http.server 8790`.

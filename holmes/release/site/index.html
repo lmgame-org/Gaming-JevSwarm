@@ -1,71 +1,97 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>One Genius or Many Minds? | The Irregulars</title>
-<meta name="description" content="A lone reasoning model, a reasoning leader with a swarm of small agents, and a leaderless swarm, in 200 simulated murder mysteries."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Irregulars</title>
+<meta name="description" content="One genius, or many minds? GPT6-Astra, a Jev swarm, and Holmes leading the swarm, in 200 murders in Victorian London.">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
-body { margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }
-main { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
-h1 { font-size: 34px; line-height: 1.25; margin-bottom: 8px; } h2 { font-size: 24px; margin-top: 42px; }
-hr { border: none; border-top: 1px solid #d8ccb0; margin: 32px 0; }
-table { border-collapse: collapse; width: 100%; font: 15px/1.4 Inter, sans-serif; margin: 18px 0; }
-th, td { border-bottom: 1px solid #d8ccb0; padding: 8px; text-align: right; } th:first-child, td:first-child { text-align: left; }
-li { margin: 6px 0; } a { color: #8a1c1c; }
-figure { margin: 22px 0 30px; } figure img, figure video { width: 100%; border-radius: 6px; display: block; background: #111; }
-figcaption { font: 14px/1.5 Inter, sans-serif; color: #6b5c45; margin-top: 8px; }
-nav.top { font: 15px Inter, sans-serif; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; padding-bottom: 14px;
-  margin-bottom: 22px; border-bottom: 1px solid #d8ccb0; }
-nav.top b { font-family: "Libre Baskerville", Georgia, serif; font-weight: 400; margin-right: auto; }
-nav.top a { text-decoration: none; } nav.top a.on { color: #241a10; border-bottom: 2px solid #8a1c1c; }
-.back { font: 14px Inter, sans-serif; } video { width: 100%; border-radius: 6px; }
-.lead { font-size: 17px; color: #4a3d2c; }
-</style></head><body><main>
-<nav class="top"><b>The Irregulars</b><a href="index.html" class="on">Blog</a><a href="trailer.html" class="">Trailer</a><a href="results.html" class="">Results</a><a href="replay.html" class="">Replays</a></nav><h1>One Genius or Many Minds? What Sherlock Holmes Taught Us About AI Swarms</h1>
-<p><i>A side-by-side study of a lone reasoning model, a reasoning leader with a swarm of small agents, and a leaderless swarm, in 200 simulated murder mysteries.</i></p>
-<hr>
-<p>In <i>The Sign of Four</i>, Sherlock Holmes explains why he pays a gang of street children a shilling a day: "They can go everywhere, see everything, overhear every one." The great detective's real secret was never one mind. It was a swarm: a dozen boys fanning out across London, bringing back fragments that only he could assemble.</p>
-<p>A century later, AI faces the same choice. Do you build one brilliant model and ask it to do everything? Or do you deploy many small, fast agents and let intelligence emerge from the crowd? Or some mix of the two?</p>
-<p>We decided to find out the Holmesian way: with a murder.</p>
-<p>We built <i>The Irregulars</i>, a simulated Victorian London with 100 addresses and 10 suspects. A murder has been committed. Every address holds one lead: a witness, a footprint, a receipt, a red herring, a lie, or nothing at all. To solve the case, an investigator must name the <b>culprit</b>, the <b>motive</b> and the <b>hideout</b>, all three correct, within twelve hours of case time.</p>
-<p>Then we sent three kinds of detective to Baker Street:</p>
-<ul><li><b>The Lone Genius (GPT6-Astra).</b> One large reasoning model takes a cab from address to address, reads every lead itself, and decides when to accuse. It gets 20 visits.</li><li><b>Holmes (GPT6-Astra) + Jev Swarm.</b> GPT6-Astra plays Holmes. He never leaves 221B. He sends twelve street boys, each a small, fast <b>Jev</b> model, out on errands, reads their reports, and decides what to check next and when to name the culprit.</li><li><b>Jev Swarm.</b> A hundred Jev boys and no leader. Each boy keeps his own notebook, shares what he finds with the boys nearby, and votes. When thirty boys name the same culprit, motive and hideout, the case closes.</li></ul>
-<p>We ran each on the same 100 seeded cases, then on 100 harder "frame-up" cases where the murderer bribes witnesses to lie. Every number below comes from those 600 runs. No model decision fell back to a scripted rule; we logged every move, clue and vote, and you can replay any case yourself on the interactive site.</p>
-<p>The short version: <b>the leader with a swarm solved 96 of 100 cases, the lone genius 57, and the leaderless swarm 38.</b> But the interesting part is <i>why</i>.</p>
-<figure><a href="media/irregulars_standard_setting_results.png"><img src="media/irregulars_standard_setting_results.png" alt="Table 1. Standard cases, 100 each."></a><figcaption>Table 1. Standard cases, 100 each.</figcaption></figure>
-<hr>
-<h2>1. The genius is limited by legwork, not by brains</h2>
-<figure><video controls preload="metadata" playsinline poster="media/poster_irregulars_clip1_astra.jpg" src="media/irregulars_clip1_astra.mp4"></video><figcaption>The Lone Genius (GPT6-Astra) on case 57: one cab, one door at a time. It runs out of visits.</figcaption></figure>
-<figure><a href="media/irregulars_solo_24h_table.png"><img src="media/irregulars_solo_24h_table.png" alt="Table 3. The Lone Genius with twice the time and visits."></a><figcaption>Table 3. The Lone Genius with twice the time and visits.</figcaption></figure>
-<p>Start with the Lone Genius. GPT6-Astra is a strong reasoner. Watch its notes during a case and you see good detective work: "Repeated cigar ash and dark hairs identify Henry Pargeter; chapel evidence corroborates his refuge." When it finds the evidence, it almost always draws the right conclusion.</p>
-<p>The problem is that it does not find the evidence. In 59 of 100 standard cases it ran out of visits or time before accusing. Its misses are telling. It gets the hideout right every single time, the culprit 83 times out of 100, but the motive only 68 times. The clues about motive tend to sit near the victim's home, a short detour from the trail of footprints. A single detective, one cab and one door at a time, keeps following the hottest trail and never gets to them.</p>
-<p>We checked this directly. We gave the Lone Genius twice the budget, 24 hours and 40 visits, and re-ran all 100 cases. Its solve rate jumped from <b>57 to 91</b>. Nothing about its reasoning changed. It simply got to knock on more doors.</p>
-<p>But that improvement comes at a cost: about 15 hours of case time and two minutes of real time per case. Meanwhile, Holmes (GPT6-Astra) + Jev Swarm solves <b>96</b> cases within the original twelve hours, in about 11 case hours and a minute and a half of real time.</p>
-<p>That is the first lesson. A single strong model is serial. It can only be in one place at a time, and every clue costs it a full round trip. Twelve small agents searching in parallel buy you coverage that no amount of reasoning can substitute for. Holmes's boys check about 70 addresses per case (median); the lone genius manages 20.</p>
-<p>There is a cheaper way to see the same point. A simple scripted detective that just counts clues, with no language model at all, solves 61 of the standard cases alone, slightly more than GPT6-Astra alone. Give it 40 visits and it reaches 99. On these honest cases, where every true fact appears twice and each lie only once, careful counting is enough. What is missing is the legwork.</p>
-<hr>
-<h2>2. The swarm agrees fast, but agreeing is not the same as being right</h2>
-<figure><video controls preload="metadata" playsinline poster="media/poster_irregulars_clip3_jev_swarm.jpg" src="media/irregulars_clip3_jev_swarm.mp4"></video><figcaption>The Jev Swarm on case 57: boys coloured by the answer they vote for. It converges in about 4 case hours, on the wrong culprit.</figcaption></figure>
-<p>If coverage is the bottleneck, why not go all the way: a hundred agents, no leader, maximum parallelism?</p>
-<p>The Jev Swarm is genuinely fast. A hundred boys start spread across the city, share leads with their neighbours, and converge. It reaches a thirty-vote agreement in 91 of 100 cases, with a median of just 2.2 case hours and about nine seconds of real time. On the map you can watch it happen: the boys' colours (each colour is one answer) spread from a few clusters until one answer dominates the city.</p>
-<p>But it is often wrong. Of those 91 agreements, <b>53 were on the wrong answer</b>. The swarm solves only 38 cases.</p>
-<p>Look at how it fails and the pattern is clear. A few boys misjudge a clue, say they weigh a lying witness too heavily or misread a description. Their neighbours, who have not seen the evidence themselves, copy the confident vote. The wrong answer snowballs through the gossip network and hits thirty votes before anyone checks. In one case we show in the trailer, two clusters formed around two different innocent suspects, both with the right motive and the right hideout, and the swarm closed on one of them.</p>
-<p>This is not a problem with searching. The swarm covers the map beautifully. It is a problem with <i>judging</i>. To prove it, we ran a hybrid swarm in which Jev chooses where to go and what to share, but a simple counting rule casts the votes. On standard cases that lifted a 2 km swarm from 11 to 16 solved out of 20 in our earlier benchmark, and a fully scripted counting swarm solves 95 of 100. The small model is good at the many quick, local "where next?" decisions. It is weak as an independent voter, where small misjudgments compound with no one in charge.</p>
-<p>The second lesson: parallelism without judgment converges, confidently, on whatever the crowd happens to amplify.</p>
-<hr>
-<h2>3. When somebody lies, only a reasoning leader sees through it</h2>
-<figure><video controls preload="metadata" playsinline poster="media/poster_irregulars_clip2_astra_jev_swarm.jpg" src="media/irregulars_clip2_astra_jev_swarm.mp4"></video><figcaption>Holmes (GPT6-Astra) + Jev Swarm on case 57: Holmes plans at 221B, twelve Jev boys run errands. Solved in 10.5 case hours.</figcaption></figure>
-<figure><a href="media/irregulars_challenging_setting_results.png"><img src="media/irregulars_challenging_setting_results.png" alt="Table 2. Frame-up cases: somebody lies."></a><figcaption>Table 2. Frame-up cases: somebody lies.</figcaption></figure>
-<p>So far a skeptic could say: on these cases a simple counting Holmes with a swarm of boys does just as well as GPT6-Astra. And they would be right. Holmes (heuristic) + Jev Swarm solves 95 of 100 standard cases, about 30% faster in case time and twenty times faster in real time. If the world were honest, you would not need a frontier model as the leader.</p>
-<p>The world is not honest. So we built a hundred more cases in which <b>somebody lies on purpose</b>. In each "frame-up" case, the murderer pays his own servants to describe an innocent suspect and to swear their master never left the house. A planted clue at the scene backs them up. Each false detail now appears twice, matching the true one, and the lie outnumbers the truth. Somewhere in the city, two honest witnesses saw the bribe being paid.</p>
-<p>Here the results split cleanly:</p>
-<table><thead><tr><th>Method</th><th>Standard cases</th><th>Frame-up cases</th></tr></thead><tbody><tr><td>The Lone Genius (GPT6-Astra)</td><td>57</td><td>59</td></tr><tr><td><b>Holmes (GPT6-Astra) + Jev Swarm</b></td><td><b>96</b></td><td><b>93</b></td></tr><tr><td>Jev Swarm</td><td>38</td><td>42</td></tr><tr><td>Holmes (heuristic) + Jev Swarm</td><td>95</td><td><b>0</b></td></tr><tr><td>Holmes (heuristic) + heuristic Swarm</td><td>97</td><td>1</td></tr></tbody></table>
-<p>Every method that counts collapses. The counting Holmes names the framed man almost every time, because two matching lies beat one true clue. It still gets the motive and hideout right, but it never catches the real murderer.</p>
-<p>GPT6-Astra does not fall for it. As Holmes, reading his boys' reports, he writes things like: "Pargeter's servants supply both his alibi and the evidence against Leopold; the dry snuff-box suggests planting. Pargeter merits suspicion, not accusation." It notices who is speaking, not just how often something is said. Holmes (GPT6-Astra) + Jev Swarm solves 93 of 100 frame-ups. The Lone Genius reasons just as well, it names the right culprit almost every time, but still runs out of doors before the motive. The leaderless Jev Swarm does better than any counting player, because some boys read the testimony and doubt it, yet without a leader it still often agrees on the framed man.</p>
-<p>(A note of honesty: the lone genius and the swarm score a few points higher on frame-ups than on standard cases. That is within chance, the 95% intervals overlap almost entirely, and the frame-up cases include extra handles a careful reader can use, like the witnesses who saw the bribe. The lie is built to fool counting, and it does.)</p>
-<p>The third lesson is the synergy. The swarm brings coverage and speed. The reasoning leader brings judgment. On easy cases you can get away with either one alone being simple. On cases built to deceive, you need both: the many minds to go everywhere and overhear everyone, and the one mind to decide whom to believe.</p>
-<hr>
-<h2>What this suggests</h2>
-<p>Holmes knew it in 1890. The street boys were never meant to solve the case; they were meant to find the pieces. The genius was never meant to walk every street; he was meant to see the shape the pieces make.</p>
-<p>For multi-agent AI, our toy London suggests a simple division of labour:</p>
-<ul><li><b>Use small, fast agents for the many local decisions</b>: where to look next, what to report, when to come back. They are cheap, they parallelize, and they are good at it. In our runs, Jev's errand decisions were as useful as a carefully scripted rule.</li><li><b>Do not let a crowd of small agents be the judge.</b> Voting among small models converges fast and wrong, especially under deception.</li><li><b>Put a strong reasoner at the point of judgment</b>, reading everything the swarm brings back. That is where a frontier model earns its cost, and where it turns a fast, error-prone crowd into a detective agency that solves 96 of 100 cases, and 93 of 100 when the witnesses lie.</li></ul>
-<p>One genius, or many minds? Holmes's answer, and ours: one genius, and many minds.</p>
-<hr>
-<p><i>Methods in brief.</i> Cases are generated from a seed: 100 addresses on a street graph, 10 suspects with six visible traits, 6 motives, 8 candidate hideouts; true key facts appear at two addresses, lone lies at one; frame-up cases add coordinated lies, a planted clue, timed alibis and witnesses to the bribe, and each is checked to be solvable by a careful reader. All approaches get 12 case hours. Holmes's boys walk; the lone genius takes cabs. The Jev swarm uses a 2 km shouting range and closes at 30 identical votes. Model calls were allowed 30 seconds; zero decisions fell back to a rule. 95% Wilson intervals are in the tables. Replay every case at the interactive site.</p><p class="back"><a href="trailer.html">Watch the trailer</a> · <a href="results.html">All results</a> · <a href="replay.html">Replay every case: every move, clue and vote &rarr;</a></p></main></body></html>
+  html, body { margin: 0; height: 100%; background: #06080b; color: #efe6cf; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 0 16px; box-sizing: border-box; }
+  .kicker { font: 500 14px/1 Inter, sans-serif; letter-spacing: 6px; color: #9c937e; text-transform: uppercase; opacity: 0; animation: up 1.2s 0.4s forwards; }
+  h1 { font: 400 clamp(44px, 9vw, 120px)/1.05 "Libre Baskerville", Georgia, serif; letter-spacing: clamp(4px, 1vw, 14px); margin: 18px 0 10px;
+    opacity: 0; animation: up 1.6s 1.0s forwards; }
+  .q { font: italic clamp(20px, 3vw, 34px)/1.3 "Libre Baskerville", Georgia, serif; color: #e0b357; opacity: 0; animation: up 1.4s 2.0s forwards; }
+  .sub { font: 400 clamp(14px, 1.6vw, 17px)/1.6 Inter, sans-serif; color: #b8ad95; max-width: 640px; margin: 14px auto 34px;
+    opacity: 0; animation: up 1.4s 2.6s forwards; }
+  .tabs { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; opacity: 0; animation: up 1.2s 3.2s forwards; }
+  .tabs a { font: 500 16px/1 Inter, sans-serif; color: #efe6cf; text-decoration: none; padding: 15px 26px; border: 1px solid rgba(224, 179, 87, 0.55);
+    border-radius: 999px; background: rgba(6, 8, 11, 0.55); backdrop-filter: blur(4px); transition: all 0.25s; min-width: 150px; }
+  .tabs a:hover, .tabs a:focus-visible { background: #e0b357; color: #1a130b; border-color: #e0b357; outline: none; }
+  .tabs a span { display: block; font-size: 12px; color: #9c937e; margin-top: 6px; letter-spacing: 0.5px; }
+  .tabs a:hover span { color: #3b2c14; }
+  .foot { position: fixed; bottom: 14px; left: 0; right: 0; z-index: 1; text-align: center; font: 12px Inter, sans-serif; color: #6f6754; }
+  @keyframes up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01s !important; animation-delay: 0s !important; } }
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+<div class="stage">
+  <div class="kicker">221B Baker Street &middot; London, 1890</div>
+  <h1>THE IRREGULARS</h1>
+  <div class="q">One genius, or many minds?</div>
+  <p class="sub">A hundred murders, solved three ways: GPT6-Astra alone, a leaderless swarm of small Jev agents,
+    and Holmes (GPT6-Astra) leading the Jev swarm. Every move, clue and vote is from a real run.</p>
+  <nav class="tabs" aria-label="Sections">
+    <a href="trailer.html">Trailer<span>1:35 &middot; the story in three cases</span></a>
+    <a href="blog.html">Blog<span>what we found, in three sections</span></a>
+    <a href="results.html">Results<span>tables &middot; replay all 200 cases</span></a>
+  </nav>
+</div>
+<div class="foot">Victorian London, simulated. Holmes, Lestrade and the Irregulars are public-domain characters.</div>
+<script>
+/* The title page backdrop: drifting fog, a gas lamp, the lit window at 221B, and a swarm of small minds that link up as they meet. */
+const cv = document.getElementById("c"), g = cv.getContext("2d");
+let W, H, dpr, pts;
+function size() {
+  dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const n = Math.round(Math.min(110, W * H / 14000));
+  pts = Array.from({length: n}, () => ({x: Math.random() * W, y: Math.random() * H, a: Math.random() * 6.28, s: 8 + Math.random() * 22}));
+}
+function frame(ms) {
+  const t = ms / 1000;
+  g.fillStyle = "#06080b"; g.fillRect(0, 0, W, H);
+  // fog
+  for (let i = 0; i < 9; i++) {
+    const x = ((i * 397 + t * (12 + i * 3)) % (W + 600)) - 300, y = (i * 211) % H, r = 260 + (i % 4) * 90;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, "rgba(150,160,170,0.06)"); gr.addColorStop(1, "rgba(150,160,170,0)");
+    g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  // gas lamp glow and the lit window at 221B, lower left and lower right
+  const fl = 0.85 + 0.15 * Math.sin(t * 13) * Math.sin(t * 5.3);
+  const lamp = g.createRadialGradient(W * 0.86, H * 0.32, 0, W * 0.86, H * 0.32, Math.max(W, H) * 0.35);
+  lamp.addColorStop(0, `rgba(255,190,100,${0.18 * fl})`); lamp.addColorStop(1, "rgba(255,190,100,0)"); g.fillStyle = lamp; g.fillRect(0, 0, W, H);
+  const wx = W * 0.1, wy = H * 0.62, ww = Math.min(150, W * 0.12), wh = ww * 0.9;
+  g.globalAlpha = Math.min(1, t / 3) * 0.75;
+  g.fillStyle = "#e9a95a"; g.fillRect(wx, wy, ww, wh);
+  g.fillStyle = "#1a120b"; g.beginPath(); g.ellipse(wx + ww * 0.45, wy + wh * 0.55, ww * 0.16, ww * 0.19, 0, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(wx + ww * 0.25, wy + wh * 0.4); g.quadraticCurveTo(wx + ww * 0.45, wy + wh * 0.05, wx + ww * 0.65, wy + wh * 0.4); g.fill();
+  g.beginPath(); g.moveTo(wx + ww * 0.1, wy + wh); g.quadraticCurveTo(wx + ww * 0.12, wy + wh * 0.7, wx + ww * 0.45, wy + wh * 0.7);
+  g.quadraticCurveTo(wx + ww * 0.8, wy + wh * 0.7, wx + ww * 0.82, wy + wh); g.fill();
+  g.strokeStyle = "#0d0a07"; g.lineWidth = 6; g.strokeRect(wx, wy, ww, wh);
+  g.beginPath(); g.moveTo(wx + ww / 2, wy); g.lineTo(wx + ww / 2, wy + wh); g.moveTo(wx, wy + wh / 2); g.lineTo(wx + ww, wy + wh / 2); g.lineWidth = 4; g.stroke();
+  g.globalAlpha = 1;
+  // the swarm: small minds drifting, linking when close
+  const link = 130;
+  for (const p of pts) { p.x = (p.x + Math.cos(p.a) * p.s / 60 + W) % W; p.y = (p.y + Math.sin(p.a) * p.s / 60 + H) % H; }
+  g.lineWidth = 1;
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.hypot(dx, dy);
+    if (d < link) { g.strokeStyle = `rgba(224,179,87,${0.28 * (1 - d / link)})`; g.beginPath(); g.moveTo(pts[i].x, pts[i].y); g.lineTo(pts[j].x, pts[j].y); g.stroke(); }
+  }
+  g.fillStyle = "rgba(245,207,90,0.75)"; for (const p of pts) { g.beginPath(); g.arc(p.x, p.y, 2.2, 0, 7); g.fill(); }
+  // vignette behind the title, so the text stays readable
+  const v = g.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.55);
+  v.addColorStop(0, "rgba(6,8,11,0.78)"); v.addColorStop(0.55, "rgba(6,8,11,0.35)"); v.addColorStop(1, "rgba(6,8,11,0.6)");
+  g.fillStyle = v; g.fillRect(0, 0, W, H);
+  requestAnimationFrame(frame);
+}
+addEventListener("resize", size); size(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
