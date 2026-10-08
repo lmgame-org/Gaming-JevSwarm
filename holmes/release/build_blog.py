@@ -78,14 +78,12 @@ def convert(md):
     return "\n".join(out)
 
 
-def main():
-    body = convert(open(os.path.join(HERE, "blog.md")).read())
-    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>One Genius or Many Minds? | The Irregulars</title>
+HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
 <meta name="description" content="A lone reasoning model, a reasoning leader with a swarm of small agents, and a leaderless swarm, in 200 simulated murder mysteries."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {{ margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }}
-main {{ max-width: 720px; margin: 0 auto; padding: 40px 16px 80px; }}
+main {{ max-width: {width}px; margin: 0 auto; padding: 28px 16px 80px; }}
 h1 {{ font-size: 34px; line-height: 1.25; margin-bottom: 8px; }} h2 {{ font-size: 24px; margin-top: 42px; }}
 hr {{ border: none; border-top: 1px solid #d8ccb0; margin: 32px 0; }}
 table {{ border-collapse: collapse; width: 100%; font: 15px/1.4 Inter, sans-serif; margin: 18px 0; }}
@@ -93,16 +91,58 @@ th, td {{ border-bottom: 1px solid #d8ccb0; padding: 8px; text-align: right; }} 
 li {{ margin: 6px 0; }} a {{ color: #8a1c1c; }}
 figure {{ margin: 22px 0 30px; }} figure img, figure video {{ width: 100%; border-radius: 6px; display: block; background: #111; }}
 figcaption {{ font: 14px/1.5 Inter, sans-serif; color: #6b5c45; margin-top: 8px; }}
-nav.top {{ font: 14px Inter, sans-serif; display: flex; justify-content: space-between; margin-bottom: 18px; }}
-.back {{ font: 14px Inter, sans-serif; }} video {{ width: 100%; border-radius: 6px; margin: 10px 0 20px; }}
+nav.top {{ font: 15px Inter, sans-serif; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; padding-bottom: 14px;
+  margin-bottom: 22px; border-bottom: 1px solid #d8ccb0; }}
+nav.top b {{ font-family: "Libre Baskerville", Georgia, serif; font-weight: 400; margin-right: auto; }}
+nav.top a {{ text-decoration: none; }} nav.top a.on {{ color: #241a10; border-bottom: 2px solid #8a1c1c; }}
+.back {{ font: 14px Inter, sans-serif; }} video {{ width: 100%; border-radius: 6px; }}
+.lead {{ font-size: 17px; color: #4a3d2c; }}
 </style></head><body><main>
-<nav class="top"><span>The Irregulars</span><a href="replay.html">Replay all 200 cases &rarr;</a></nav>
-<video controls preload="metadata" playsinline poster="media/poster_trailer.jpg" src="media/the_irregulars_trailer.mp4"></video>
-{body}
-<p class="back"><a href="replay.html">Replay every case interactively: every move, clue and vote &rarr;</a></p>
-</main></body></html>"""
-    open(os.path.join(HERE, "site", "index.html"), "w").write(page)
-    print("site/index.html")
+"""
+
+
+def nav(on):
+    links = [("index.html", "Blog"), ("trailer.html", "Trailer"), ("results.html", "Results"), ("replay.html", "Replays")]
+    items = "".join(f'<a href="{h}" class="{"on" if h == on else ""}">{t}</a>' for h, t in links)
+    return f'<nav class="top"><b>The Irregulars</b>{items}</nav>'
+
+
+def write(name, title, body, width=720):
+    page = HEAD.format(title=title, width=width) + nav(name) + body + "</main></body></html>"
+    open(os.path.join(HERE, "site", name), "w").write(page)
+    print("site/" + name)
+
+
+def main():
+    blog = convert(open(os.path.join(HERE, "blog.md")).read())
+    write("index.html", "One Genius or Many Minds? | The Irregulars",
+          blog + '<p class="back"><a href="trailer.html">Watch the trailer</a> \u00b7 <a href="results.html">All results</a> \u00b7 '
+          '<a href="replay.html">Replay every case: every move, clue and vote &rarr;</a></p>')
+    write("trailer.html", "Trailer | The Irregulars", """
+<h1>The Irregulars: the trailer</h1>
+<p class="lead">One genius, or many minds? Three ways to solve a murder in Victorian London: GPT6-Astra alone, GPT6-Astra leading
+a swarm of Jev agents, and a leaderless Jev swarm. Every move in the trailer is from a real benchmark run.</p>
+<figure><video controls preload="metadata" playsinline poster="media/poster_trailer.jpg" src="media/the_irregulars_trailer.mp4"></video>
+<figcaption>1:35. Narration: synthesised speech; music: an original score generated in code.</figcaption></figure>
+<h2>The three runs, one case</h2>""" + video("irregulars_clip1_astra.mp4", "The Lone Genius (GPT6-Astra): unsolved, out of visits.")
+          + video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm: solved in 10.5 case hours.")
+          + video("irregulars_clip3_jev_swarm.mp4", "Jev Swarm: converged in about 4 case hours, on the wrong culprit.")
+          + '<p class="back"><a href="index.html">&larr; Read the blog</a></p>', width=900)
+    write("results.html", "Results | The Irregulars", """
+<h1>Results</h1>
+<p class="lead">100 cases per setting, 12 case hours each. A case is solved only if the culprit, motive and hideout are all correct.
+Case time is simulated time in the story; real time is wall-clock time to run one case. No model decision fell back to a scripted rule.</p>
+<table><thead><tr><th>Method</th><th>Standard</th><th>Frame-up (somebody lies)</th><th>Case time</th><th>Real time</th></tr></thead><tbody>
+<tr><td>The Lone Genius (GPT6-Astra)</td><td>57</td><td>59</td><td>10.5 h</td><td>82 s</td></tr>
+<tr><td><b>Holmes (GPT6-Astra) + Jev Swarm</b></td><td><b>96</b></td><td><b>93</b></td><td>11.0 h</td><td>97 s</td></tr>
+<tr><td>Jev Swarm</td><td>38</td><td>42</td><td>2.2 h</td><td>9 s</td></tr>
+<tr><td>Holmes (heuristic) + Jev Swarm</td><td>95</td><td>0</td><td>7.8 h</td><td>5 s</td></tr>
+<tr><td>Holmes (heuristic) + heuristic Swarm</td><td>97</td><td>1</td><td>8.8 h</td><td>&lt;0.1 s</td></tr>
+</tbody></table>
+<p class="back">Times are medians on standard cases.</p>""" + image("irregulars_standard_setting_results.png", "Table 1. Standard cases.")
+          + image("irregulars_challenging_setting_results.png", "Table 2. Frame-up cases: the murderer bribes witnesses to frame an innocent man.")
+          + image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice the time and visits.")
+          + '<p class="back"><a href="replay.html">Replay every case interactively &rarr;</a></p>', width=1000)
 
 
 if __name__ == "__main__":
