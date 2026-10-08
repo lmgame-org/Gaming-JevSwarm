@@ -610,7 +610,7 @@ function frameup(u) {                          // the same three methods when so
   });
   text("solved, out of 100", 1220, 320, {size: 24, color: DIM, alpha: al});
   text("Holmes (GPT6-Astra) + Jev Swarm sees through the lie and solves the most cases.", W / 2, 900, {size: 40, color: GOLD, alpha: al * prog(u, 4.6, 5.2)});
-  text(`Holmes (heuristic) + heuristic Swarm counts the clues and solves ${(TB.frameup || {}).counting} of 100.`, W / 2, 960, {size: 36, color: "#e4836f", alpha: al * prog(u, 5.2, 5.8)});
+  text("Replace the Astra leader or the Jev swarm with a counting heuristic: almost none solved (0\u20131 of 100).", W / 2, 960, {size: 34, color: "#e4836f", alpha: al * prog(u, 5.2, 5.8)});
   vignette();
 }
 function render(t) {

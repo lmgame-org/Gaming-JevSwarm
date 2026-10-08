@@ -26,11 +26,11 @@ LINES = [
     (63.8, "09_swarm", "Finally, the Jev swarm. A hundred boys, no leader. They vote."),
     (73.9, "10_wrong", "Unsolved. The wrong man."),
     (77.4, "11_casebook", "Across a hundred cases, Holmes and his Irregulars solve ninety-six."),
-    (82.8, "12_lies", "Then somebody lies. Astra, leading the Jev swarm, sees through it. Replace Astra with a counting heuristic, and almost none are solved."),
+    (82.8, "12_lies", "Then somebody lies. Astra, leading the Jev swarm, sees through it. Replace the Astra leader, or the Jev swarm, with a counting heuristic, and almost none are solved."),
 ]
 
 
-TEMPO = {"11_casebook": 1.05, "12_lies": 1.1}  # lines played slightly faster so they finish before the next scene
+TEMPO = {"11_casebook": 1.05, "12_lies": 1.2}  # lines played slightly faster so they finish before the next scene
 
 
 def tts(text, out):
