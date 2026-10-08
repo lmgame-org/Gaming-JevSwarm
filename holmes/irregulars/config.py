@@ -4,6 +4,7 @@ Units: case time in minutes (the clock starts at 08:00 on the morning the body i
 10 m. One Solo visit costs the cab ride plus an interview; one Swarm tick is `tick_min` minutes for every Irregular.
 """
 from swarmcore.keys import CHAT_KEY_CANDIDATES, JEV_KEY_CANDIDATES, first_key
+from swarmcore.params import merge
 
 DEFAULTS = {
     # run
@@ -107,6 +108,8 @@ PRESETS = {
 }
 
 # Launch-screen schema: (key, label, kind, extra). kind: int | float | bool | choice | text
+PRESET_KEY = "preset"
+
 SCHEMA = [
     ("Playback", [
         ("mode", "Who investigates", "choice", {"solo": "one detective", "swarm": "street boys (Baker Street or a swarm)"}),
@@ -185,25 +188,8 @@ LIVE_KEYS = {"speed", "comm_range", "bandwidth", "forget_rate", "quorum_frac", "
 
 
 def coerce(cfg):
-    out = dict(DEFAULTS)
-    pre = (cfg or {}).get("preset")
-    if pre in PRESETS:
-        out.update(PRESETS[pre]["overrides"])
-    for k, v in (cfg or {}).items():
-        if k not in DEFAULTS or v is None or v == "":
-            continue
-        d = DEFAULTS[k]
-        try:
-            if isinstance(d, bool):
-                out[k] = v if isinstance(v, bool) else str(v).lower() in ("1", "true", "on", "yes")
-            elif isinstance(d, int):
-                out[k] = int(float(v))
-            elif isinstance(d, float):
-                out[k] = float(v)
-            else:
-                out[k] = str(v)
-        except (TypeError, ValueError):
-            pass
+    out = merge(DEFAULTS, PRESETS, PRESET_KEY, cfg)
+    pre = (cfg or {}).get(PRESET_KEY)
     out["n_addresses"] = max(20, min(300, out["n_addresses"]))
     out["n_suspects"] = max(3, min(16, out["n_suspects"]))
     # One time limit for every approach: the swarm clock follows the case hours unless ticks are set explicitly.

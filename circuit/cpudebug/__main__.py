@@ -1,9 +1,7 @@
-import argparse
+"""python3 -m cpudebug [--port N] [--preset NAME] [--set key=value ...]; options: swarmcore/cli.py."""
+from swarmcore.cli import app_main
 
+from . import config
 from .server import serve
 
-ap = argparse.ArgumentParser(prog="python3 -m cpudebug", description="Circuit: debug a CPU with Holmes and the Irregulars")
-ap.add_argument("--host", default="127.0.0.1")
-ap.add_argument("--port", type=int, default=8783)
-a = ap.parse_args()
-serve(a.host, a.port)
+app_main(config, serve, prog="python3 -m cpudebug", description="Circuit: Holmes, Wiggins and Jev Irregulars hunt one CPU bug", port=8783)

@@ -1,5 +1,7 @@
 # Circuit: debugging a CPU solo, at Baker Street, or as a swarm
 
+> Part of [jev-swarm-games](../README.md). Launch options are the same for every game: `python3 run.py circuit --list-presets`, `--list-params`, `--preset NAME`, `--set key=value`, `--config FILE.json` (see [Customize your settings](../README.md#customize-your-settings)).
+
 One hardware bug (sometimes two) hides in a small pipelined CPU. A test fails. Who names the broken block, the
 signal, the bug type and the fix, within a time limit and a spend cap: one debugger, Holmes directing a dozen street
 boys, or 100 Irregulars with no leader? The three families mirror the Holmes detective game in `holmes/`.

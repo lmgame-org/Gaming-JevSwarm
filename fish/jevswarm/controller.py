@@ -7,7 +7,6 @@ avoidance uses currently visible walls and rocks only. Nothing here reads hidden
 """
 import math
 
-from .sensors import wrap
 
 FOLLOW_GRACE_S = 0.5
 ORIENT_RADIUS = 4.0          # Couzin-style zones: separation < sep_radius < orientation < attraction (vision)

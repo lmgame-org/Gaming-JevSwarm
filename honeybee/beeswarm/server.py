@@ -140,4 +140,4 @@ def serve(host="127.0.0.1", port=8779):
     def stop():
         if STATE["engine"]:
             STATE["engine"].stopped = True
-    _serve(Handler, host, port, "jev-swarm honeybee", on_exit=stop)
+    _serve(Handler, host, port, "jev-swarm-games honeybee", on_exit=stop)

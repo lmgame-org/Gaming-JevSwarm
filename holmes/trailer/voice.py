@@ -8,7 +8,7 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "common"))
-from swarmcore.keys import CHAT_KEY_CANDIDATES, first_key  # noqa: E402
+from swarmcore.keys import CHAT_KEY_CANDIDATES, first_key, read_key  # noqa: E402
 
 VOICE, MODEL = "onyx", "gpt-4o-mini-tts"
 STYLE = ("Narrate a film trailer for a Victorian detective mystery. Deep, calm, British, measured and slightly "
@@ -34,7 +34,7 @@ TEMPO = {"11_casebook": 1.05, "12_lies": 1.2}  # lines played slightly faster so
 
 
 def tts(text, out):
-    key = open(os.path.expanduser(first_key(CHAT_KEY_CANDIDATES))).read().strip()
+    key = read_key(first_key(CHAT_KEY_CANDIDATES))
     body = json.dumps({"model": MODEL, "voice": VOICE, "input": text, "instructions": STYLE, "response_format": "wav"}).encode()
     req = urllib.request.Request("https://api.openai.com/v1/audio/speech", data=body,
                                  headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})

@@ -184,7 +184,7 @@ class Engine:
         self.cmds.put(cmd)
 
     def _handle(self, cmd):
-        a = cmd.get("action")
+        a = cmd.get("action") or cmd.get("op")  # the shared form is {"op": ...}; the viewer sends {"action": ...}
         if a == "pause":
             self.paused = True
         elif a == "resume":
@@ -195,7 +195,8 @@ class Engine:
         elif a == "stop":
             self.stopped = True
         elif a == "set":
-            for k, v in (cmd.get("cfg") or {}).items():
+            changes = cmd.get("cfg") or ({cmd["key"]: cmd.get("value")} if "key" in cmd else {})
+            for k, v in changes.items():
                 if k in LIVE_KEYS:
                     self.cfg[k] = coerce({k: v})[k]
 

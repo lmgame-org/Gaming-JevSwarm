@@ -1,5 +1,6 @@
 """Hyperparameters and their launch-screen schema. Defaults are the hardened benchmark settings."""
 from swarmcore.keys import CHAT_KEY_CANDIDATES, JEV_KEY_CANDIDATES, first_key
+from swarmcore.params import merge
 
 DEFAULTS = {
     # difficulty tier: easy and v2 are the single 96-block CPU; v3 is the 12-core chip
@@ -90,6 +91,8 @@ PRESETS = {
            "overrides": {"tier": "v3"}},
 }
 
+PRESET_KEY = "preset"
+
 SCHEMA = [
     ("Run", [
         ("mode", "Who debugs", "choice", MODES),
@@ -171,24 +174,7 @@ def coerce(cfg):
     out = dict(DEFAULTS)
     if (cfg or {}).get("tier") == "v3" or ((cfg or {}).get("preset") == "v3"):
         out.update({k: v for k, v in V3_DEFAULTS.items() if k not in (cfg or {})})
-    pre = (cfg or {}).get("preset")
-    if pre in PRESETS:
-        out.update(PRESETS[pre]["overrides"])
-    for k, v in (cfg or {}).items():
-        if k not in DEFAULTS or v is None or v == "":
-            continue
-        d = DEFAULTS[k]
-        try:
-            if isinstance(d, bool):
-                out[k] = v if isinstance(v, bool) else str(v).lower() in ("1", "true", "yes", "on")
-            elif isinstance(d, int):
-                out[k] = int(float(v))
-            elif isinstance(d, float):
-                out[k] = float(v)
-            else:
-                out[k] = str(v)
-        except (TypeError, ValueError):
-            pass
+    out = merge(DEFAULTS, PRESETS, PRESET_KEY, cfg, base=out)
     for k, opts in (("mode", MODES), ("solo_policy", SOLO_POLICIES), ("holmes", HOLMES), ("boy_policy", BOYS),
                     ("swarm_policy", SWARM_POLICIES), ("bug_type", BUG_TYPES),
                     ("tier", {"easy": 1, "v2": 1, "v3": 1})):

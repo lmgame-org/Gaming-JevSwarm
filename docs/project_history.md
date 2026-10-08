@@ -1,5 +1,7 @@
 # jev-swarm: project history (30 Sep to 4 Oct 2026)
 
+**Update, 8 Oct 2026:** the repo was renamed **jev-swarm-games** (GitHub `snyhlx/jev-swarm-games`, local `~/worksapce/jev-swarm-games`). Every game now launches with `python3 run.py <game>` and shares one command line (`--preset`, `--set`, `--config`, `--list-params`, `--print-config`; `common/swarmcore/cli.py`) and one hyperparameter contract (`common/swarmcore/params.py`). Keys may also come from `$OPENROUTER_API_KEY` / `$OPENAI_API_KEY`. Older paths below are kept as written.
+
 A compacted record of the whole project, written so a fresh thread can read only this file and keep refining the work
 without asking Sonny anything again. The repo copy lives at `docs/project_history.md`; a copy is at
 `~/Downloads/jev_swarm_history.md`. State as of commit `6593185` on `main` (4 Oct 2026).

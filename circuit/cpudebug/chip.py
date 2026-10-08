@@ -36,7 +36,7 @@ import heapq
 import random
 from collections import deque
 
-from .isa import MEM_SIZE, NOP, disasm, load_tests
+from .isa import MEM_SIZE, load_tests
 from .netlist import BUG_TYPES, CPU, Block, all_faults, build_cpu, mask, trig_active, wire_xform
 
 N_CORES = 12

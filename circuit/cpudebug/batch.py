@@ -68,13 +68,14 @@ def main():
     ap.add_argument("--out", required=False)
     ap.add_argument("--max-usd", type=float, default=15.0)
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--set", nargs="*", default=[], help="fixed overrides, key=value (same as the positional form)")
     ap.add_argument("overrides", nargs="*", help="key=value config overrides")
     a = ap.parse_args()
     if a.list:
         for k, (lab, cfg) in SETTINGS.items():
             print(f"{k:28s} {lab}")
         return 0
-    over = dict(kv.split("=", 1) for kv in a.overrides)
+    over = dict(kv.split("=", 1) for kv in a.overrides + a.set)
     done = {(r["setting"], int(r["seed"])) for r in read_rows(a.out)}
     for name in a.settings.split(","):
         label, cfg = SETTINGS[name]

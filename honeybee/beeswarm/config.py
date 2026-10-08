@@ -6,6 +6,7 @@ dance circuits fall by ~15 per return trip, quorum of ~20-30 bees out of a few h
 engineering defaults for a scaled-down swarm, not species estimates.
 """
 from swarmcore.keys import CHAT_KEY_CANDIDATES, JEV_KEY_CANDIDATES, first_key
+from swarmcore.params import merge
 
 DEFAULTS = {
     # run
@@ -91,6 +92,10 @@ SCENARIOS = {
 }
 
 # Launch-screen schema: (key, label, kind, extra). kind: int | float | bool | choice | text
+# The shared hyperparameter contract (see swarmcore/params.py) calls scenarios presets.
+PRESETS = SCENARIOS
+PRESET_KEY = "scenario"
+
 SCHEMA = [
     ("Run", [
         ("scenario", "Scenario", "choice", {k: v["label"] for k, v in SCENARIOS.items()}),
@@ -162,25 +167,7 @@ LIVE_KEYS = {"speed", "sampling", "policy", "dance_bandwidth", "quality_noise", 
 
 def coerce(cfg):
     """Merge user values over defaults with type coercion; apply scenario overrides first."""
-    out = dict(DEFAULTS)
-    scen = (cfg or {}).get("scenario", out["scenario"])
-    if scen in SCENARIOS:
-        out.update(SCENARIOS[scen]["overrides"])
-    for k, v in (cfg or {}).items():
-        if k not in DEFAULTS or v is None or (v == "" and k != "replay_run"):
-            continue
-        d = DEFAULTS[k]
-        try:
-            if isinstance(d, bool):
-                out[k] = v if isinstance(v, bool) else str(v).lower() in ("1", "true", "on", "yes")
-            elif isinstance(d, int):
-                out[k] = int(float(v))
-            elif isinstance(d, float):
-                out[k] = float(v)
-            else:
-                out[k] = str(v)
-        except (TypeError, ValueError):
-            pass
+    out = merge(DEFAULTS, SCENARIOS, PRESET_KEY, cfg, keep_empty=("replay_run",))
     out["n_sites"] = max(2, min(10, out["n_sites"]))
     out["confidence_calibration"] = max(-1.0, min(1.0, out["confidence_calibration"]))
     out["max_dist_m"] = max(out["max_dist_m"], out["min_dist_m"] + 50)

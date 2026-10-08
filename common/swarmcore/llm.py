@@ -1,14 +1,15 @@
 """Minimal OpenAI-compatible chat client (OpenAI or OpenRouter), stdlib only.
 
-API keys are read from a file path at call time. The key value is never logged,
+API keys are read at call time from a key source (a file path or env:NAME, see keys.py). The key value is never logged,
 returned, or included in error messages.
 """
 import json
-import os
 import re
 import time
 import urllib.error
 import urllib.request
+
+from .keys import read_key  # noqa: F401  (re-exported: llm.read_key)
 
 PROVIDERS = {
     "openai": "https://api.openai.com/v1",
@@ -26,15 +27,6 @@ DEFAULT_MODELS = {
 def is_jev_model(model):
     """Jev (TypeSafe System One) models answer typed questions, not chat."""
     return "jev" in (model or "").split("/")[-1].lower()
-
-
-def read_key(path):
-    path = os.path.expanduser(path or "")
-    if not path or not os.path.isfile(path):
-        return None
-    with open(path) as f:
-        key = f.read().strip()
-    return key or None
 
 
 def detect_provider(path):
@@ -78,7 +70,7 @@ class LLMClient:
         headers = {"Content-Type": "application/json",
                    "Authorization": f"Bearer {key}"}
         if self.provider == "openrouter":
-            headers["X-Title"] = "jev-swarm"
+            headers["X-Title"] = "jev-swarm-games"
         last = None
         for attempt in range(retries + 1):
             req = urllib.request.Request(
@@ -154,7 +146,7 @@ class JevClient:
         if not key:
             raise LLMError(f"no API key readable at {self.key_path!r}")
         body = json.dumps({"model": self.model, "state": state, "questions": questions}).encode()
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {key}", "X-Title": "jev-swarm"}
+        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {key}", "X-Title": "jev-swarm-games"}
         last = None
         for attempt in range(retries + 1):
             req = urllib.request.Request(self.url, data=body, headers=headers, method="POST")

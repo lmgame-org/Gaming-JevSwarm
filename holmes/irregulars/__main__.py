@@ -1,9 +1,7 @@
-import argparse
+"""python3 -m irregulars [--port N] [--preset NAME] [--set key=value ...]; options: swarmcore/cli.py."""
+from swarmcore.cli import app_main
 
+from . import config
 from .server import serve
 
-ap = argparse.ArgumentParser(prog="python3 -m irregulars", description="The Irregulars: Holmes case engine, Solo and Swarm")
-ap.add_argument("--host", default="127.0.0.1")
-ap.add_argument("--port", type=int, default=8781)
-a = ap.parse_args()
-serve(a.host, a.port)
+app_main(config, serve, prog="python3 -m irregulars", description="The Irregulars: a Holmes case for one detective or a Jev swarm", port=8781)

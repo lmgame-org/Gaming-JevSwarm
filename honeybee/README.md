@@ -1,4 +1,6 @@
-# Honeybee nest-site selection (jev-swarm/honeybee)
+# Honeybee nest-site selection (jev-swarm-games/honeybee)
+
+> Part of [jev-swarm-games](../README.md). Launch options are the same for every game: `python3 run.py honeybee --list-presets`, `--list-params`, `--preset NAME`, `--set key=value`, `--config FILE.json` (see [Customize your settings](../README.md#customize-your-settings)).
 
 A honeybee swarm hanging from a branch has to choose one new home. Scouts inspect candidate cavities, come back and
 waggle-dance for the ones they like, and other scouts follow those dances to judge the sites themselves. When enough

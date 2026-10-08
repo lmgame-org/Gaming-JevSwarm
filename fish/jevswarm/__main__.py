@@ -1,9 +1,7 @@
-import argparse
+"""python3 -m jevswarm [--port N] [--preset NAME] [--set key=value ...]; options: swarmcore/cli.py."""
+from swarmcore.cli import app_main
 
+from . import config
 from .server import serve
 
-ap = argparse.ArgumentParser(prog="python3 -m jevswarm", description="Jev fish-schooling simulator")
-ap.add_argument("--host", default="127.0.0.1")
-ap.add_argument("--port", type=int, default=8777)
-a = ap.parse_args()
-serve(a.host, a.port)
+app_main(config, serve, prog="python3 -m jevswarm", description="Fish schooling under predator attack, one Jev decision per fish", port=8777)

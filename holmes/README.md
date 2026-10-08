@@ -1,5 +1,7 @@
 # The Irregulars (holmes)
 
+> Part of [jev-swarm-games](../README.md). Launch options are the same for every game: `python3 run.py holmes --list-presets`, `--list-params`, `--preset NAME`, `--set key=value`, `--config FILE.json` (see [Customize your settings](../README.md#customize-your-settings)).
+
 A seeded, procedurally generated Sherlock Holmes case, solved either by **one detective** (Solo) or by a **swarm of
 Baker Street Irregulars** (Swarm), where every agent picks its next move with Jev.
 

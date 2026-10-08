@@ -3,27 +3,8 @@
 Units: lengths in fish body lengths (BL), time in simulated seconds, angles in degrees.
 Starting values follow the design doc; they are engineering defaults, not species estimates.
 """
-import os
-
-# First readable file wins. Keys are only ever read at call time and never logged.
-JEV_KEY_CANDIDATES = [
-    "/workspace/.credentials/openrouter_api_key",
-    "~/.credentials/openrouter_api_key",
-]
-CHAT_KEY_CANDIDATES = [
-    "/workspace/.credentials/llm_api_key",
-    "~/.credentials/llm_api_key",
-    "~/.credentials/astra_api_key",
-    "~/.credentials/openai_key",
-]
-
-
-def first_key(paths):
-    for p in paths:
-        if os.path.isfile(os.path.expanduser(p)):
-            return p
-    return paths[0]
-
+from swarmcore.keys import CHAT_KEY_CANDIDATES, JEV_KEY_CANDIDATES, first_key  # noqa: F401
+from swarmcore.params import merge
 
 DEFAULTS = {
     # run
@@ -124,6 +105,10 @@ SCENARIOS = {
     "calm": {"label": "No predator (schooling only)", "overrides": {"n_predators": 0}},
 }
 
+# The shared hyperparameter contract (see swarmcore/params.py) calls scenarios presets.
+PRESETS = SCENARIOS
+PRESET_KEY = "scenario"
+
 # Launch-screen schema: (key, label, kind, extra). kind: int | float | bool | choice | text
 SCHEMA = [
     ("Run", [
@@ -203,26 +188,6 @@ LIVE_KEYS = {"speed", "vision_range", "turbidity", "sampling", "policy", "fov_de
 
 def coerce(cfg):
     """Merge user values over defaults with type coercion; apply scenario overrides first."""
-    out = dict(DEFAULTS)
-    scen = (cfg or {}).get("scenario", out["scenario"])
-    if scen in SCENARIOS:
-        out.update(SCENARIOS[scen]["overrides"])
-    for k, v in (cfg or {}).items():
-        if k not in DEFAULTS or v is None or v == "":
-            if k in DEFAULTS and k in ("replay_run",):
-                out[k] = ""
-            continue
-        d = DEFAULTS[k]
-        try:
-            if isinstance(d, bool):
-                out[k] = v if isinstance(v, bool) else str(v).lower() in ("1", "true", "on", "yes")
-            elif isinstance(d, int):
-                out[k] = int(float(v))
-            elif isinstance(d, float):
-                out[k] = float(v)
-            else:
-                out[k] = str(v)
-        except (TypeError, ValueError):
-            pass
+    out = merge(DEFAULTS, SCENARIOS, PRESET_KEY, cfg, keep_empty=("replay_run",))
     out["memory_s"] = max(0.0, min(2.0, out["memory_s"]))
     return out

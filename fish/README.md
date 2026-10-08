@@ -1,4 +1,6 @@
-# Fish schooling (jev-swarm/fish)
+# Fish schooling (jev-swarm-games/fish)
+
+> Part of [jev-swarm-games](../README.md). Launch options are the same for every game: `python3 run.py fish --list-presets`, `--list-params`, `--preset NAME`, `--set key=value`, `--config FILE.json` (see [Customize your settings](../README.md#customize-your-settings)).
 
 Fish schooling under predator attack, where **every fish picks its next action with Jev** from its own local view.
 It follows the design doc *Fish Schooling Under Predator Attack* (30 Sep 2026): a 2D world, no central planner,

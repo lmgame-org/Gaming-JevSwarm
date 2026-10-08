@@ -2,14 +2,16 @@
 import json
 import os
 import queue
-import re
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+from swarmcore.keys import key_files
+from swarmcore.web import redact
+
 from . import candidates as C
-from .config import CHAT_KEY_CANDIDATES, DEFAULTS, JEV_KEY_CANDIDATES, POLICIES, SCENARIOS, SCHEMA, coerce
+from .config import DEFAULTS, POLICIES, SCENARIOS, SCHEMA, coerce
 from .engine import RUNS, Engine
 from .llm import JevClient, LLMClient
 
@@ -18,18 +20,6 @@ WEB = os.path.join(ROOT, "web")
 TYPES = {".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css"}
 STATE = {"engine": None, "thread": None}
 LOCK = threading.Lock()
-SECRET = re.compile(r"(sk-[A-Za-z0-9_\-]{6})[A-Za-z0-9_\-*]+")
-
-
-def redact(s):
-    return SECRET.sub(r"\1…", str(s))
-
-
-def key_files():
-    out = []
-    for p in JEV_KEY_CANDIDATES + CHAT_KEY_CANDIDATES:
-        out.append({"path": p, "exists": os.path.isfile(os.path.expanduser(p))})
-    return out
 
 
 def list_runs():
@@ -209,7 +199,7 @@ class Handler(BaseHTTPRequestHandler):
 def serve(host="127.0.0.1", port=8777):
     httpd = ThreadingHTTPServer((host, port), Handler)
     httpd.daemon_threads = True
-    print(f"jev-swarm running at http://{host}:{port}  (Ctrl+C to quit)")
+    print(f"jev-swarm-games fish running at http://{host}:{port}  (Ctrl+C to quit)")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -476,7 +476,7 @@ with more time: 9 of its 11 quorums were on a wrong answer.
 ## Reproduce
 
 ```
-cd ~/worksapce/jev-swarm
+cd ~/worksapce/jev-swarm-games
 python3 run.py holmes                     # viewer at http://127.0.0.1:8781
 cd holmes
 python3 -m irregulars.batch --mode solo  --policies jev chat rule random --seeds 5
