@@ -26,15 +26,15 @@ def image(src, cap):
 
 # what each section shows, placed right under its heading
 MEDIA = {
-    "1.": [video("irregulars_clip1_astra.mp4", "The Lone Genius (GPT6-Astra) on case 57: one cab, one door at a time. It runs out of visits."),
-           image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice the time and visits.")],
-    "2.": [video("irregulars_clip3_jev_swarm.mp4", "The Jev Swarm on case 57: boys coloured by the answer they vote for. "
-                 "It converges in about 4 case hours, on the wrong culprit.")],
-    "3.": [video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm on case 57: Holmes plans at 221B, twelve "
-                 "Jev boys run errands. Solved in 10.5 case hours."),
-           image("irregulars_challenging_setting_results.png", "Table 2. Frame-up cases: somebody lies.")],
+    "solo": [video("irregulars_clip1_astra.mp4", "The Lone Genius (GPT6-Astra) on case 57: motive and hideout found, the decisive culprit clue never reached. Unsolved.")],
+    "swarm": [video("irregulars_clip3_jev_swarm.mp4", "The Jev Swarm on case 57: each colour is one answer. It converges at 4h 15m, on the wrong culprit.")],
+    "holmes": [video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm on case 57: Holmes plans at 221B, twelve Jev boys run "
+                 "errands. Solved in 10.5 case hours.")],
+    "t1": [image("irregulars_standard_setting_results.png", "Table 1. Standard cases, 100 each.")],
+    "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Frame-up cases: somebody lies.")],
+    "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice the time and visits, against the original budget.")],
 }
-HOOK_END = image("irregulars_standard_setting_results.png", "Table 1. Standard cases, 100 each.")
+HOOK_END = ""
 
 
 def convert(md):
@@ -44,11 +44,10 @@ def convert(md):
         if ln.startswith("# "):
             out.append(f"<h1>{inline(ln[2:])}</h1>")
         elif ln.startswith("## "):
-            if sections == 0:  # the results table closes the hook
-                out.insert(len(out) - 1 if out and out[-1] == "<hr>" else len(out), HOOK_END)
             sections += 1
             out.append(f"<h2>{inline(ln[3:])}</h2>")
-            out += MEDIA.get(ln[3:].split(" ")[0], [])
+        elif ln.startswith("{{media:"):
+            out += MEDIA[ln.strip()[8:-2]]
         elif ln.strip() == "---":
             out.append("<hr>")
         elif ln.startswith("- "):
@@ -70,7 +69,7 @@ def convert(md):
             continue
         elif ln.strip():
             para = [ln]
-            while i + 1 < len(lines) and lines[i + 1].strip() and not re.match(r"^(#|- |\||---)", lines[i + 1]):
+            while i + 1 < len(lines) and lines[i + 1].strip() and not re.match(r"^(#|- |\||---|\{\{)", lines[i + 1]):
                 i += 1
                 para.append(lines[i])
             out.append(f"<p>{inline(' '.join(para))}</p>")
@@ -117,7 +116,7 @@ def main():
     blog = convert(open(os.path.join(HERE, "blog.md")).read())
     write("blog.html", "One Genius or Many Minds? | The Irregulars",
           blog + '<p class="back"><a href="trailer.html">Watch the trailer</a> \u00b7 '
-          '<a href="results.html">Results, and a replay of every case: every move, clue and vote &rarr;</a></p>')
+          '<a href="results.html">Results, and a replay of every case (try case 57): every move, clue and vote &rarr;</a></p>')
     write("trailer.html", "Trailer | The Irregulars", """
 <h1>The Irregulars: the trailer</h1>
 <p class="lead">One genius, or many minds? Three ways to solve a murder in Victorian London: GPT6-Astra alone, GPT6-Astra leading

@@ -1,99 +1,94 @@
 # One Genius or Many Minds? What Sherlock Holmes Taught Us About AI Swarms
 
-*A side-by-side study of a lone reasoning model, a reasoning leader with a swarm of small agents, and a leaderless swarm, in 200 simulated murder mysteries.*
+*A lone reasoning model, a leaderless swarm of small agents, and a reasoning leader directing the swarm, in 200 simulated murder mysteries.*
 
 ---
 
-In *The Sign of Four*, Sherlock Holmes explains why he pays a gang of street children a shilling a day: "They can go everywhere, see everything, overhear every one." The great detective's real secret was never one mind. It was a swarm: a dozen boys fanning out across London, bringing back fragments that only he could assemble.
+Sherlock Holmes said of his street boys, the Baker Street Irregulars: "They can go everywhere, see everything, overhear every one." His secret was never one mind. Today's AI faces the same choice: one large model that reasons, or a swarm of small, fast agents?
 
-A century later, AI faces the same choice. Do you build one brilliant model and ask it to do everything? Or do you deploy many small, fast agents and let intelligence emerge from the crowd? Or some mix of the two?
+We built *The Irregulars*, a simulated Victorian London of 100 addresses and 10 suspects. Every address holds one lead: a witness, a footprint, a red herring, or a lie. A case is **solved** only if the culprit, the motive and the hideout are all right within 12 case hours. Three detectives play every case:
 
-We decided to find out the Holmesian way: with a murder.
+- **The Lone Genius (GPT6-Astra):** one large reasoning model takes a cab from door to door, 20 visits.
+- **Jev Swarm:** 100 small, fast Jev agents, no leader. Each shares what it finds with those nearby and votes; the case closes when 30 agree.
+- **Holmes (GPT6-Astra) + Jev Swarm:** GPT6-Astra stays at 221B and plans; 12 Jev boys run the errands and report back.
 
-We built *The Irregulars*, a simulated Victorian London with 100 addresses and 10 suspects. A murder has been committed. Every address holds one lead: a witness, a footprint, a receipt, a red herring, a lie, or nothing at all. To solve the case, an investigator must name the **culprit**, the **motive** and the **hideout**, all three correct, within twelve hours of case time.
-
-Then we sent three kinds of detective to Baker Street:
-
-- **The Lone Genius (GPT6-Astra).** One large reasoning model takes a cab from address to address, reads every lead itself, and decides when to accuse. It gets 20 visits.
-- **Holmes (GPT6-Astra) + Jev Swarm.** GPT6-Astra plays Holmes. He never leaves 221B. He sends twelve street boys, each a small, fast **Jev** model, out on errands, reads their reports, and decides what to check next and when to name the culprit.
-- **Jev Swarm.** A hundred Jev boys and no leader. Each boy keeps his own notebook, shares what he finds with the boys nearby, and votes. When thirty boys name the same culprit, motive and hideout, the case closes.
-
-We ran each on the same 100 seeded cases, then on 100 harder "frame-up" cases where the murderer bribes witnesses to lie. Every number below comes from those 600 runs. No model decision fell back to a scripted rule; we logged every move, clue and vote, and you can replay any case yourself on the interactive site.
-
-The short version: **the leader with a swarm solved 96 of 100 cases, the lone genius 57, and the leaderless swarm 38.** But the interesting part is *why*.
+Every number below comes from real, fully logged runs (no decision fell back to a scripted rule), and you can replay any case on the results page.
 
 ---
 
-## 1. The genius is limited by legwork, not by brains
+## 1. One case, three detectives
 
-Start with the Lone Genius. GPT6-Astra is a strong reasoner. Watch its notes during a case and you see good detective work: "Repeated cigar ash and dark hairs identify Henry Pargeter; chapel evidence corroborates his refuge." When it finds the evidence, it almost always draws the right conclusion.
+Case 57. Florence Fenwick, a physician, is found dead in Soho. The truth: **Beatrice Jessop**, out of **revenge**, hiding in an **opium den in Kensington**.
 
-The problem is that it does not find the evidence. In 59 of 100 standard cases it ran out of visits or time before accusing. Its misses are telling. It gets the hideout right every single time, the culprit 83 times out of 100, but the motive only 68 times. The clues about motive tend to sit near the victim's home, a short detour from the trail of footprints. A single detective, one cab and one door at a time, keeps following the hottest trail and never gets to them.
+**The Lone Genius** starts well. Its first stop turns up an old newspaper cutting about the victim's testimony sending an innocent man to prison, and it writes: "The cutting suggests revenge, but neither culprit nor refuge is established." Muddy prints at the scene show heavy boots, which "narrow the suspects to Ashdown, Fenwick, Esterby, Wetherell and Jessop." Later it smells the opium den, then finds it. Motive and hideout are settled by midday. But the clue that separates the five suspects, a knife sold late that night to a right-handed buyer, sits at an address it never reaches. After twenty visits and ten and a half hours it has to guess, and names the wrong woman. **Unsolved.**
 
-We checked this directly. We gave the Lone Genius twice the budget, 24 hours and 40 visits, and re-ran all 100 cases. Its solve rate jumped from **57 to 91**. Nothing about its reasoning changed. It simply got to knock on more doors.
+{{media:solo}}
 
-But that improvement comes at a cost: about 15 hours of case time and two minutes of real time per case. Meanwhile, Holmes (GPT6-Astra) + Jev Swarm solves **96** cases within the original twelve hours, in about 11 case hours and a minute and a half of real time.
+**The Jev Swarm** is fast. For three hours its boys gather and share clues; then, at 3 hours 15 minutes, the first boy commits to a full answer, and within an hour one answer snowballs from 1 boy to 33. You can watch the colour spread across the map as neighbours copy each other. At 4 hours 15 minutes, 33 boys agree on Prudence Wetherell, revenge, the Kensington opium den, and the case closes. Motive and hideout are right; the culprit is a woman who merely wore the right boots. A second cluster of 8 boys had settled on yet another innocent suspect. **Unsolved.**
 
-That is the first lesson. A single strong model is serial. It can only be in one place at a time, and every clue costs it a full round trip. Twelve small agents searching in parallel buy you coverage that no amount of reasoning can substitute for. Holmes's boys check about 70 addresses per case (median); the lone genius manages 20.
+{{media:swarm}}
 
-There is a cheaper way to see the same point. A simple scripted detective that just counts clues, with no language model at all, solves 61 of the standard cases alone, slightly more than GPT6-Astra alone. Give it 40 visits and it reaches 99. On these honest cases, where every true fact appears twice and each lie only once, careful counting is enough. What is missing is the legwork.
+**Holmes and his Irregulars** take longer, and get it right. Holmes's first order: "Wiggins, begin with the death scene, Florence's home, and independent witnesses. Record exact observations, not rumours." By 2½ hours the boys have brought back the heavy boots and the right-handed knife buyer: "The right-handed buyer tentatively favours Maud or Beatrice. Maud's incompatible alibis demand independent checking." He sends boys to recheck the alibi. By 7½ hours: "Esterby has corroborated alibis. Two newspaper cuttings suggest revenge." At 10½ hours he names Beatrice Jessop, revenge, Kensington. **Solved**, in about two minutes of real time.
 
----
+{{media:holmes}}
 
-## 2. The swarm agrees fast, but agreeing is not the same as being right
-
-If coverage is the bottleneck, why not go all the way: a hundred agents, no leader, maximum parallelism?
-
-The Jev Swarm is genuinely fast. A hundred boys start spread across the city, share leads with their neighbours, and converge. It reaches a thirty-vote agreement in 91 of 100 cases, with a median of just 2.2 case hours and about nine seconds of real time. On the map you can watch it happen: the boys' colours (each colour is one answer) spread from a few clusters until one answer dominates the city.
-
-But it is often wrong. Of those 91 agreements, **53 were on the wrong answer**. The swarm solves only 38 cases.
-
-Look at how it fails and the pattern is clear. A few boys misjudge a clue, say they weigh a lying witness too heavily or misread a description. Their neighbours, who have not seen the evidence themselves, copy the confident vote. The wrong answer snowballs through the gossip network and hits thirty votes before anyone checks. In one case we show in the trailer, two clusters formed around two different innocent suspects, both with the right motive and the right hideout, and the swarm closed on one of them.
-
-This is not a problem with searching. The swarm covers the map beautifully. It is a problem with *judging*. To prove it, we ran a hybrid swarm in which Jev chooses where to go and what to share, but a simple counting rule casts the votes. On standard cases that lifted a 2 km swarm from 11 to 16 solved out of 20 in our earlier benchmark, and a fully scripted counting swarm solves 95 of 100. The small model is good at the many quick, local "where next?" decisions. It is weak as an independent voter, where small misjudgments compound with no one in charge.
-
-The second lesson: parallelism without judgment converges, confidently, on whatever the crowd happens to amplify.
+That is the whole study in one case. The genius reasons well about what it finds but cannot knock on enough doors. The swarm covers the city but votes on half the evidence. The leader with a swarm gets both: twelve pairs of legs to find the decisive clue, and one mind to weigh it.
 
 ---
 
-## 3. When somebody lies, only a reasoning leader sees through it
+## 2. Standard cases: the leader with a swarm wins
 
-So far a skeptic could say: on these cases a simple counting Holmes with a swarm of boys does just as well as GPT6-Astra. And they would be right. Holmes (heuristic) + Jev Swarm solves 95 of 100 standard cases, about 30% faster in case time and twenty times faster in real time. If the world were honest, you would not need a frontier model as the leader.
+Across 100 standard cases (Table 1):
 
-The world is not honest. So we built a hundred more cases in which **somebody lies on purpose**. In each "frame-up" case, the murderer pays his own servants to describe an innocent suspect and to swear their master never left the house. A planted clue at the scene backs them up. Each false detail now appears twice, matching the true one, and the lie outnumbers the truth. Somewhere in the city, two honest witnesses saw the bribe being paid.
+{{media:t1}}
 
-Here the results split cleanly:
+- **Holmes (GPT6-Astra) + Jev Swarm: 96 solved**, median 11.0 case hours, 97 seconds of real time.
+- **The Lone Genius (GPT6-Astra): 57 solved**, 10.5 case hours, 82 seconds.
+- **Jev Swarm: 38 solved**, 2.2 case hours, 9 seconds.
 
-| Method | Standard cases | Frame-up cases |
-|---|---|---|
-| The Lone Genius (GPT6-Astra) | 57 | 59 |
-| **Holmes (GPT6-Astra) + Jev Swarm** | **96** | **93** |
-| Jev Swarm | 38 | 42 |
-| Holmes (heuristic) + Jev Swarm | 95 | **0** |
-| Holmes (heuristic) + heuristic Swarm | 97 | 1 |
+The Jev Swarm is by far the fastest, but speed is its trap. It reaches a 30-vote agreement in 91 of 100 cases, and **53 of those agreements are wrong**. A few boys misjudge a clue, their neighbours copy the confident vote, and the wrong answer snowballs to thirty before anyone checks. Small agents turn out to be good searchers and weak judges.
 
-Every method that counts collapses. The counting Holmes names the framed man almost every time, because two matching lies beat one true clue. It still gets the motive and hideout right, but it never catches the real murderer.
+The heuristic baselines make the same point from the other side. On these honest cases, where every true fact appears twice and each lie once, a Holmes that simply counts clues does just as well with the same boys (95 with Jev boys, 97 with scripted boys). What wins here is the structure, one leader and many helpers, more than the brilliance of the leader.
 
-GPT6-Astra does not fall for it. As Holmes, reading his boys' reports, he writes things like: "Pargeter's servants supply both his alibi and the evidence against Leopold; the dry snuff-box suggests planting. Pargeter merits suspicion, not accusation." It notices who is speaking, not just how often something is said. Holmes (GPT6-Astra) + Jev Swarm solves 93 of 100 frame-ups. The Lone Genius reasons just as well, it names the right culprit almost every time, but still runs out of doors before the motive. The leaderless Jev Swarm does better than any counting player, because some boys read the testimony and doubt it, yet without a leader it still often agrees on the framed man.
+---
 
-(A note of honesty: the lone genius and the swarm score a few points higher on frame-ups than on standard cases. That is within chance, the 95% intervals overlap almost entirely, and the frame-up cases include extra handles a careful reader can use, like the witnesses who saw the bribe. The lie is built to fool counting, and it does.)
+## 3. When somebody lies
 
-The third lesson is the synergy. The swarm brings coverage and speed. The reasoning leader brings judgment. On easy cases you can get away with either one alone being simple. On cases built to deceive, you need both: the many minds to go everywhere and overhear everyone, and the one mind to decide whom to believe.
+So we made the cases harder. In 100 *frame-up* cases the murderer pays his own servants to describe an innocent man and swear their master never left home, and a planted clue backs them up. Now the lie appears more often than the truth. Two honest witnesses saw the bribe being paid (Table 2):
+
+{{media:t2}}
+
+- **Holmes (GPT6-Astra) + Jev Swarm: 93 solved.**
+- The Lone Genius (GPT6-Astra): 59.
+- Jev Swarm: 42.
+- Replace the Astra leader with a clue-counting Holmes: **0**. Replace the Jev swarm with a counting swarm: **1**.
+
+Counting follows the majority, and the majority is now lying. GPT6-Astra asks who is speaking. In one frame-up, Holmes wrote: "Pargeter's servants supply both his alibi and evidence against Leopold; the dry snuff-box suggests planting. Pargeter merits suspicion, not accusation." The Jev Swarm does better than any counting player because some boys read the testimony and doubt it, but without a leader it still often agrees on the framed man.
+
+So the leader matters after all, once the case fights back. The swarm finds the evidence; only a reasoning leader decides whom to believe.
+
+---
+
+## 4. Why the genius loses: efficiency, not capability
+
+Is the Lone Genius simply a worse detective? No. Case 57 already showed it reasoning well; it ran out of doors. In 59 of 100 standard cases it hit its limit, and the piece it was missing was usually the motive, never the hideout.
+
+So we gave it twice the time and visits: 24 case hours and 40 visits (Table 3). It jumps from **57 to 91** on standard cases and from **59 to 89** on frame-ups. Given enough time, the genius can do the job. A control confirms it is the visits that matter, not the hours: a counting detective at 24 hours with the original 20 visits stays at 61, and with 40 visits reaches 99.
+
+{{media:t3}}
+
+But look at the cost. To reach 91, the Lone Genius needs about **15 case hours** and **two minutes of real time** per case. Holmes (GPT6-Astra) + Jev Swarm reaches **96** within the original 12 hours (median 11) and about a minute and a half, because twelve boys search in parallel while the leader thinks. Holmes's boys check about 70 addresses per case; the lone genius manages 20, or 40 with double the budget.
+
+That is the real distinction. The lone model's limit is not capability but **efficiency**: one reasoner doing all the legwork serially. A swarm of cheap, fast agents buys parallel coverage; a strong leader turns that coverage into a correct verdict.
 
 ---
 
 ## What this suggests
 
-Holmes knew it in 1890. The street boys were never meant to solve the case; they were meant to find the pieces. The genius was never meant to walk every street; he was meant to see the shape the pieces make.
+Holmes knew it in 1890. The street boys were never meant to solve the case; they were meant to find the pieces. The genius was never meant to walk every street; he was meant to see the shape the pieces make. For multi-agent AI that suggests a simple division of labour: let small, fast agents make the many local "where next?" decisions, do not let a crowd of them be the judge, and put a strong reasoner at the point of judgment.
 
-For multi-agent AI, our toy London suggests a simple division of labour:
-
-- **Use small, fast agents for the many local decisions**: where to look next, what to report, when to come back. They are cheap, they parallelize, and they are good at it. In our runs, Jev's errand decisions were as useful as a carefully scripted rule.
-- **Do not let a crowd of small agents be the judge.** Voting among small models converges fast and wrong, especially under deception.
-- **Put a strong reasoner at the point of judgment**, reading everything the swarm brings back. That is where a frontier model earns its cost, and where it turns a fast, error-prone crowd into a detective agency that solves 96 of 100 cases, and 93 of 100 when the witnesses lie.
-
-One genius, or many minds? Holmes's answer, and ours: one genius, and many minds.
+One genius, or many minds? Our answer, and Holmes's: one genius, and many minds.
 
 ---
 
-*Methods in brief.* Cases are generated from a seed: 100 addresses on a street graph, 10 suspects with six visible traits, 6 motives, 8 candidate hideouts; true key facts appear at two addresses, lone lies at one; frame-up cases add coordinated lies, a planted clue, timed alibis and witnesses to the bribe, and each is checked to be solvable by a careful reader. All approaches get 12 case hours. Holmes's boys walk; the lone genius takes cabs. The Jev swarm uses a 2 km shouting range and closes at 30 identical votes. Model calls were allowed 30 seconds; zero decisions fell back to a rule. 95% Wilson intervals are in the tables. Replay every case at the interactive site.
+*Methods in brief.* Cases are generated from a seed: 100 addresses on a street graph, 10 suspects with six visible traits, 6 motives, 8 candidate hideouts. In standard cases each true key fact appears at two addresses and each lie at one; frame-up cases add coordinated lies, a planted clue, timed alibis and witnesses to the bribe, and each case is checked to be solvable by a careful reader. All approaches get 12 case hours. Holmes's boys walk; the lone genius takes cabs. The Jev Swarm uses a 2 km range and closes at 30 identical votes. Model calls were allowed 30 seconds; zero decisions fell back to a rule. Wilson 95% intervals are in the tables.
