@@ -1,10 +1,3 @@
-<p align="center">
-  <img src="fish/docs/viewer.jpg" alt="fish" width="24%">
-  <img src="honeybee/docs/viewer.jpg" alt="honeybee" width="24%">
-  <img src="holmes/docs/viewer_baker_street.jpg" alt="holmes" width="24%">
-  <img src="circuit/docs/img/v3_viewer_baker_street.png" alt="circuit" width="24%">
-</p>
-
 <div align="center"> <h1>Jev Swarm Games</h1> </div>
 
 <p align="center">
@@ -16,21 +9,10 @@
 
 ## Introduction
 
-Jev Swarm Games is a set of collective-behaviour studies and games where **every agent picks its next action with
-Jev**, TypeSafe's fast "System One" decision model, from nothing but its own local information. There is no central
-planner and no hidden shared state: a fish sees only its vision sector, a scout bee remembers only the sites it has
-visited, and an Irregular knows only the leads it has heard. You watch many small, noisy decisions turn into one
-collective behaviour, intervene while it runs, and compare the swarm with a single strong reasoner (OpenAI
-`gpt-6-astra`), with a strong leader directing a swarm, and with hand-written rules.
-
-Four games share one launcher, one hyperparameter interface, one model client and one key policy:
-
-- **fish**: fish schooling under predator attack (escape waves, fragmentation, confusion effect).
-- **honeybee**: honeybee nest-site selection (waggle dances, quorum, misinformation, stubborn scouts).
-- **holmes**: *The Irregulars*, a seeded Sherlock Holmes case solved by one detective, by Holmes directing Jev
-  street boys, or by a leaderless swarm of 100 Jev Irregulars who lie, forget and vote.
-- **circuit**: one injected hardware bug in a pipelined CPU (or a 12-core chip), hunted solo, at Baker Street, or
-  by a swarm.
+Collective-behaviour games where **every agent picks its next action with Jev** from its own local information, and
+the swarm is compared with a single `gpt-6-astra` reasoner, a leader directing a swarm, and plain rules. Four games
+share one launcher and one settings interface: **fish** (schooling under predator attack), **honeybee** (nest-site
+selection), **holmes** (a Sherlock Holmes case) and **circuit** (hunting a CPU bug).
 
 ## Contents
 
