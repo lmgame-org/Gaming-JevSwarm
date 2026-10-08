@@ -275,7 +275,7 @@ docs/project_history.md  decisions, results and open work across all games
 ```
 @misc{jevswarmgames2026,
   title  = {Jev Swarm Games: collective behaviour from many fast local decisions},
-  author = {Sonny},
+  author = {LMGame Team},
   year   = {2026},
   howpublished = {\url{https://github.com/snyhlx/jev-swarm-games}}
 }
