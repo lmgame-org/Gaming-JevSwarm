@@ -103,6 +103,60 @@ PYTHONPATH=.:../common python3 -m cpudebug.batch --settings solo_rule,baker_rule
 PYTHONPATH=.:../common python3 -m cpudebug.report docs/x.csv
 ```
 
+## Difficulty tiers
+
+The launch screen's Step 2 picks the tier. `tier` in the settings.
+
+| Tier | The chip | What makes it hard |
+|---|---|---|
+| easy | the 96-block CPU | investigators get the first wrong instruction and its cycle; no noise, no liars |
+| v2 | the 96-block CPU | the hardening knobs above (final values only, noise, rare-trigger and two-bug cases, liars) |
+| v3 | 12 cores, 1,187 blocks, about 2,500 wires | see below |
+
+**v3: what's on the chip.** 12 copies of the CPU each run their own program. Each core has a signature unit (a MISR
+over its write-back and store stream), and an XOR tree folds the 12 signatures into the chip signature.
+
+**What the investigators see.** Only that the chip signature is wrong, plus each core's golden signature. So the
+first step is global: read the core signatures (`SIG:c<k>`, one probe each) to find the bad core. A group reads all
+12 at once; one investigator needs up to 12 probes.
+
+**Bugs:**
+- the v2 block faults, in any core or in the signature fabric;
+- **wire faults** on one connection inside a core: `delay` (the receiver sees last cycle's value, a load-timing bug)
+  or `convention` (it reads the bus bit-reversed, or a 1-bit signal inverted, an interface mismatch). Both blocks
+  meet their own specs, so only a link probe on that wire (`L:c<k>:<receiver>.<port>`) or cross-block reasoning
+  (both ends observed, values disagree) can see it.
+
+**Scarce bench.** A bench drive takes 3 ticks and one of 2 shared bench slots, and covers 4 vectors from one input
+region. The `trace` region replays what the block saw at a chosen cycle.
+
+**Grading.** Up to 3 fixes; any fix that names an innocent block or wire makes the answer wrong.
+
+**Defaults:** 4-cycle check window, 8-hour clock, solo budget = the clock (32 probes), swarm quorum 12%.
+
+[docs/problem_setup.md](docs/problem_setup.md) explains why v2 needed this: a blind parallel bench sweep solved
+80/100 v2 cases. On v3 it solves 0/100 ([docs/bench_sweep_v3_100seeds.csv](docs/bench_sweep_v3_100seeds.csv)).
+
+**v3 results** (100 seeds; [full write-up](docs/benchmark_v3_100seeds_2026-10-08.md)):
+
+| Setting | Fixed |
+|---|---|
+| Solo gpt-6-astra | 39/82 |
+| Baker Street, counting Holmes, rule boys | 24/100 |
+| Baker Street, gpt-6-astra Holmes | 19-23/100 |
+| Baker Street, counting Holmes, Jev boys | 15-18/100 |
+| Solo rule | 7/100 |
+| Solo Jev | 1/100 |
+| Every leaderless swarm | 0/100 |
+
+The swarms fail because radio does not cross cores, and a quorum must outnumber the liars.
+
+![v3 Baker Street on the 12-core chip](docs/img/v3_viewer_baker_street.png)
+
+The v3 viewer shows the 12 cores in a grid. Each core carries a signature badge: ? unread, ✓ clean, ! read bad once,
+✗ confirmed bad. Suspect wires are drawn in colour. Scroll or click to zoom into a core; zoomed in, blocks are
+labelled and wires drawn ([zoomed screenshot](docs/img/v3_viewer_baker_street_zoom.png)).
+
 ## The viewer
 
 ![Baker Street live view](docs/img/viewer_baker_street.png)
