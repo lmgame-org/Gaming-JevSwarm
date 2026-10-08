@@ -4,15 +4,15 @@
 
 ---
 
-Sherlock Holmes said of his street boys, the Baker Street Irregulars: "They can go everywhere, see everything, overhear every one." His secret was never one mind. Today's AI faces the same choice: one large model that reasons, or a swarm of small, fast agents?
+Sherlock Holmes never worked alone: his street boys, the Baker Street Irregulars, could "go everywhere, see everything." AI faces the same choice today: one large model that reasons, or a swarm of small, fast agents? We tested both, and the combination, in *The Irregulars*.
 
-We built *The Irregulars*, a simulated Victorian London of 100 addresses and 10 suspects. Every address holds one lead: a witness, a footprint, a red herring, or a lie. A case is **solved** only if the culprit, the motive and the hideout are all right within 12 case hours. Three detectives play every case:
+**Preliminaries.** Each case is a simulated Victorian London with 100 addresses, 10 suspects and one lead per address (a witness, a footprint, a red herring or a lie). A case is **solved** only if the culprit, motive and hideout are all right within 12 case hours. Three detectives play every case:
 
 - **The Lone Genius (GPT6-Astra):** one large reasoning model takes a cab from door to door, 20 visits.
-- **Jev Swarm:** 100 small, fast Jev agents, no leader. Each shares what it finds with those nearby and votes; the case closes when 30 agree.
+- **Jev Swarm:** 100 small, fast Jev agents, no leader. They share clues with neighbours and vote; the case closes when 30 agree.
 - **Holmes (GPT6-Astra) + Jev Swarm:** GPT6-Astra stays at 221B and plans; 12 Jev boys run the errands and report back.
 
-Every number below comes from real, fully logged runs (no decision fell back to a scripted rule), and you can replay any case on the results page.
+All numbers come from fully logged runs (no model decision fell back to a scripted rule); every case can be replayed on the results page.
 
 ---
 
@@ -71,15 +71,22 @@ So the leader matters after all, once the case fights back. The swarm finds the 
 
 ## 4. Why the genius loses: efficiency, not capability
 
-Is the Lone Genius simply a worse detective? No. Case 57 already showed it reasoning well; it ran out of doors. In 59 of 100 standard cases it hit its limit, and the piece it was missing was usually the motive, never the hideout.
+Is the Lone Genius simply a worse detective? No. Case 57 showed it reasoning well; it ran out of doors. In 59 of 100 standard cases it used up its visits or its hours, and of its 43 failures, 32 had the motive wrong, 17 the culprit, and none the hideout.
 
-So we gave it twice the time and visits: 24 case hours and 40 visits (Table 3). It jumps from **57 to 91** on standard cases and from **59 to 89** on frame-ups. Given enough time, the genius can do the job. A control confirms it is the visits that matter, not the hours: a counting detective at 24 hours with the original 20 visits stays at 61, and with 40 visits reaches 99.
+So we gave it twice the budget: 24 case hours and 40 visits (Table 3). It climbs from **57 to 91** on standard cases and from **59 to 89** on frame-ups. Given the legwork, the genius can solve the case. A control shows the visits matter, not the hours: a counting detective at 24 hours with the original 20 visits stays at 61, and with 40 visits reaches 99.
 
 {{media:t3}}
 
-But look at the cost. To reach 91, the Lone Genius needs about **15 case hours** and **two minutes of real time** per case. Holmes (GPT6-Astra) + Jev Swarm reaches **96** within the original 12 hours (median 11) and about a minute and a half, because twelve boys search in parallel while the leader thinks. Holmes's boys check about 70 addresses per case; the lone genius manages 20, or 40 with double the budget.
+The gap is efficiency. On standard cases:
 
-That is the real distinction. The lone model's limit is not capability but **efficiency**: one reasoner doing all the legwork serially. A swarm of cheap, fast agents buys parallel coverage; a strong leader turns that coverage into a correct verdict.
+| | Solved | Case time (median) | Real time (median) | Cost per case |
+|---|---|---|---|---|
+| The Lone Genius (GPT6-Astra), 24 h / 40 visits | 91 | 14.8 h | 126 s | $0.60 |
+| Holmes (GPT6-Astra) + Jev Swarm, 12 h | 96 | 11.0 h | 97 s | $0.58 |
+
+With double the budget, the Lone Genius still solves fewer cases. It needs about 35% more case time (3.8 more hours, which breaks the 12-hour rule) and about 30% more real time (29 more seconds), at roughly the same cost. Holmes's boys cover a median of 74 addresses per case, searching in parallel while the leader thinks; the genius covers 40 at most, one cab ride after another. On frame-ups the gap is smaller: the doubled Lone Genius solves 89 in 12.4 h and 104 s at $0.52 a case, against 93 in 12.0 h and 99 s at $0.60 for Holmes + Jev. There it is a little cheaper, but still slower and still less accurate, and still past the 12-hour limit.
+
+So the lone model is not short of capability; it is short of **efficiency**, because one reasoner does all the legwork serially. The cheap, fast swarm buys parallel coverage, and a strong leader turns that coverage into the right verdict.
 
 ---
 
