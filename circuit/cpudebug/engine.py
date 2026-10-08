@@ -330,7 +330,8 @@ class Engine:
         c = self.case
         return {"blocks": c.public_blocks(), "edges": c.edges(), "brief": c.brief(), "results": c.results,
                 "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "window": c.window,
-                "src": c.test["src"], "mode": self.mode, "setting": self.setting, "deadline": self.deadline,
+                "src": c.test.get("src", ""), "mode": self.mode,
+                "occupancy_all": [c.occupancy(k) for k in range(c.n_cores)] if self.v3 else None, "setting": self.setting, "deadline": self.deadline,
                 "cfg": {k: v for k, v in self.cfg.items() if not k.endswith("_key")}}
 
     def agent_detail(self, i):

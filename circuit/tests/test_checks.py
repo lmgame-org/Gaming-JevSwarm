@@ -138,6 +138,51 @@ def test_jev_paths_with_a_fake_model():
         assert sm["inference"]["calls"] > 0
 
 
+def test_v3_chip_case_and_grading():
+    from cpudebug.chip import ChipCase
+    from cpudebug.config import coerce
+    for s in (1, 2, 3, 6):
+        c = ChipCase(coerce({"seed": s, "tier": "v3"}))
+        assert len(c.blocks) > 1000 and any(not r["ok"] for r in c.results)
+        bad = [k for k in range(c.n_cores) if c.trace.core_sigs[k] != c.trace.golden.core_sigs[k]]
+        assert {f["core"] for f in c.faults if f.get("core") is not None} <= set(bad)
+        right = c.grade({"fixes": [dict(f) for f in c.faults]})
+        assert right["fix_ok"] and right["innocent_fixes"] == 0
+        extra = c.grade({"fixes": [dict(f) for f in c.faults] + [{"block": "c0.alu_and", "key": "stuck:out:0"}]})
+        assert not extra["fix_ok"] and extra["innocent_fixes"] == 1   # an innocent fix is penalised
+
+
+def test_v3_wire_fault_is_invisible_to_block_checks():
+    from cpudebug.chip import ChipCase
+    from cpudebug.config import coerce
+    for s in range(1, 40):
+        c = ChipCase(coerce({"seed": s, "tier": "v3", "noise": 0.0, "double_frac": 0.0}))
+        f = c.faults[0]
+        if not f.get("wire"):
+            continue
+        lk = c.by[f["block"]]
+        cyc = c.slice_cycles().get(f["block"])
+        if not cyc:
+            continue
+        caught = any(c.check(f["block"], x)["mismatch"] for x in cyc)
+        ends = [lk.src[0], lk.dst[0]]
+        blk = [b for b in ends if not c.by[b].trusted]
+        assert caught
+        assert not any(c.check(b, x)["mismatch"] for b in blk for x in cyc[:4])
+        return
+    raise AssertionError("no wire bug in seeds 1-39")
+
+
+def test_v3_families_run_offline():
+    for cfg in ({"mode": "solo", "solo_policy": "rule"}, {"mode": "leader", "holmes": "rule", "boy_policy": "rule"},
+                {"mode": "swarm", "swarm_policy": "rule"}):
+        e = Engine(dict(cfg, seed=4, tier="v3"), realtime=False, log=False)
+        e.run()
+        assert not e.summary["errors"], e.summary["errors"]
+        json.dumps(e.frame(), default=str)
+        json.dumps(e.static(), default=str)
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

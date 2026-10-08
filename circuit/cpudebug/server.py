@@ -10,6 +10,7 @@ from swarmcore.llm import JevClient, LLMClient
 from swarmcore.web import BaseHandler, redact, serve as _serve
 
 from .case import Case
+from .chip import ChipCase
 from .config import BOYS, DEFAULTS, HOLMES, MODES, PRESETS, SCHEMA, SOLO_POLICIES, SWARM_POLICIES, coerce
 from .engine import RUNS, Engine
 
@@ -37,39 +38,44 @@ def list_runs():
 
 
 def bench():
-    """Per-setting results of the newest benchmark CSVs in docs/ (shown on the launch screen)."""
+    """Per-tier, per-setting results of the benchmark CSVs in docs/ (shown on the launch screen)."""
     import csv
     import glob
+    files = {"v2": sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_100seeds_v2*.csv"))) or
+             sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_20seeds_*.csv"))),
+             "v3": sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_v3_*.csv")))}
     out = {}
-    rows = []
-    files = sorted(glob.glob(os.path.join(ROOT, "docs", "benchmark_*.csv")))
-    big = [p for p in files if "100seeds" in p]
-    for p in (big or files):  # the 100-seed run supersedes the 20-seed one
-        with open(p) as f:
-            rows += list(csv.DictReader(f))
-    for r in rows:
-        if "setting" not in r:
-            continue
-        d = out.setdefault(r["setting"], {"solved": 0, "n": 0, "spend": 0.0, "walls": []})
-        d["n"] += 1
-        d["solved"] += r["fix_ok"] == "True"
-        d["spend"] += float(r["cost_usd"] or 0)
-        d["walls"].append(float(r.get("wall_s") or 0))
-    for d in out.values():
-        c = d["spend"] / max(1, d["n"])
-        d["cost"] = "free" if c == 0 else f"${c:.4f} per case" if c < 0.01 else f"${c:.3f} per case"
-        w = sorted(d.pop("walls"))
-        m = w[len(w) // 2] if w else 0
-        d["wall"] = f"{m:.0f} s" if m >= 1 else "under a second"
+    for tier, paths in files.items():
+        rows = []
+        for p in paths:
+            with open(p) as f:
+                rows += list(csv.DictReader(f))
+        t = out.setdefault(tier, {})
+        for r in rows:
+            if "setting" not in r:
+                continue
+            d = t.setdefault(r["setting"], {"solved": 0, "n": 0, "spend": 0.0, "walls": []})
+            d["n"] += 1
+            d["solved"] += r["fix_ok"] == "True"
+            d["spend"] += float(r["cost_usd"] or 0)
+            d["walls"].append(float(r.get("wall_s") or 0))
+        for d in t.values():
+            c = d["spend"] / max(1, d["n"])
+            d["cost"] = "free" if c == 0 else f"${c:.4f} per case" if c < 0.01 else f"${c:.3f} per case"
+            w = sorted(d.pop("walls"))
+            m = w[len(w) // 2] if w else 0
+            d["wall"] = f"{m:.0f} s" if m >= 1 else "under a second"
     return out
 
 
 def preview(q):
-    c = Case(coerce(q))
+    cfg = coerce(q)
+    c = ChipCase(cfg) if cfg["tier"] == "v3" else Case(cfg)
     sl = c.slice_cycles()
     return {"blocks": c.public_blocks(), "edges": c.edges(), "brief": c.brief(), "results": c.results,
-            "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "src": c.test["src"], "window": c.window,
-            "slice": {b: len(v) for b, v in sl.items()},
+            "occupancy": c.occupancy(), "n": c.n, "starts": c.starts, "src": c.test.get("src", ""), "window": c.window,
+            # v3: no per-block shading (it would show which core is broken)
+            "slice": {} if cfg["tier"] == "v3" else {b: len(v) for b, v in sl.items()}, "tier": cfg["tier"],
             # spoiler-free solvability: does the handed-out test's back-trace reach every broken block?
             "check": {"reachable": all(f["block"] in sl for f in c.faults), "slice_blocks": len(sl),
                       "slice_nodes": sum(len(v) for v in sl.values()), "suspect_blocks": sum(1 for b in c.blocks if not b.trusted),

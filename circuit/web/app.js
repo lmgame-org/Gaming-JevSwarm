@@ -102,9 +102,43 @@ function layout(blocks) {
   });
   return { pos, colX, rowH };
 }
-let LAY = null, ADJ = null, BY = {};
+let LAY = null, ADJ = null, BY = {}, CHIP = false, DRV = {};
+/* v3: twelve cores in a 4 x 3 grid, each a scaled copy of the single-core layout; the signature tree on the right */
+function chipLayout(blocks) {
+  const cores = {};
+  blocks.forEach((b) => { if (b.core !== null && b.core !== undefined) (cores[b.core] = cores[b.core] || []).push(b); });
+  const n = Object.keys(cores).length, ncol = 4, nrow = Math.ceil(n / ncol);
+  const gx = 8, gy = TOP, gw = VW - 86, gh = FLOOR - TOP - 4, cw = gw / ncol, ch = gh / nrow;
+  const pos = {}, cells = [];
+  const local = layout(cores[0].filter((b) => !b.name.endsWith("sig_mix") && !b.name.endsWith("sig_reg")).map((b) => ({ ...b, name: b.name.split(".").slice(1).join(".") })));
+  for (let k = 0; k < n; k++) {
+    const cx0 = gx + (k % ncol) * cw, cy0 = gy + Math.floor(k / ncol) * ch;
+    cells.push({ k, x: cx0 + 3, y: cy0 + 3, w: cw - 6, h: ch - 6 });
+    const sx = (cw - 34) / (VW - 16), sy = (ch - 22) / (FLOOR - TOP - 10);
+    for (const b of cores[k]) {
+      const ln = b.name.split(".").slice(1).join(".");
+      let q = local.pos[ln];
+      if (ln === "sig_mix" || ln === "sig_reg") {
+        const yy = cy0 + ch / 2 + (ln === "sig_reg" ? 8 : -10);
+        pos[b.name] = { x: cx0 + cw - 26, y: yy, w: 20, h: 14, cx: cx0 + cw - 16, cy: yy + 7, b };
+        continue;
+      }
+      const x = cx0 + 6 + (q.x - 8) * sx, y = cy0 + 16 + (q.y - TOP) * sy, w = q.w * sx, h = q.h * sy;
+      pos[b.name] = { x, y, w, h, cx: x + w / 2, cy: y + h / 2, b };
+    }
+  }
+  const tree = blocks.filter((b) => b.name.startsWith("tree"));
+  tree.forEach((b, i) => {
+    const y = gy + 10 + i * (gh - 20) / Math.max(1, tree.length);
+    pos[b.name] = { x: VW - 72, y, w: 60, h: 18, cx: VW - 42, cy: y + 9, b };
+  });
+  return { pos, cells, colX: [], rowH: 0 };
+}
 function prepare(blocks, edges) {
-  LAY = layout(blocks);
+  CHIP = blocks.some((b) => b.core !== null && b.core !== undefined);
+  LAY = CHIP ? chipLayout(blocks) : layout(blocks);
+  DRV = {};
+  for (const [a, b, port] of edges) DRV[b + "|" + port] = a;
   BY = {}; blocks.forEach((b) => (BY[b.name] = b));
   ADJ = {}; blocks.forEach((b) => (ADJ[b.name] = new Set()));
   for (const [a, b] of edges) { if (a !== b) { ADJ[a].add(b); ADJ[b].add(a); } }
@@ -135,7 +169,25 @@ function along(pts, f) {
   return pts[pts.length - 1];
 }
 const DESK = [120, FLOOR + 40];
-function postXY(col) { if (col === null || col === undefined || !LAY) return null; const [x, cw] = LAY.colX[col]; return [x + cw / 2, FLOOR + 34]; }
+function postXY(col) {
+  if (col === null || col === undefined || !LAY) return null;
+  if (CHIP) { const c = LAY.cells[Math.min(LAY.cells.length - 1, Math.floor(col / 12))]; if (!c) return null; return [c.x + ((col % 12) / 12) * c.w, c.y + c.h - 6]; }
+  if (!LAY.colX[col]) return null;
+  const [x, cw] = LAY.colX[col]; return [x + cw / 2, FLOOR + 34];
+}
+/* a wire L:c<k>:<receiver>.<port> or a signature SIG:c<k> is drawn at its receiver / the core's signature mixer */
+function anchorName(n) {
+  if (!n) return n;
+  if (n.startsWith("L:")) { const m = /^L:c(\d+):([^.]+)\./.exec(n); return m ? `c${m[1]}.${m[2]}` : n; }
+  if (n.startsWith("SIG:")) return `${n.slice(4)}.sig_mix`;
+  return n;
+}
+function wireEnds(n) {
+  const m = /^L:c(\d+):([^.]+)\.(.+)$/.exec(n);
+  if (!m) return null;
+  const dst = `c${m[1]}.${m[2]}`, src = DRV[dst + "|" + m[3]];
+  return src ? [src, dst] : null;
+}
 
 /* ---------------------------------------------------------------------------------------------- camera */
 const CAM = { z: 1, cx: VW / 2, cy: VH / 2, from: null, to: null, t0: 0, dur: 0, drag: null };
@@ -162,6 +214,7 @@ function baseLayer(c) {
   const g = off.getContext("2d"); g.scale(dpr, dpr);
   g.fillStyle = css("--board"); g.fillRect(0, 0, v.W, v.H);
   const S = v.s * CAM.z;
+  if (CHIP) { chipBase(g, v, S); BASES.set(key, off); return off; }
   // stage bands
   LAY.colX.forEach(([x, cw], i) => {
     const [x1, y1] = P(v, x, TOP - 6), [x2, y2] = P(v, x + cw, FLOOR);
@@ -205,6 +258,50 @@ function baseLayer(c) {
   BASES.set(key, off);
   return off;
 }
+function chipBase(g, v, S) {
+  const progs = (ST.brief.core_programs || []);
+  for (const c of LAY.cells) {
+    const [x, y] = P(v, c.x, c.y), w = c.w * S, h = c.h * S;
+    if (x > v.W || y > v.H || x + w < 0 || y + h < 0) continue;
+    rr(g, x, y, w, h, 6); g.fillStyle = css("--band"); g.fill(); g.strokeStyle = css("--line2"); g.lineWidth = 1; g.stroke();
+    g.fillStyle = css("--muted"); g.font = `600 ${Math.max(9, Math.min(13, 9 * S))}px ${css("--f-ui")}`; g.textAlign = "left";
+    g.fillText(`core c${c.k} · ${progs[c.k] || ""}`, x + 6, y + Math.max(11, 10 * S));
+  }
+  const detail = S > 2.6;
+  if (detail) {   // wires inside the cores that are on screen
+    g.strokeStyle = css("--wire"); g.lineWidth = 0.7; g.beginPath();
+    for (const [a, b] of ST.edges) {
+      const A = LAY.pos[a]; if (!A) continue;
+      const [ax, ay] = P(v, A.cx, A.cy); if (ax < -50 || ay < -50 || ax > v.W + 50 || ay > v.H + 50) continue;
+      wireCurve(g, v, a, b);
+    }
+    g.stroke();
+  }
+  // signature fabric: each core's sig register to the tree
+  g.strokeStyle = alpha(css("--accent"), 0.18); g.lineWidth = 1; g.beginPath();
+  for (const [a, b] of ST.edges) if (b.startsWith("tree")) { const A = LAY.pos[a], B = LAY.pos[b]; if (!A || !B) continue;
+    const [x1, y1] = P(v, A.x + A.w, A.cy), [x2, y2] = P(v, B.x, B.cy); g.moveTo(x1, y1); g.lineTo(x2, y2); }
+  g.stroke();
+  for (const p of Object.values(LAY.pos)) {
+    const [x, y] = P(v, p.x, p.y), w = p.w * S, h = p.h * S;
+    if (x > v.W || y > v.H || x + w < 0 || y + h < 0) continue;
+    if (w < 1.2) continue;
+    g.fillStyle = p.b.trusted ? css("--pipe") : css("--logic");
+    if (w > 6) { rr(g, x, y, w, h, Math.min(3, w / 4)); g.fill(); g.strokeStyle = css("--line2"); g.lineWidth = 0.6; g.stroke(); }
+    else g.fillRect(x, y, w, h);
+    if (h > 10 && w > 30) {
+      g.fillStyle = p.b.trusted ? css("--pipe-ink") : css("--board-ink");
+      g.font = `${Math.min(12, Math.max(7, h * 0.55))}px ${css("--f-mono")}`; g.textAlign = "center"; g.textBaseline = "middle";
+      let lab = p.b.name.split(".").slice(1).join(".") || p.b.name; if (p.b.trusted) lab = short(lab);
+      while (lab.length > 2 && g.measureText(lab).width > w - 4) lab = lab.slice(0, -1);
+      g.fillText(lab, x + w / 2, y + h / 2 + 0.5); g.textBaseline = "alphabetic";
+    }
+  }
+  const [dx, dy] = P(v, 12, FLOOR + 12), dw = 150 * S, dh = 52 * S;
+  rr(g, dx, dy, dw, dh, 6); g.fillStyle = css("--surface"); g.fill(); g.strokeStyle = css("--line2"); g.stroke();
+  g.fillStyle = css("--muted"); g.font = `600 ${Math.max(8, 10 * S)}px ${css("--f-ui")}`; g.textAlign = "left";
+  g.fillText(ST.mode === "leader" ? "221B BAKER STREET" : ST.mode === "solo" ? "THE BENCH" : "THE BENCH FLOOR", dx + 8 * S, dy + 14 * S);
+}
 function wireCurve(g, v, a, b, only) {
   const A = LAY.pos[a], B = LAY.pos[b];
   if (!A || !B) return;
@@ -222,6 +319,7 @@ const FLASH = [];
 const RIPPLE = [];
 let lastProbeN = 0;
 function anchorOf(a) {
+  if (a.block && !LAY.pos[a.block]) a = { ...a, block: anchorName(a.block) };
   if (a.block && LAY.pos[a.block]) return { block: a.block, xy: [LAY.pos[a.block].cx, LAY.pos[a.block].cy] };
   if (a.where === "post" && F && F.post !== null && F.post !== undefined) return { block: null, xy: postXY(F.post) };
   return { block: null, xy: [DESK[0] + 30, DESK[1]] };
@@ -301,6 +399,25 @@ function drawMap(now) {
       g.fillStyle = css("--bad"); g.font = `700 ${Math.max(9, 10 * S)}px ${css("--f-ui")}`; g.textAlign = "right"; g.fillText("BUG", x + bw + 4, y - 8);
     }
     if ((F.guesses || []).some((q) => q.block === p.b.name)) { g.fillStyle = css("--accent"); g.font = `14px ${css("--f-ui")}`; g.textAlign = "left"; g.fillText("★", x + 2, y + 11); }
+  }
+  if (CHIP) {
+    // each core's signature: unread, clean or wrong
+    for (const c of LAY.cells) {
+      const st = F.heat["SIG:c" + c.k], [x, y] = P(v, c.x + c.w, c.y);
+      const col = !st ? css("--faint") : st[1] === "c" ? css("--good") : st[1] === "x" ? css("--bad") : css("--warn");
+      g.beginPath(); g.arc(x - 10, y + 10, 7, 0, 7); g.fillStyle = col; g.fill();
+      g.fillStyle = "#fff"; g.font = `700 9px ${css("--f-ui")}`; g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(!st ? "?" : st[1] === "c" ? "✓" : st[1] === "x" ? "✗" : "!", x - 10, y + 10.5); g.textBaseline = "alphabetic";
+      if (truthOn() && SECRET.bugs.some((bg) => bg.core === c.k)) { const [x0, y0] = P(v, c.x, c.y); g.save(); g.setLineDash([6, 4]); rr(g, x0 - 2, y0 - 2, c.w * S + 4, c.h * S + 4, 8); g.strokeStyle = css("--bad"); g.lineWidth = 2; g.stroke(); g.restore(); }
+    }
+    // suspect wires
+    for (const [n, st] of Object.entries(F.heat)) {
+      if (!n.startsWith("L:") || (st[1] !== "x" && st[1] !== "u")) continue;
+      const e = wireEnds(n); if (!e) continue;
+      g.strokeStyle = st[1] === "x" ? css("--bad") : css("--warn"); g.lineWidth = 2.5; g.beginPath(); wireCurve(g, v, e[0], e[1]); g.stroke();
+    }
+    if (truthOn()) for (const bg of SECRET.bugs) { if (!bg.block.startsWith("L:")) continue; const e = wireEnds(bg.block); if (!e) continue;
+      g.save(); g.setLineDash([5, 3]); g.strokeStyle = css("--bad"); g.lineWidth = 3; g.beginPath(); wireCurve(g, v, e[0], e[1]); g.stroke(); g.restore(); }
   }
   // probe flashes
   for (let i = FLASH.length - 1; i >= 0; i--) {
@@ -448,7 +565,7 @@ function setupMap() {
   c.addEventListener("wheel", (e) => {
     e.preventDefault(); const r = c.getBoundingClientRect(), v = view(c);
     const [mx, my] = UP(v, e.clientX - r.left, e.clientY - r.top);
-    const z = Math.max(1, Math.min(5, CAM.z * Math.exp(-e.deltaY * 0.0015)));
+    const z = Math.max(1, Math.min(CHIP ? 14 : 5, CAM.z * Math.exp(-e.deltaY * 0.0015)));
     CAM.to = null; CAM.cx = mx - (mx - CAM.cx) * CAM.z / z; CAM.cy = my - (my - CAM.cy) * CAM.z / z; CAM.z = z;
     if (z === 1) { CAM.cx = VW / 2; CAM.cy = VH / 2; }
   }, { passive: false });
@@ -469,7 +586,8 @@ function setupMap() {
     if (CAM.drag && CAM.drag.moved) return;
     const h = hitTest(e); if (!h) return;
     select(h.kind, h.id);
-    if (h.kind === "block" && CAM.z < 1.5) { const p = LAY.pos[h.id]; camTo(1.8, p.cx, p.cy); }
+    if (h.kind === "block" && CHIP && CAM.z < 2.5) { const k = BY[h.id].core; const c = LAY.cells[k]; if (c) camTo(3.6, c.x + c.w / 2, c.y + c.h / 2); else { const p = LAY.pos[h.id]; camTo(3, p.cx, p.cy); } }
+    else if (h.kind === "block" && !CHIP && CAM.z < 1.5) { const p = LAY.pos[h.id]; camTo(1.8, p.cx, p.cy); }
   });
 }
 function showTip(h) {
@@ -552,7 +670,8 @@ function setCfg(patch, o = {}) {
   if (o.preview) preview();
 }
 function benchLine(key) {
-  const b = (SCHEMA.bench || {})[key];
+  const tier = cfg.tier === "v3" ? "v3" : "v2";
+  const b = ((SCHEMA.bench || {})[tier] || {})[key];
   return b ? `${b.solved}/${b.n} solved · ${b.cost}` : "not benchmarked yet";
 }
 function optGroup(title, key, note) {
@@ -640,7 +759,21 @@ function renderCase() {
     presets.appendChild(b);
   }
   const pct = (x) => `${Math.round(x * 100)}%`;
-  el.append(head,
+  const tierRow = document.createElement("div"); tierRow.className = "presets";
+  for (const [t, lab] of [["easy", "Easy: the original single CPU"], ["v2", "v2: hardened single CPU (96 blocks)"], ["v3", "v3: 12-core chip (1,187 blocks)"]]) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = lab;
+    if ((cfg.tier || "v2") === t) { b.style.borderColor = "var(--accent)"; b.style.fontWeight = "600"; }
+    b.onclick = () => {
+      const base = { ...SCHEMA.defaults, seed: cfg.seed, mode: cfg.mode, solo_policy: cfg.solo_policy, holmes: cfg.holmes,
+        boy_policy: cfg.boy_policy, swarm_policy: cfg.swarm_policy, comm_range: cfg.comm_range, wiggins: cfg.wiggins };
+      if (t === "easy") Object.assign(base, SCHEMA.presets.easy.overrides);
+      if (t === "v3") Object.assign(base, { tier: "v3", window: 4, deadline_hours: 8, quorum_frac: 0.12, probe_budget: 32 });
+      cfg = base; setCfg({}, { case: true, preview: true });
+    };
+    tierRow.appendChild(b);
+  }
+  const th = document.createElement("div"); th.innerHTML = `<h4 class="sub-h">Difficulty tier</h4>`; th.appendChild(tierRow);
+  el.append(head, th,
     grid(selectCtl("failure_info", "What the investigators are told", { final: "only the final wrong values", first: "the first wrong instruction" }, { preview: true }),
       selectCtl("test_pick", "Which failing test", { longest: "the longest", shortest: "the shortest" }, { preview: true }),
       slider("window", "Cycles per check", { min: 1, max: 8, step: 1 }),
@@ -682,7 +815,7 @@ function renderRuns() {
   $("#runsList").innerHTML = r.length ? r.map((x) => `<div>${esc(x.name.slice(9, 15))} ${esc(x.setting || x.mode)} #${x.seed} <span class="${x.fix_ok ? "ok" : "no"}">${x.fix_ok ? "fixed" : "not fixed"}</span> · $${(x.cost || 0).toFixed(3)}</div>`).join("") : "<span class='muted'>none yet</span>";
 }
 function estimate() {
-  const c = cfg, b = (SCHEMA.bench || {})[benchKey(c)], L = [];
+  const c = cfg, b = ((SCHEMA.bench || {})[c.tier === "v3" ? "v3" : "v2"] || {})[benchKey(c)], L = [];
   const usesChat = (c.mode === "solo" && c.solo_policy === "chat") || (c.mode === "leader" && c.holmes === "chat");
   const usesJev = (c.mode === "solo" && c.solo_policy === "jev") || (c.mode === "leader" && c.boy_policy === "jev") || (c.mode === "swarm" && ["jev", "hybrid"].includes(c.swarm_policy));
   L.push(`<p><b>${esc(setupLabel(c))}</b>, ${c.deadline_hours} case hours.</p>`);
@@ -721,7 +854,8 @@ function preview() {
 function drawPreview() {
   if (!PREV || $("#launch").hidden) return;
   const c = $("#preview"), { g, w, h } = fitCanvas(c);
-  const L = layout(PREV.blocks), s = Math.min(w / VW, h / VH), ox = (w - VW * s) / 2, oy = (h - VH * s) / 2;
+  const L = PREV.blocks.some((b) => b.core !== null && b.core !== undefined) ? chipLayout(PREV.blocks) : layout(PREV.blocks);
+  const s = Math.min(w / VW, h / VH), ox = (w - VW * s) / 2, oy = (h - VH * s) / 2;
   g.fillStyle = css("--board"); g.fillRect(0, 0, w, h);
   const mx = Math.max(1, ...Object.values(PREV.slice)), starts = new Set(PREV.starts.map((x) => x[0]));
   for (const p of Object.values(L.pos)) {
@@ -731,6 +865,7 @@ function drawPreview() {
     if (n) { rr(g, x, y, bw, bh, 2); g.fillStyle = alpha(css("--front"), 0.12 + 0.6 * Math.sqrt(n / mx)); g.fill(); }
     g.strokeStyle = starts.has(p.b.name) ? css("--bad") : css("--line2"); g.lineWidth = starts.has(p.b.name) ? 2 : 0.8; g.stroke();
   }
+  if (L.cells) for (const c of L.cells) { rr(g, ox + c.x * s, oy + c.y * s, c.w * s, c.h * s, 3); g.strokeStyle = css("--line2"); g.lineWidth = 1; g.stroke(); }
 }
 async function testModel(which) { const o = $("#testOut"); o.hidden = false; o.textContent = "checking…"; o.textContent = JSON.stringify(await api("/api/test", { which, cfg }), null, 1); }
 async function launch() {
@@ -767,6 +902,8 @@ async function startDash() {
   if (new URLSearchParams(location.search).has("still")) {   // one frame, no stream (for screenshots)
     $("#titleCard").hidden = true;
     const f = await api("/api/frame"); onFrame(f); onFrame(f);
+    const fk = new URLSearchParams(location.search).get("focus");   // zoom into one core (v3) for a screenshot
+    if (fk !== null && CHIP && LAY.cells[Number(fk)]) { const c = LAY.cells[Number(fk)]; CAM.z = 3.4; CAM.cx = c.x + c.w / 2; CAM.cy = c.y + c.h / 2; BASES.clear(); }
     return;
   }
   es = new EventSource("/api/stream");
@@ -788,7 +925,7 @@ function onFrame(f) {
   retarget(f);
   if (f.probe_log && f.probes > lastProbeN) {
     const fresh = Math.min(f.probes - lastProbeN, 30);
-    if (!first) f.probe_log.slice(-fresh).forEach((p) => FLASH.push({ block: p.block, bad: p.mismatch, t0: performance.now() }));
+    if (!first) f.probe_log.slice(-fresh).forEach((p) => FLASH.push({ block: anchorName(p.block), bad: p.mismatch, t0: performance.now() }));
     lastProbeN = f.probes;
   }
   if (f.mode === "swarm" && f.shares) f.shares.slice(0, 25).forEach((b) => RIPPLE.push({ block: b, t0: performance.now() }));
@@ -971,6 +1108,8 @@ function drawWave() {
   const c = $("#wave"), { g, w, h } = fitCanvas(c);
   g.fillStyle = css("--board"); g.fillRect(0, 0, w, h);
   const n = ST.n, left = 46, top = 16, rows = ["IF", "ID", "EX", "MEM", "WB"], rh = (h - top - 40) / rows.length, cw = (w - left - 6) / n;
+  const core = timelineCore();
+  const OCC = CHIP && ST.occupancy_all ? ST.occupancy_all[core] : ST.occupancy;
   const log = (F && F.probe_log) || [];
   log.forEach((p, i) => {
     if (p.type !== "check" || !p.window) return;
@@ -982,7 +1121,7 @@ function drawWave() {
   rows.forEach((r, k) => { g.fillStyle = css("--muted"); g.textAlign = "left"; g.fillText(r, 8, top + k * rh + rh / 2); });
   g.textAlign = "center";
   for (let cy = 0; cy < n; cy++) {
-    const occ = ST.occupancy[cy];
+    const occ = OCC[cy];
     for (let k = 0; k < 5; k++) {
       const x = left + cy * cw, y = top + k * rh;
       g.strokeStyle = css("--wire"); g.lineWidth = 0.5; g.strokeRect(x, y, cw, rh);
@@ -993,13 +1132,20 @@ function drawWave() {
   for (const [b, cy] of ST.starts) { const x = left + cy * cw + cw / 2; g.fillStyle = css("--bad"); g.beginPath(); g.arc(x, top + rh * 4.5, 3, 0, 7); g.fill(); }
   ((F && F.frontier) || []).forEach(([b, cy]) => { const x = left + cy * cw + cw / 2; g.fillStyle = css("--front"); g.beginPath(); g.moveTo(x - 4, h - 40); g.lineTo(x + 4, h - 40); g.lineTo(x, h - 35); g.fill(); });
   g.textBaseline = "alphabetic";
-  $("#wvInfo").textContent = `${n} cycles · bands: checked windows (red: a mismatch) · ▾ next on the back-trace · red dot: wrong final value`;
+  $("#wvInfo").textContent = (CHIP ? `core c${core} (${(ST.brief.core_programs || [])[core] || ""}) · ` : "") + `${n} cycles · bands: checked windows (red: a mismatch) · ▾ next on the back-trace` + (CHIP ? " · click a block in another core to switch" : " · red dot: wrong final value");
   c.onmousemove = (e) => {
     const r = c.getBoundingClientRect(), cy = Math.floor((e.clientX - r.left - left) / cw);
     if (cy < 0 || cy >= n) return;
-    const occ = ST.occupancy[cy];
+    const occ = OCC[cy];
     $("#wvHover").textContent = `cycle ${cy}: ` + rows.map((s, k) => `${s} ${occ[k] === null ? "-" : (ST.brief.program[occ[k]] || `${occ[k]}: NOP`).replace(/^\s*\d+: /, `${occ[k]} `)}`).join(" | ");
   };
+}
+
+function timelineCore() {
+  if (!CHIP) return 0;
+  if (SEL && SEL.kind === "block" && BY[SEL.id] && BY[SEL.id].core !== null && BY[SEL.id].core !== undefined) return BY[SEL.id].core;
+  if (F) for (let k = 0; k < (ST.brief.n_cores || 12); k++) { const st = F.heat["SIG:c" + k]; if (st && st[1] !== "c") return k; }
+  return 0;
 }
 
 /* ---------------------------------------------------------------------------------------------- controls */
