@@ -122,7 +122,7 @@ def nav(on):
 
 
 def write(name, title, body, width=720):
-    page = HEAD.format(title=title, width=width, page=name) + nav(name) + body + "</main></body></html>"
+    page = HEAD.format(title=title, width=width, page=name + ("?v=lmgame" if name == "blog.html" else "")) + nav(name) + body + "</main></body></html>"
     open(os.path.join(HERE, "site", name), "w").write(page)
     print("site/" + name)
 
