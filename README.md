@@ -17,7 +17,6 @@ selection), **holmes** (a Sherlock Holmes case) and **circuit** (hunting a CPU b
 ## Contents
 
 - [Introduction](#introduction)
-- [News 🔥](#news-)
 - [Installation](#installation)
 - [APIs](#apis)
 - [Launching a game](#launching-a-game)
@@ -32,19 +31,6 @@ selection), **holmes** (a Sherlock Holmes case) and **circuit** (hunting a CPU b
 - [Repository layout](#repository-layout)
 - [Add your own game](#add-your-own-game)
 - [Citation](#citation)
-
-## News 🔥
-
-- [2026/10/08] The repo is now **jev-swarm-games**: one launch command and one hyperparameter interface for every
-  game (`--preset`, `--set`, `--config`, `--list-params`), and API keys can also come from environment variables.
-- [2026/10/08] Circuit v3: a 12-core chip of 1,187 blocks with wire faults, signature probes and scarce bench time;
-  100-seed benchmark of all 16 settings. See [the write-up](circuit/docs/benchmark_v3_100seeds_2026-10-08.md).
-- [2026/10/05] Holmes release: blog, trailer, and an interactive replay site for 200 cases
-  ([holmes/release](holmes/release)).
-- [2026/10/04] Holmes 100-case benchmark: **Holmes (gpt-6-astra) + Jev swarm solves 96/100**, against 57 for the
-  lone gpt-6-astra genius and 38 for the leaderless Jev swarm; on frame-up cases a clue-counting leader solves 1.
-- [2026/10/03] Circuit: CPU debugging with Holmes, Wiggins and Jev Irregulars.
-- [2026/09/30] Fish schooling and honeybee nest-site selection simulators with live viewers.
 
 ## Installation
 
