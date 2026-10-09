@@ -184,7 +184,8 @@
       const add = (node, t) => { items.push({ node, t }); return node; };
       // scatter: from the start out over the lanes
       const src = el("circle", { cx: 12, cy: ym, r: 5, fill: w.color }, svg);
-      el("text", { x: 12, y: ym - 9, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "city" : "221B";
+      if (w.key === "swarm") el("text", { x: 2, y: Y0 - 7, class: "sg-lbl", style: "text-anchor: start" }, svg).textContent = "everywhere in the city";
+      else el("text", { x: 12, y: ym - 9, class: "sg-lbl" }, svg).textContent = "221B";
       const laneFirst = {};
       r.visits.forEach(v => { if (!(v[1] in laneFirst)) laneFirst[v[1]] = v; });
       Object.values(laneFirst).forEach(([t, lane]) => {
