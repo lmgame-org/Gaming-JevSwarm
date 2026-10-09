@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>One Leader, Many Minds: A Sherlock Holmes Detective Game Study</title>
 <link rel="icon" type="image/png" sizes="32x32" href="media/lmgame_icon_32.png"><link rel="icon" type="image/png" sizes="64x64" href="media/lmgame_icon_64.png"><link rel="apple-touch-icon" href="media/lmgame_icon_180.png">
-<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body { margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }
 main { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
@@ -18,6 +18,7 @@ nav.top b { font-family: "Libre Baskerville", Georgia, serif; font-weight: 400; 
 nav.top a { text-decoration: none; } nav.top a.on { color: #241a10; border-bottom: 2px solid #8a1c1c; }
 .back { font: 14px Inter, sans-serif; } video { width: 100%; border-radius: 6px; }
 .lead { font-size: 17px; color: #4a3d2c; }
+p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 </style></head><body><main>
 <nav class="top"><b>The Irregulars</b><a href="index.html" class="">Home</a><a href="trailer.html" class="">Trailer</a><a href="blog.html" class="on">Blog</a><a href="results.html" class="">Results</a></nav><h1>One Leader, Many Minds: Why a Reasoning Leader with an AI Swarm Wins</h1>
 <p>By <b><a href="https://lmgame.org/#/aboutus">the LMGame Team</a></b></p>
@@ -31,7 +32,7 @@ nav.top a { text-decoration: none; } nav.top a.on { color: #241a10; border-botto
 <p><b>The data.</b> Every run is fully logged, and no model decision fell back to a scripted rule. Any case can be replayed on the results page.</p>
 <hr>
 <h2>1. Case Study: The Soho Physician</h2>
-<p><b>The case.</b> Florence Fenwick, a physician, is found dead in Soho. The truth: <b>Beatrice Jessop</b>, out of <b>revenge</b>, hiding in an <b>opium den in Kensington</b>.</p>
+<p><b>The case.</b> Dr Florence Fenwick lies dead in Soho. At the scene: heavy bootprints, and a knife bought by a right-handed hand. Ten suspects, a hundred doors, twelve hours on the clock. Somewhere in the city the truth is waiting: <b>Beatrice Jessop</b> killed her out of <b>revenge</b> for an old wrong the doctor once did, and is hiding in an <b>opium den in Kensington</b>.</p>
 <p><b>Holmes + Jev Swarm solves it by checking before concluding.</b> Holmes sends the boys to the scene and the witnesses first, asking for "exact observations, not rumours." When an alibi looks shaky, he sends boys back to recheck it rather than guessing. He accuses only once the boots, the knife and the motive all point the same way.</p>
 <figure><video controls preload="metadata" playsinline poster="media/poster_irregulars_clip2_astra_jev_swarm.jpg" src="media/irregulars_clip2_astra_jev_swarm.mp4"></video><figcaption>Holmes (GPT6-Astra) + Jev Swarm, case 57: Holmes plans, the boys search.</figcaption></figure>
 <p><b>The Lone Genius reasons well but runs out of doors.</b> It narrows the culprit to five suspects early. The one clue that separates them sits at an address it never reaches, so it ends up guessing.</p>

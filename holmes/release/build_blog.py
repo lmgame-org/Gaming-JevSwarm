@@ -91,7 +91,7 @@ def convert(md):
 HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <link rel="icon" type="image/png" sizes="32x32" href="media/lmgame_icon_32.png"><link rel="icon" type="image/png" sizes="64x64" href="media/lmgame_icon_64.png"><link rel="apple-touch-icon" href="media/lmgame_icon_180.png">
-<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {{ margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }}
 main {{ max-width: {width}px; margin: 0 auto; padding: 28px 16px 80px; }}
@@ -108,6 +108,7 @@ nav.top b {{ font-family: "Libre Baskerville", Georgia, serif; font-weight: 400;
 nav.top a {{ text-decoration: none; }} nav.top a.on {{ color: #241a10; border-bottom: 2px solid #8a1c1c; }}
 .back {{ font: 14px Inter, sans-serif; }} video {{ width: 100%; border-radius: 6px; }}
 .lead {{ font-size: 17px; color: #4a3d2c; }}
+p > b:first-child, li > b:first-child {{ font-weight: 700; color: #8a1c1c; }}
 </style></head><body><main>
 """
 

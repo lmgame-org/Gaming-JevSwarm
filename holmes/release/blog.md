@@ -25,7 +25,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## 1. Case Study: The Soho Physician
 
-**The case.** Florence Fenwick, a physician, is found dead in Soho. The truth: **Beatrice Jessop**, out of **revenge**, hiding in an **opium den in Kensington**.
+**The case.** Dr Florence Fenwick lies dead in Soho. At the scene: heavy bootprints, and a knife bought by a right-handed hand. Ten suspects, a hundred doors, twelve hours on the clock. Somewhere in the city the truth is waiting: **Beatrice Jessop** killed her out of **revenge** for an old wrong the doctor once did, and is hiding in an **opium den in Kensington**.
 
 **Holmes + Jev Swarm solves it by checking before concluding.** Holmes sends the boys to the scene and the witnesses first, asking for "exact observations, not rumours." When an alibi looks shaky, he sends boys back to recheck it rather than guessing. He accuses only once the boots, the knife and the motive all point the same way.
 
