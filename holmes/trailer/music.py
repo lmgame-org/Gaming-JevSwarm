@@ -103,7 +103,7 @@ section(25.0, 77.0, MINOR, waltz=True, tunes=[TUNE_A, TUNE_B], level=0.9)      #
 section(77.0, 92.5, MAJOR, waltz=True, harp=True, tunes=[TUNE_M], level=1.0)   # the results
 pad([50, 54, 57, 62], 92.5, 2.4)                                              # a final D major chord
 add(92.5, pluck(50, 2.0, 0.7), 0.2)
-for t in (25.0, 43.0, 61.0, 77.0):
+for t in (25.0, 41.0, 59.0, 77.0):
     timp(t, 0.12)
 
 # fade out the last second

@@ -210,7 +210,7 @@ const stretch = (fn, s0, s1, i0, i1) => (t) => fn(i0 + (t - s0) * (i1 - i0) / (s
 const local = (fn, s0) => (t) => fn(t - s0);
 const SCENES = [[0, 5, stretch(night, 0, 5, 0, 4.6)], [5, 10.5, stretch(irregularsQuote, 5, 10.5, 4.6, 9.0)],
   [10.5, 16, stretch(minskyQuote, 10.5, 16, 9.0, 13.0)], [16, 25, local(experiment, 16)],
-  [25, 43, local(chapLone, 25)], [43, 61, local(chapBaker, 43)], [61, 77, local(chapSwarm, 61)],
+  [25, 41, local(chapSwarm, 25)], [41, 59, local(chapBaker, 41)], [59, 77, local(chapLone, 59)],
   [77, 82.5, local(casebook2, 77)], [82.5, 92.5, local(frameup, 82.5)], [92.5, 95.01, stretch(endCard, 92.5, 95, 43.2, 45.0)]];
 
 function skyline(y, col, seed) {   // London rooftops: chimneys, a dome and a clock tower
@@ -412,8 +412,8 @@ function experiment(u) {
     text(["who did it", "why", "where he hides"][i], x, 425, {size: 32, alpha: r});
   });
   text("Solved means all three right, within twelve hours.", W / 2, 490, {size: 32, color: DIM, alpha: al * prog(u, 2.8, 3.3)});
-  const rows = [["I.", "The Lone Genius", "gpt-6-astra, a large language model, alone"], ["II.", "Holmes & the Irregulars", "gpt-6-astra leads twelve Jev boys (a small, fast model)"],
-    ["III.", "The Jev Swarm", "a hundred Jev boys, no leader"]];
+  const rows = [["I.", "The Jev Swarm", "a hundred Jev boys, no leader"], ["II.", "Holmes & the Irregulars", "gpt-6-astra leads twelve Jev boys (a small, fast model)"],
+    ["III.", "The Lone Genius", "gpt-6-astra, a large language model, alone"]];
   rows.forEach(([n, who, how], i) => {
     const r = al * ease(prog(u, 3.8 + i * 0.7, 4.4 + i * 0.7)), y = 610 + i * 110;
     text(n, 500, y, {size: 44, color: GOLD, align: "right", alpha: r});
@@ -472,7 +472,7 @@ function chapLone(u) {
   stamp(S.solved, u, CH.stamp);
   caption(["One genius, alone: one cab, one door at a time."], u, 3.4, 8.6);
   caption(["Twenty visits, twelve hours. Not enough doors."], u, 8.6, 13.6);
-  titleCard("I.", "The Lone Genius", "gpt-6-astra, alone", u);
+  titleCard("III.", "The Lone Genius", "gpt-6-astra, alone", u);
 }
 function chapBaker(u) {
   baseMap();
@@ -567,7 +567,7 @@ function chapSwarm(u) {
   stamp(SW.solved, u, 13.2, 470, 900);
   caption(["The Jev swarm: a hundred boys, no leader.", "Each shares what he finds with the boys nearby, and votes."], u, 3.4, 8.0);
   caption(["The Jev swarm agrees fast. But agreeing is not the same as being right."], u, 8.0, 13.0);
-  titleCard("III.", "The Jev Swarm", "a hundred Jev boys, no leader", u);
+  titleCard("I.", "The Jev Swarm", "a hundred Jev boys, no leader", u);
 }
 function casebook2(u) {
   fog(u + 67, 0.5, false);
