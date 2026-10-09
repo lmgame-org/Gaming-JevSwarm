@@ -1,6 +1,6 @@
 # One Leader, Many Minds: Why a Reasoning Leader with an AI Swarm Wins
 
-*A Sherlock Holmes detective game study. A large reasoning model (GPT6-Astra) leading a swarm of small, fast agents (Jev) solved 96 of 100 standard murder cases and 93 of 100 cases built on lies, ahead of the model alone (57, 59) and the swarm alone (38, 42).*
+*A Sherlock Holmes detective game study. A large reasoning model (GPT6-Astra) leading a swarm of small, fast agents (Jev) solved 96 of 100 standard murder cases and 93 of 100 cases built on lies, far ahead of the Astra model alone (57, 59) and the swarm alone (38, 42).*
 
 ---
 
