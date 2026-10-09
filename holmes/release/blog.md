@@ -100,15 +100,19 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ---
 
-## What This Suggests
+## What This Suggests: Divide and Conquer
+
+**A detective case is a divide-and-conquer problem.** The investigation splits naturally into many small, local subproblems: where to look next, and what a particular witness or footprint means. Each of these can be solved quickly and in parallel. The answers then have to be combined into a single verdict, and that combining step is where the hard reasoning lives. **Fast agents are well suited to the divide step, and a strong reasoner is needed for the conquer step whenever the pieces disagree.**
 
 **Holmes knew it in 1890.** The street boys were never meant to solve the case, only to find the pieces. The genius was never meant to walk every street, only to see the shape that the pieces make.
 
-**The design rule.** Divide the labour according to how hard the analysis is:
+**The design rule.** Divide the labour according to how hard the combining step is:
 
 - **Always use the swarm for evidence coverage.** Small, fast agents can make the many local decisions about where to look next, all in parallel.
 - **For simple analysis, a simple centre will do.** If the evidence can be taken at face value, divide up the work and combine the results with a simple rule.
 - **For hard analysis, put a reasoner at the centre.** When sources conflict or try to deceive, both voting and counting follow the majority, so a strong reasoner has to make the final judgment.
+
+**Games are the right test bed for this question.** At LMGame, we have found that reasoning puzzles of this kind are everywhere in games, and that many of them can be solved by divide and conquer: explore widely, solve the small pieces locally, and reason carefully when the pieces are put back together. Games also run on a clock and keep score, so they let us measure both how often an approach succeeds and how much time and money it costs. **That makes games an ideal place to study the trade-off between capability and efficiency when fast-decision models like Jev are deployed on real-time challenges.**
 
 **The answer.** Should we choose one genius or many minds? **The best choice is one genius leading many minds.**
 
