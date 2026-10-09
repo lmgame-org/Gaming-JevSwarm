@@ -27,16 +27,17 @@ def image(src, cap):
 
 # what each section shows, placed right under its heading
 MEDIA = {
-    "solo": [video("irregulars_clip1_astra.mp4", "The Lone Genius, case 57: the deciding clue is never reached.")],
-    "swarm": [video("irregulars_clip3_jev_swarm.mp4", "The Jev Swarm, case 57: each colour is one answer.")],
-    "holmes": [video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm, case 57: Holmes plans, the boys search.")],
+    "solo": [video("irregulars_clip1_astra.mp4", "The Lone Genius on case 57. It never reaches the address that holds the deciding clue.")],
+    "swarm": [video("irregulars_clip3_jev_swarm.mp4", "The Jev Swarm on case 57. Each colour shows one answer that the boys are voting for.")],
+    "holmes": [video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm on case 57. Holmes plans at 221B while the boys search the city.")],
     "sg": ['<link rel="stylesheet" href="sg.css?v=8"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div>'
-           "<figcaption>Figure 1. Scatter and gather on case 57, or any case you pick. One lane per agent; "
-           "◆ and ticks mark decisions; lines carry evidence to the answer. Zoom with + or a double-click.</figcaption></figure>"
+           "<figcaption>Figure 1. How each detective spreads out over the city and gathers the evidence back into an answer, shown for case 57 "
+           "(you can pick any other case). Each lane is one agent, the diamonds and ticks mark decisions, and the lines carry evidence to the answer. "
+           "You can zoom in with the + button or a double-click.</figcaption></figure>"
            '<script src="sg.js?v=8" defer></script>'],
-    "t1": [image("irregulars_standard_setting_results.png", "Table 1. Standard cases.")],
-    "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Frame-up cases: somebody lies.")],
-    "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice the time and visits.")],
+    "t1": [image("irregulars_standard_setting_results.png", "Table 1. Results on the 100 standard cases.")],
+    "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Results on the 100 frame-up cases, in which somebody lies.")],
+    "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice as much time and twice as many visits.")],
 }
 HOOK_END = ""
 
