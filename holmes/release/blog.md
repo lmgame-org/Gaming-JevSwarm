@@ -1,6 +1,6 @@
-# One Genius or Many Minds? A Sherlock Holmes Detective Game Study
+# One Leader, Many Minds: Why a Reasoning Leader with an AI Swarm Wins
 
-*Can one large reasoning model (GPT6-Astra) solve murders better than a swarm of small, fast agents (Jev)? And what happens when the reasoner leads the swarm? 200 simulated Victorian murder cases.*
+*A Sherlock Holmes detective game study. A large reasoning model (GPT6-Astra) leading a swarm of small, fast agents (Jev) solved 96 of 100 standard murder cases and 93 of 100 cases built on lies, ahead of the model alone (57, 59) and the swarm alone (38, 42).*
 
 ---
 
@@ -11,6 +11,11 @@ Sherlock Holmes never worked alone: his street boys, the Baker Street Irregulars
 - **The Lone Genius (GPT6-Astra):** one large reasoning model takes a cab from door to door, 20 visits.
 - **Jev Swarm:** 100 small, fast Jev agents, no leader. They share clues with neighbours and vote; the case closes when 30 agree.
 - **Holmes (GPT6-Astra) + Jev Swarm:** GPT6-Astra stays at 221B and plans; 12 Jev boys run the errands and report back.
+
+**The finding.** The leader with a swarm wins, and the two parts do different jobs. The swarm supplies **coverage**: many agents searching in parallel. The leader supplies **judgment**: deciding what the evidence means. How much judgment is needed depends on how hard the analysis is:
+
+1. **When the evidence is honest** (standard cases), coverage is the bottleneck. A swarm under a simple central rule (divide the city, count corroborated clues) is enough.
+2. **When the evidence conflicts** (frame-up cases, where witnesses lie), you need both: the swarm to find the evidence and a reasoning leader to decide whom to believe. Neither one alone is enough, and a counting rule fails completely.
 
 All numbers come from fully logged runs (no model decision fell back to a scripted rule); every case can be replayed on the results page.
 
@@ -36,7 +41,7 @@ That is the whole study in one case. The genius reasons well about what it finds
 
 ---
 
-## 2. Standard cases: the leader with a swarm wins
+## 2. Standard cases: a swarm with a simple central rule is enough
 
 Across 100 standard cases (Table 1):
 
@@ -48,11 +53,13 @@ Across 100 standard cases (Table 1):
 
 The Jev Swarm is by far the fastest, but speed is its trap. It reaches a 30-vote agreement in 91 of 100 cases, and **53 of those agreements are wrong**. A few boys misjudge a clue, their neighbours copy the confident vote, and the wrong answer snowballs to thirty before anyone checks. Small agents turn out to be good searchers and weak judges.
 
-The heuristic baselines make the same point from the other side. On these honest cases, where every true fact appears twice and each lie once, a Holmes that simply counts clues does just as well with the same boys (95 with Jev boys, 97 with scripted boys). What wins here is the structure, one leader and many helpers, more than the brilliance of the leader.
+The baselines with no model at the top isolate what matters here. In standard cases every true fact appears at two addresses and each lie at only one, so the analysis is simple: the corroborated answer is the right one. Here a Holmes who only divides the work and counts clues does as well as GPT6-Astra: **95** with Jev boys and **97** with scripted boys, against **96**, at $0.002 or less per case instead of $0.58. (A leaderless swarm whose boys count rather than copy reaches 95 too.)
+
+**Finding 1.** When the analysis is simple, performance comes from the architecture: parallel coverage plus a simple aggregation rule. A strong reasoner at the top adds little.
 
 ---
 
-## 3. When somebody lies
+## 3. Frame-up cases: when the analysis gets hard, you need both
 
 So we made the cases harder. In 100 *frame-up* cases the murderer pays his own servants to describe an innocent man and swear their master never left home, and a planted clue backs them up. Now the lie appears more often than the truth. Two honest witnesses saw the bribe being paid (Table 2):
 
@@ -61,11 +68,11 @@ So we made the cases harder. In 100 *frame-up* cases the murderer pays his own s
 - **Holmes (GPT6-Astra) + Jev Swarm: 93 solved.**
 - The Lone Genius (GPT6-Astra): 59.
 - Jev Swarm: 42.
-- Replace the Astra leader with a clue-counting Holmes: **0**. Replace the Jev swarm with a counting swarm: **1**.
+- The same swarm under a clue-counting Holmes: **0**. A counting Holmes with counting boys: **1**. A leaderless counting swarm: **1**.
 
 Counting follows the majority, and the majority is now lying. GPT6-Astra asks who is speaking. In one frame-up, Holmes wrote: "Pargeter's servants supply both his alibi and evidence against Leopold; the dry snuff-box suggests planting. Pargeter merits suspicion, not accusation." The Jev Swarm does better than any counting player because some boys read the testimony and doubt it, but without a leader it still often agrees on the framed man.
 
-So the leader matters after all, once the case fights back. The swarm finds the evidence; only a reasoning leader decides whom to believe.
+**Finding 2.** When the analysis is hard, coverage and judgment are both necessary, and neither alone is sufficient. Without the swarm, the reasoner misses evidence (the Lone Genius, 59). Without the reasoner, the swarm is misled (Jev Swarm, 42; any counting rule, 0 to 1). Together they solve 93.
 
 ---
 
@@ -92,9 +99,15 @@ So the lone model is not short of capability; it is short of **efficiency**, bec
 
 ## What this suggests
 
-Holmes knew it in 1890. The street boys were never meant to solve the case; they were meant to find the pieces. The genius was never meant to walk every street; he was meant to see the shape the pieces make. For multi-agent AI that suggests a simple division of labour: let small, fast agents make the many local "where next?" decisions, do not let a crowd of them be the judge, and put a strong reasoner at the point of judgment.
+Holmes knew it in 1890. The street boys were never meant to solve the case; they were meant to find the pieces. The genius was never meant to walk every street; he was meant to see the shape the pieces make.
 
-One genius, or many minds? Our answer, and Holmes's: one genius, and many minds.
+For multi-agent AI the lesson is a division of labour that scales with the difficulty of the analysis:
+
+- **Always use the swarm for coverage.** Small, fast agents make the many local "where next?" decisions in parallel, far more efficiently than one reasoner working through them one at a time (section 4).
+- **For simple analysis, a simple centre will do.** If the evidence can be taken at face value, divide the work and aggregate it with a rule. No expensive reasoner is needed.
+- **For hard analysis, put a reasoner at the centre.** When sources conflict or deceive, a crowd's vote and a counting rule both follow the majority. A strong reasoner has to make the judgment.
+
+One genius, or many minds? Our answer, and Holmes's: one genius leading many minds.
 
 ---
 

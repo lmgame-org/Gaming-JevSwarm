@@ -57,6 +57,13 @@ def convert(md):
                 i += 1
             out.append("<ul>" + "".join(items) + "</ul>")
             continue
+        elif re.match(r"^\d+\. ", ln):
+            items = []
+            while i < len(lines) and re.match(r"^\d+\. ", lines[i]):
+                items.append(f"<li>{inline(lines[i].split('. ', 1)[1])}</li>")
+                i += 1
+            out.append("<ol>" + "".join(items) + "</ol>")
+            continue
         elif ln.startswith("|"):
             rows = []
             while i < len(lines) and lines[i].startswith("|"):
@@ -69,7 +76,7 @@ def convert(md):
             continue
         elif ln.strip():
             para = [ln]
-            while i + 1 < len(lines) and lines[i + 1].strip() and not re.match(r"^(#|- |\||---|\{\{)", lines[i + 1]):
+            while i + 1 < len(lines) and lines[i + 1].strip() and not re.match(r"^(#|- |\d+\. |\||---|\{\{)", lines[i + 1]):
                 i += 1
                 para.append(lines[i])
             out.append(f"<p>{inline(' '.join(para))}</p>")
@@ -114,7 +121,7 @@ def write(name, title, body, width=720):
 
 def main():
     blog = convert(open(os.path.join(HERE, "blog.md")).read())
-    write("blog.html", "One Genius or Many Minds? A Sherlock Holmes Detective Game Study",
+    write("blog.html", "One Leader, Many Minds: A Sherlock Holmes Detective Game Study",
           blog + '<p class="back"><a href="trailer.html">Watch the trailer</a> \u00b7 '
           '<a href="results.html">Results, and a replay of every case (try case 57): every move, clue and vote &rarr;</a></p>')
     write("trailer.html", "Trailer | The Irregulars", """
