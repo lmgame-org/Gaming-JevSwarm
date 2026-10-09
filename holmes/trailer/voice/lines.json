@@ -1,84 +1,84 @@
 [
  {
   "t": 0.6,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/01_london.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/01_london.wav",
   "dur": 2.4,
   "fits": true,
   "tempo": null
  },
  {
   "t": 5.3,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/02_secret.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/02_secret.wav",
   "dur": 3.85,
   "fits": true,
   "tempo": null
  },
  {
   "t": 10.8,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/03_ai.wav",
-  "dur": 5.5,
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/03_jev.wav",
+  "dur": 5.74,
   "fits": true,
-  "tempo": null
+  "tempo": 1.15
  },
  {
   "t": 16.9,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/04_setup.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/04_setup.wav",
   "dur": 7.3,
   "fits": true,
   "tempo": null
  },
  {
   "t": 27.8,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/05_lone.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/05_lone.wav",
   "dur": 5.8,
   "fits": true,
   "tempo": null
  },
  {
   "t": 38.9,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/06_unsolved.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/06_unsolved.wav",
   "dur": 1.85,
   "fits": true,
   "tempo": null
  },
  {
   "t": 45.8,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/07_holmes.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/07_holmes.wav",
   "dur": 7.1,
   "fits": true,
   "tempo": null
  },
  {
   "t": 56.9,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/08_solved.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/08_solved.wav",
   "dur": 1.85,
   "fits": true,
   "tempo": null
  },
  {
   "t": 63.8,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/09_swarm.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/09_swarm.wav",
   "dur": 6.7,
   "fits": true,
   "tempo": null
  },
  {
   "t": 73.9,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/10_wrong.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/10_wrong.wav",
   "dur": 3.3,
   "fits": true,
   "tempo": null
  },
  {
   "t": 77.4,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/11_casebook.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/11_casebook.wav",
   "dur": 5.05,
   "fits": true,
   "tempo": 1.05
  },
  {
   "t": 82.8,
-  "file": "/Users/lanxiangh/worksapce/jev-swarm/holmes/trailer/voice/12_lies.wav",
+  "file": "/Users/lanxiangh/worksapce/jev-swarm-games/holmes/trailer/voice/12_lies.wav",
   "dur": 10.04,
   "fits": true,
   "tempo": 1.2
