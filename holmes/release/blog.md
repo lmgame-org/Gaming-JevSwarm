@@ -27,6 +27,8 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **The case.** Dr Florence Fenwick has been found dead in Soho. Heavy bootprints mark the scene, and the knife was sold to a right-handed buyer. There are ten suspects, a hundred doors to knock on, and twelve hours on the clock. Somewhere in the city lies the truth: **Beatrice Jessop** killed the doctor out of **revenge** for an old wrong, and she is now hiding in an **opium den in Kensington**.
 
+{{media:case}}
+
 **Holmes and the Jev Swarm solve it by checking before concluding.** Holmes first sends the boys to the scene and to the witnesses, asking them for "exact observations, not rumours." When one suspect's alibi looks doubtful, he sends boys back to check it again instead of guessing. **He makes his accusation only once the bootprints, the knife and the motive all point to the same person.**
 
 {{media:holmes}}

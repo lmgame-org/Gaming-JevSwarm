@@ -35,6 +35,7 @@ MEDIA = {
            "(you can pick any other case). Each lane is one agent, the diamonds and ticks mark decisions, and the lines carry evidence to the answer. "
            "You can zoom in with the + button or a double-click.</figcaption></figure>"
            '<script src="sg.js?v=8" defer></script>'],
+    "case": [image("case57_soho.jpg", "Soho, the night of the murder: the doctor's bag, the bootprints and the knife, suspects in the street, and a red glow far to the west.")],
     "t1": [image("irregulars_standard_setting_results.png", "Table 1. Results on the 100 standard cases.")],
     "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Results on the 100 frame-up cases, in which somebody lies.")],
     "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice as much time and twice as many visits.")],
