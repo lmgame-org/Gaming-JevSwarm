@@ -1,4 +1,4 @@
-# One Genius or Many Minds? What Sherlock Holmes Taught Us About AI Swarms
+# One Genius or Many Minds? A Sherlock Holmes Detective Game Study
 
 *A lone reasoning model, a leaderless swarm of small agents, and a reasoning leader directing the swarm, in 200 simulated murder mysteries.*
 
