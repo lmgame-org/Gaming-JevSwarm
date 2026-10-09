@@ -290,10 +290,10 @@ function minskyQuote(t) {
   for (const [x, y] of pts) { g.fillStyle = `rgba(245,207,90,${0.7 * al})`; g.beginPath(); g.arc(x, y, 3.5, 0, 7); g.fill(); }
   { const sh = g.createRadialGradient(W / 2, 500, 100, W / 2, 500, 900); sh.addColorStop(0, `rgba(5,7,10,${0.85 * al})`); sh.addColorStop(1, "rgba(5,7,10,0)"); g.fillStyle = sh; g.fillRect(0, 0, W, H); }
   text("A century later, the same question for AI:", W / 2, 300, {size: 46, color: DIM, style: "italic", alpha: al});
-  text("One genius, or many minds?", W / 2, 470, {size: 96, color: GOLD, style: "italic", alpha: prog(t, 9.4, 9.9) * al});
-  text("One genius: gpt-6-astra, a large language model.", W / 2, 640, {size: 40, alpha: prog(t, 10.2, 10.6) * al});
-  text("Many minds: Jev, a swarm of small, fast models.", W / 2, 710, {size: 40, alpha: prog(t, 10.7, 11.1) * al});
-  text("Which is better?", W / 2, 860, {size: 52, color: GOLD, alpha: prog(t, 11.4, 11.8) * al});
+  text("Can a Jev swarm catch a murderer?", W / 2, 470, {size: 92, color: GOLD, style: "italic", alpha: prog(t, 9.4, 9.9) * al});
+  text("Jev: a swarm of small models that make fast decisions.", W / 2, 640, {size: 40, alpha: prog(t, 10.2, 10.6) * al});
+  text("On its own, or led by gpt-6-astra, a large reasoning model?", W / 2, 710, {size: 40, alpha: prog(t, 10.7, 11.1) * al});
+  text("Which one catches the murderer?", W / 2, 860, {size: 52, color: GOLD, alpha: prog(t, 11.4, 11.8) * al});
   vignette(0.7);
 }
 function window221(t, al) {
@@ -357,8 +357,8 @@ function endCard(t) {
   fog(t, 0.6);
   const p = prog(t, 43.1, 43.6);
   holmes(W / 2, 360, 0.75 * (0.96 + 0.04 * p), `rgba(239,230,207,${0.9 * p})`);
-  text("THE IRREGULARS", W / 2, 640, {size: 120, alpha: p, spacing: 10});
-  text("one genius \u00b7 a lead with helpers \u00b7 a swarm", W / 2, 740, {size: 36, color: DIM, style: "italic", alpha: prog(t, 43.5, 43.9)});
+  text("CATCH MURDERER WITH JEV SWARM", W / 2, 640, {size: 80, alpha: p, spacing: 6});
+  text("a detective game case study \u00b7 LMGame", W / 2, 740, {size: 36, color: DIM, style: "italic", alpha: prog(t, 43.5, 43.9)});
   vignette();
 }
 
