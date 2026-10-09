@@ -14,7 +14,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 - **The Lone Genius (GPT6-Astra):** a single large reasoning model travels from door to door by cab and does all the searching and reasoning itself.
 - **Jev Swarm:** 100 Jev boys with no leader. They share clues with the boys around them and vote on the answer.
 
-**The finding.** **The swarm supplies evidence coverage, and the leader supplies judgment.** How much judgment a case needs depends on how hard its evidence is to interpret:
+**The finding.** **The Jev swarm supplies evidence coverage, while the leader reasons over the information already gathered, evaluates progress, and draws conclusions.** How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:
 
 1. **When the evidence is honest,** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
 2. **When the evidence conflicts,** you need both. Neither the swarm nor the reasoner is enough on its own, and a simple counting rule fails completely.
