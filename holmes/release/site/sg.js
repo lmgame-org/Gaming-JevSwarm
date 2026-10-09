@@ -6,7 +6,13 @@
   if (!root) return;
   const NS = "http://www.w3.org/2000/svg";
   const END = 720;                       // 12 case hours, in minutes
-  const W = 300, H = 210, X0 = 34, X1 = 246, XV = 278, Y0 = 18, Y1 = H - 22;
+  // timeline windows: one per row and wide on a desktop, compact on a phone (set per build from the figure's width)
+  let W, H, X0, X1, XV, Y0 = 18, Y1;
+  const size = () => {
+    const wide = root.clientWidth >= 640;
+    W = wide ? 900 : 300; H = wide ? 250 : 210; X0 = wide ? 44 : 34; XV = W - 22; X1 = XV - (wide ? 52 : 32); Y1 = H - 22;
+    panels.classList.toggle("sg-rows", wide);
+  };
   const WHO = [
     { key: "baker", name: "Holmes (GPT6-Astra) + Jev Swarm", color: "#8a1c1c", how: "Astra plans at 221B (◆); 12 Jev boys decide each step (|)" },
     { key: "solo", name: "The Lone Genius (GPT6-Astra)", color: "#3d6a99", how: "GPT6-Astra makes every decision (◆), one stop at a time" },
@@ -48,10 +54,43 @@
   const clock = h("span", "sg-clock", bar);
   kindSel.setAttribute("aria-label", "Case set"); seedSel.setAttribute("aria-label", "Case number");
   slider.setAttribute("aria-label", "Case time");
+  const legend = h("div", "sg-key", root);
   const panels = h("div", "sg-grid", root);
   h("div", "sg-head", root, "Evidence board");
   const boards = h("div", "sg-grid", root);
   const charts = h("div", "sg-charts", root);
+
+  // the colour key, drawn with the same marks the figure uses
+  const sw = (svg) => `<svg viewBox="0 0 22 14" width="22" height="14" aria-hidden="true">${svg}</svg>`;
+  const dotK = (fill, stroke) => sw(`<circle cx="11" cy="7" r="4.5" fill="${fill}" ${stroke ? `stroke="${stroke}" stroke-width="1.6"` : ""}/>`);
+  const lineK = (c, dash) => sw(`<line x1="1" y1="7" x2="21" y2="7" stroke="${c}" stroke-width="2.4" ${dash ? 'stroke-dasharray="3 2"' : ""}/>`);
+  const tickK = c => sw(`<line x1="11" y1="1" x2="11" y2="13" stroke="${c}" stroke-width="2.4"/>`);
+  const slotK = c => sw(`<rect x="7" y="2" width="8" height="10" rx="1.5" fill="${c}"/>`);
+  const pinK = (cls, c) => `<span class="sg-pin ${cls}" style="--c:${c}">clue</span>`;
+  const group = (title, rows) => `<div class="sg-kg"><div class="sg-kt">${title}</div>` +
+    rows.map(([m, t]) => `<div class="sg-ki">${m}<span>${t}</span></div>`).join("") + `</div>`;
+  legend.innerHTML = `<div class="sg-kh">How to read the colours</div><div class="sg-kgrid">` +
+    group("Detective (panel dot, fan lines, chart lines)", WHO.map(w => [lineK(w.color), w.name])) +
+    group("Address checked (dots on a lane)", [
+      [dotK(PART.culprit), "key clue to the <b>culprit</b>"], [dotK(PART.motive), "key clue to the <b>motive</b>"],
+      [dotK(PART.hideout), "key clue to the <b>hideout</b>"], [dotK("#b9ad94"), "nothing decisive there"],
+      [dotK("#fff", LIE), "a <b>lie</b> (frame-up cases)"]]) +
+    group("Decision points", [
+      [sw(`<path d="${diamond(11, 7, 5.5)}" fill="${ASTRA}"/>`), "GPT6-Astra decides (Holmes plans, or the Lone Genius picks its next stop)"],
+      [tickK(KCOL.go), "a Jev boy decides to <b>move</b> (check, go, tail)"],
+      [tickK(KCOL.talk), "a Jev boy decides to <b>share or report</b>"],
+      [tickK(KCOL.wait), "a Jev boy decides to <b>wait</b>"]]) +
+    group("Evidence reaching the answer", [
+      [lineK(PART.culprit), "a clue carried to the answer, in its clue colour"],
+      [lineK(LIE, true), "a lie carried to the answer"],
+      [lineK(OK), "Jev Swarm: a vote for a fully right answer"],
+      [lineK(BAD), "Jev Swarm: a vote for a wrong answer"]]) +
+    group("Answer node (culprit · motive · hideout)", [
+      [slotK(OK), "this part of the working answer is right"], [slotK(BAD), "this part is wrong"], [slotK("#ddd"), "no answer yet"]]) +
+    group("Evidence board", [
+      [pinK("on", PART.motive), "clue in hand (filled, clue colour)"], [pinK("", PART.motive), "clue not found yet (dashed)"],
+      [pinK("lie on", LIE), "a lie picked up"]]) +
+    `</div>`;
 
   let C = null, T = 0, playing = true, last = null, items = [];
 
@@ -70,6 +109,7 @@
 
   // ---------------------------------------------------------------- build one case
   function build() {
+    size();
     panels.innerHTML = ""; boards.innerHTML = ""; charts.innerHTML = ""; items = [];
     const d = C, keyPart = {}, isLie = {};
     d.keys.forEach(([a, p]) => { keyPart[a] = p; });
@@ -140,7 +180,7 @@
         });
       }
       if (w.key === "baker") {
-        el("text", { x: 2, y: 11, class: "sg-lbl", "text-anchor": "start" }, svg).textContent = "Astra";
+        el("text", { x: 2, y: 11, class: "sg-lbl", style: "text-anchor: start" }, svg).textContent = "Astra";
         (r.plans || []).forEach(([t, k]) => {
           add(el("line", { x1: x(t), x2: x(t), y1: 13, y2: Y1, class: "sg-plan" }, g), t);
           const dm = add(el("path", { d: diamond(x(t), 8, 5), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
@@ -266,12 +306,6 @@
       });
     });
     items.push({ update(t) { [A, B].forEach(c => { c.cursor.setAttribute("x1", c.cx(t)); c.cursor.setAttribute("x2", c.cx(t)); }); } });
-    const key = h("div", "sg-legend", charts);
-    key.innerHTML = `<span><i class="dia"></i>GPT6-Astra decision</span>` +
-      Object.entries({ go: "Jev boy decides to move", talk: "to share or report", wait: "to wait" }).map(([k, t]) =>
-        `<span><i class="tick" style="background:${KCOL[k]}"></i>${t}</span>`).join("") + `<span class="sg-br"></span>` + WHO.map(w => `<span><i class="line" style="background:${w.color}"></i>${w.name}</span>`).join("") + `<span><i style="background:${PART.culprit}"></i>culprit clue</span><span><i style="background:${PART.motive}"></i>motive clue</span>` +
-      `<span><i style="background:${PART.hideout}"></i>hideout clue</span><span><i class="ring"></i>lie</span>` +
-      `<span><i style="background:${OK}"></i>right</span><span><i style="background:${BAD}"></i>wrong</span>`;
   }
 
   function pickAt(picks, t) {
