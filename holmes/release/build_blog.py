@@ -140,7 +140,7 @@ def main():
 <h1>The Irregulars: the trailer</h1>
 <p class="lead">Can a Jev swarm catch a murderer? Three ways to solve a murder in Victorian London: GPT6-Astra alone, GPT6-Astra leading
 a swarm of Jev agents, and a leaderless Jev swarm. Every move in the trailer is from a real benchmark run.</p>
-<figure><video controls preload="metadata" playsinline poster="media/poster_trailer.jpg" src="media/the_irregulars_trailer.mp4?v=2"></video>
+<figure><video controls preload="metadata" playsinline poster="media/poster_trailer.jpg" src="media/the_irregulars_trailer.mp4?v=3"></video>
 <figcaption>1:35. Narration: synthesised speech; music: an original score generated in code.</figcaption></figure>"""
           + '<p class="back"><a href="blog.html">Read the blog &rarr;</a></p>', width=900)
 
