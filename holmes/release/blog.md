@@ -14,7 +14,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 - **The Lone Genius (GPT6-Astra):** a single large reasoning model travels from door to door by cab and does all the searching and reasoning itself.
 - **Jev Swarm:** 100 Jev boys with no leader. They share clues with the boys around them and vote on the answer.
 
-**The finding.** **The Jev swarm supplies evidence coverage, while the leader reasons over the information already gathered, evaluates progress, and draws conclusions.** How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:
+**The finding.** **The Jev swarm supplies evidence coverage, while the leader reasons.** How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:
 
 1. **When the evidence is honest,** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
 2. **When the evidence conflicts,** you need both. Neither the swarm nor the reasoner is enough on its own, and a simple counting rule fails completely.
@@ -100,7 +100,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ---
 
-## What This Suggests: Divide and Conquer
+## What This Suggests
 
 **A detective case is a divide-and-conquer problem.** The investigation splits naturally into many small, local subproblems: where to look next, and what a particular witness or footprint means. Each of these can be solved quickly and in parallel. The answers then have to be combined into a single verdict, and that combining step is where the hard reasoning lives. **Fast agents are well suited to the divide step, and a strong reasoner is needed for the conquer step whenever the pieces disagree.**
 
