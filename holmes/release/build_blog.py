@@ -1,6 +1,8 @@
 """Render blog.md to site/index.html, the staged blog: the trailer up top and each section's clip and table placed in
 it (a tiny Markdown subset: headings, paragraphs, lists, tables, bold, italic, rules)."""
 import html
+
+from brand_head import icons, social
 import os
 import re
 
@@ -41,6 +43,7 @@ MEDIA = {
     "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice as much time and twice as many visits.")],
 }
 HOOK_END = ""
+DESC = "One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."
 
 
 def convert(md):
@@ -92,8 +95,8 @@ def convert(md):
 
 HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
-<link rel="icon" type="image/png" sizes="32x32" href="media/lmgame_icon_32.png"><link rel="icon" type="image/png" sizes="64x64" href="media/lmgame_icon_64.png"><link rel="apple-touch-icon" href="media/lmgame_icon_180.png"><link rel="shortcut icon" href="favicon.ico">
-<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><meta property="og:type" content="article"><meta property="og:site_name" content="LMGame"><meta name="application-name" content="LMGame"><meta name="apple-mobile-web-app-title" content="LMGame"><meta property="og:title" content="{title}"><meta property="og:description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><meta property="og:url" content="https://snyhlx.github.io/the_irregulars_detective_game/{page}"><meta property="og:image" content="https://snyhlx.github.io/the_irregulars_detective_game/media/lmgame_logo.png"><meta property="og:image:width" content="300"><meta property="og:image:height" content="300"><meta property="og:image:alt" content="LMGame logo"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="{title}"><meta name="twitter:description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><meta name="twitter:image" content="https://snyhlx.github.io/the_irregulars_detective_game/media/lmgame_logo.png"><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+{icons}
+<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases.">{social}<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {{ margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }}
 main {{ max-width: {width}px; margin: 0 auto; padding: 28px 16px 80px; }}
@@ -122,7 +125,8 @@ def nav(on):
 
 
 def write(name, title, body, width=720):
-    page = HEAD.format(title=title, width=width, page=name + ("?v=lmgame" if name == "blog.html" else "")) + nav(name) + body + "</main></body></html>"
+    page = HEAD.format(title=title, width=width, icons=icons(),
+                       social=social(title, DESC, name + ("?v=lmgame" if name == "blog.html" else ""))) + nav(name) + body + "</main></body></html>"
     open(os.path.join(HERE, "site", name), "w").write(page)
     print("site/" + name)
 
