@@ -79,7 +79,7 @@ def convert(md):
 
 HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
-<meta name="description" content="A lone reasoning model, a reasoning leader with a swarm of small agents, and a leaderless swarm, in 200 simulated murder mysteries."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {{ margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }}
 main {{ max-width: {width}px; margin: 0 auto; padding: 28px 16px 80px; }}
@@ -114,7 +114,7 @@ def write(name, title, body, width=720):
 
 def main():
     blog = convert(open(os.path.join(HERE, "blog.md")).read())
-    write("blog.html", "One Genius or Many Minds? | The Irregulars",
+    write("blog.html", "One Genius or Many Minds? A Sherlock Holmes Detective Game Study",
           blog + '<p class="back"><a href="trailer.html">Watch the trailer</a> \u00b7 '
           '<a href="results.html">Results, and a replay of every case (try case 57): every move, clue and vote &rarr;</a></p>')
     write("trailer.html", "Trailer | The Irregulars", """

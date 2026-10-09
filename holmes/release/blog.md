@@ -1,6 +1,6 @@
 # One Genius or Many Minds? A Sherlock Holmes Detective Game Study
 
-*A lone reasoning model, a leaderless swarm of small agents, and a reasoning leader directing the swarm, in 200 simulated murder mysteries.*
+*Can one large reasoning model (GPT6-Astra) solve murders better than a swarm of small, fast agents (Jev)? And what happens when the reasoner leads the swarm? 200 simulated Victorian murder cases.*
 
 ---
 
