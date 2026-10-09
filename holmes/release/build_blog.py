@@ -32,13 +32,14 @@ MEDIA = {
                  "errands. Solved in 10.5 case hours.")],
     "sg": ['<link rel="stylesheet" href="sg.css"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div>'
            "<figcaption>Figure 1. Scatter and gather on case 57 (pick any of the 200 cases above). Top: each detective's "
-           "search over 12 case hours. Lines fan out from the start to every address a detective checks (one lane per "
-           "boy; Holmes's lanes are read from his boys' positions each quarter-hour), and coloured lines carry the key "
-           "clues back to the answer node, whose three slots turn green or red as the working culprit, motive and "
-           "hideout are right or wrong. The Lone Genius gathers what it finds itself, Holmes gathers his boys' reports, "
-           "and the Jev Swarm, which starts with a boy at every address, gathers only by voting: each line into its node "
-           "is one boy's vote, green for a fully right answer, red for a wrong one (30 matching votes close the case). Below: the evidence board, with each detective's working answer and the key clues it holds, and "
-           "two progress charts side by side.</figcaption></figure>"
+           "12 case hours, one lane per agent. Lines fan out to every address checked (Holmes's lanes are read from his "
+           "boys' positions each quarter-hour). Diamonds mark GPT6-Astra's decisions: Holmes's planning sessions, or "
+           "each of the Lone Genius's stops. Ticks mark each Jev boy's decision every quarter-hour: move, share or "
+           "report, or wait. Coloured lines carry key clues to the answer node, whose three slots turn green or red as "
+           "the working culprit, motive and hideout are right or wrong. The Jev Swarm has no centre, so its lines are "
+           "votes: green for a fully right answer, red for a wrong one (30 matching votes close the case). Below: the "
+           "evidence board, with each detective's working answer and the key clues it holds, and two progress "
+           "charts.</figcaption></figure>"
            '<script src="sg.js" defer></script>'],
     "t1": [image("irregulars_standard_setting_results.png", "Table 1. Standard cases, 100 each.")],
     "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Frame-up cases: somebody lies.")],
@@ -96,6 +97,7 @@ def convert(md):
 
 HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
+<link rel="icon" type="image/png" sizes="32x32" href="media/lmgame_icon_32.png"><link rel="icon" type="image/png" sizes="64x64" href="media/lmgame_icon_64.png"><link rel="apple-touch-icon" href="media/lmgame_icon_180.png">
 <meta name="description" content="One large reasoning model (GPT6-Astra), a swarm of small, fast agents (Jev), and the reasoner leading the swarm, on 200 simulated murder cases."><link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {{ margin: 0; background: #faf6ec; color: #241a10; font: 18px/1.7 "Libre Baskerville", Georgia, serif; }}

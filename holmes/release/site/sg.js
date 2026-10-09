@@ -8,12 +8,16 @@
   const END = 720;                       // 12 case hours, in minutes
   const W = 300, H = 210, X0 = 34, X1 = 246, XV = 278, Y0 = 18, Y1 = H - 22;
   const WHO = [
-    { key: "solo", name: "The Lone Genius (GPT6-Astra)", color: "#3d6a99", how: "one mind, one cab, visit after visit" },
-    { key: "swarm", name: "Jev Swarm", color: "#c08a2e", how: "100 boys, no leader; the answer is a vote" },
-    { key: "baker", name: "Holmes (GPT6-Astra) + Jev Swarm", color: "#8a1c1c", how: "12 boys search; reports come back to Holmes" },
+    { key: "baker", name: "Holmes (GPT6-Astra) + Jev Swarm", color: "#8a1c1c", how: "Astra plans at 221B (◆); 12 Jev boys decide each step (|)" },
+    { key: "solo", name: "The Lone Genius (GPT6-Astra)", color: "#3d6a99", how: "GPT6-Astra makes every decision (◆), one stop at a time" },
+    { key: "swarm", name: "Jev Swarm", color: "#c08a2e", how: "100 Jev boys each decide every 15 min (|); no leader, answer by vote" },
   ];
   const PART = { culprit: "#6a3d8f", motive: "#2e7d6b", hideout: "#a0522d" };
-  const LIE = "#d03030", OK = "#2e7d32", BAD = "#c62828";
+  const LIE = "#d03030", OK = "#2e7d32", BAD = "#c62828", ASTRA = "#1d3557";
+  // a Jev boy's decision each quarter-hour: go somewhere (check, move, tail), talk (share, report back), or wait
+  const KIND = { C: "go", M: "go", T: "go", S: "talk", R: "talk", F: "talk", L: "talk", W: "wait" };
+  const KCOL = { go: "#4f6d8a", talk: "#e09b20", wait: "#cdbfa3" };
+  const diamond = (cx, cy, r) => `M${cx},${cy - r} L${cx + r},${cy} L${cx},${cy + r} L${cx - r},${cy} Z`;
   const x = m => X0 + (Math.min(m, END) / END) * (X1 - X0);
   const hm = m => `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, "0")}m`;
   const el = (tag, attrs, parent) => {
@@ -117,6 +121,32 @@
         add(el("circle", { cx, cy, r: k || lie ? dotR + 1.2 : dotR, fill: k ? PART[k] : lie ? "#fff" : "#b9ad94",
           stroke: lie ? LIE : "none", "stroke-width": lie ? 1.4 : 0 }, g), t);
       });
+      // decision points: GPT6-Astra's as diamonds, every Jev boy's as a short tick on its lane
+      if (r.decisions && w.key !== "solo") {
+        const hgt = Math.max(1.2, Math.min(5, (Y1 - Y0) / n * 0.8));
+        r.decisions.forEach(([t, row]) => {
+          const by = { go: "", talk: "", wait: "" };
+          for (let i = 0; i < row.length; i++) {
+            const k = KIND[row[i]];
+            if (k) by[k] += `M${x(t)},${ly(i) - hgt / 2} v${hgt} `;
+          }
+          for (const k in by) if (by[k]) add(el("path", { d: by[k], stroke: KCOL[k], "stroke-width": n > 50 ? 0.9 : 1.4 }, g), t);
+        });
+      }
+      if (w.key === "solo") {
+        (r.decisions || []).forEach(t => {
+          const dm = add(el("path", { d: diamond(x(t), ym, 4.2), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
+          el("title", {}, dm).textContent = `GPT6-Astra decides at ${hm(t)}`;
+        });
+      }
+      if (w.key === "baker") {
+        el("text", { x: 2, y: 11, class: "sg-lbl", "text-anchor": "start" }, svg).textContent = "Astra";
+        (r.plans || []).forEach(([t, k]) => {
+          add(el("line", { x1: x(t), x2: x(t), y1: 13, y2: Y1, class: "sg-plan" }, g), t);
+          const dm = add(el("path", { d: diamond(x(t), 8, 5), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
+          el("title", {}, dm).textContent = `Holmes (GPT6-Astra) plans at ${hm(t)}: ${k} errand${k === 1 ? "" : "s"}`;
+        });
+      }
       // gather: evidence travelling to the answer
       const vy = ym;
       if (w.key === "solo" || w.key === "baker") {
@@ -237,7 +267,9 @@
     });
     items.push({ update(t) { [A, B].forEach(c => { c.cursor.setAttribute("x1", c.cx(t)); c.cursor.setAttribute("x2", c.cx(t)); }); } });
     const key = h("div", "sg-legend", charts);
-    key.innerHTML = WHO.map(w => `<span><i class="line" style="background:${w.color}"></i>${w.name}</span>`).join("") + `<span><i style="background:${PART.culprit}"></i>culprit clue</span><span><i style="background:${PART.motive}"></i>motive clue</span>` +
+    key.innerHTML = `<span><i class="dia"></i>GPT6-Astra decision</span>` +
+      Object.entries({ go: "Jev boy decides to move", talk: "to share or report", wait: "to wait" }).map(([k, t]) =>
+        `<span><i class="tick" style="background:${KCOL[k]}"></i>${t}</span>`).join("") + `<span class="sg-br"></span>` + WHO.map(w => `<span><i class="line" style="background:${w.color}"></i>${w.name}</span>`).join("") + `<span><i style="background:${PART.culprit}"></i>culprit clue</span><span><i style="background:${PART.motive}"></i>motive clue</span>` +
       `<span><i style="background:${PART.hideout}"></i>hideout clue</span><span><i class="ring"></i>lie</span>` +
       `<span><i style="background:${OK}"></i>right</span><span><i style="background:${BAD}"></i>wrong</span>`;
   }

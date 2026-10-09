@@ -111,6 +111,21 @@ def picks_holmes(plans, brief, truth, tick_min):
              [x["plan"][k] == truth[k] for k in ("culprit", "motive", "hideout")]] for x in plans if x["tick"] > 0]
 
 
+CODE = {"CHECK": "C", "RUN": "R", "TAIL": "T", "SHARE": "S", "WAIT": "W", "MOVE": "M", "LIE": "L", "REFUTE": "F"}
+
+
+def boy_decisions(run_dir, who, n, tick_min):
+    """Every Jev boy's decision, one string per tick with a letter per boy (CODE; '.' where that boy did not decide)."""
+    rows = {}
+    for line in open(os.path.join(run_dir, "decisions.jsonl")):
+        x = json.loads(line)
+        if who in x and "action" in x:
+            row = rows.setdefault(x["tick"], ["."] * n)
+            if 0 <= x[who] < n:
+                row[x[who]] = CODE.get(x["action"].split("_")[0], "?")
+    return [[t * tick_min, "".join(r)] for t, r in sorted(rows.items())]
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     n = 0
@@ -175,14 +190,18 @@ def main():
                 "kind": kind, "seed": seed, "keys": keys, "lies": lies,
                 "solo": {"lanes": 1, "visits": [[s["minute"], 0, s["at"]] for s in solo["stops"][1:]],
                          "end": solo["minutes"], "ok": solo["ok"], "accused": accused(solo_dir, brief),
-                         "picks": picks_solo(solo_dir, brief, truth)},
+                         "picks": picks_solo(solo_dir, brief, truth),
+                         "decisions": [round(json.loads(l).get("minute", 0), 1) for l in open(os.path.join(solo_dir, "decisions.jsonl"))]},
                 "baker": {"lanes": len(baker["ticks"][0]["boys"]) if baker["ticks"] else 12,
                           "visits": first_visits(baker["ticks"], where, errands),
                           "picks": picks_holmes(plans, brief, truth, tick_min),
+                          "plans": [[x["tick"] * tick_min, len(x["plan"].get("assignments") or [])] for x in plans],
+                          "decisions": boy_decisions(baker_dir, "boy", len(baker["ticks"][0]["boys"]) if baker["ticks"] else 12, tick_min),
                           "reports": [[t["minute"], r["at"]] for t in baker["ticks"] for r in t["new"]],
                           "end": baker["minute"], "ok": baker["ok"], "accused": accused(baker_dir, brief)},
                 "swarm": {"lanes": len(swarm["ticks"][0]["boys"]) if swarm["ticks"] else 100,
                           "visits": swarm_visits, "picks": swarm_picks, "ballots": ballots,
+                          "decisions": boy_decisions(swarm_dir, "irr", len(swarm["ticks"][0]["boys"]) if swarm["ticks"] else 100, tick_min),
                           "votes": [[t["minute"], [sum(1 for v in t["vote"] if v == i) for i in range(len(swarm["answers"]))]]
                                     for t in swarm["ticks"]],
                           "answers": swarm["answers"], "end": swarm["minute"], "ok": swarm["ok"],
