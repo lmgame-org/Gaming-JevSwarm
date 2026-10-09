@@ -136,10 +136,7 @@ def main():
 <p class="lead">One genius, or many minds? Three ways to solve a murder in Victorian London: GPT6-Astra alone, GPT6-Astra leading
 a swarm of Jev agents, and a leaderless Jev swarm. Every move in the trailer is from a real benchmark run.</p>
 <figure><video controls preload="metadata" playsinline poster="media/poster_trailer.jpg" src="media/the_irregulars_trailer.mp4"></video>
-<figcaption>1:35. Narration: synthesised speech; music: an original score generated in code.</figcaption></figure>
-<h2>The three runs, one case</h2>""" + video("irregulars_clip1_astra.mp4", "The Lone Genius (GPT6-Astra): unsolved, out of visits.")
-          + video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm: solved in 10.5 case hours.")
-          + video("irregulars_clip3_jev_swarm.mp4", "Jev Swarm: converged in about 4 case hours, on the wrong culprit.")
+<figcaption>1:35. Narration: synthesised speech; music: an original score generated in code.</figcaption></figure>"""
           + '<p class="back"><a href="blog.html">Read the blog &rarr;</a></p>', width=900)
 
 
