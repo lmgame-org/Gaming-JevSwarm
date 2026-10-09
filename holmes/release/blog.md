@@ -29,6 +29,10 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 {{media:case}}
 
+**The Jev Swarm is fast but reaches agreement too early.** One boy commits to an answer, the boys near him copy it, and the vote snowballs until the case closes. The swarm gets the motive and the hideout right, but it names the wrong culprit: a woman who simply wore the right kind of boots.
+
+{{media:swarm}}
+
 **Holmes and the Jev Swarm solve it by checking before concluding.** Holmes first sends the boys to the scene and to the witnesses, asking them for "exact observations, not rumours." When one suspect's alibi looks doubtful, he sends boys back to check it again instead of guessing. **He makes his accusation only once the bootprints, the knife and the motive all point to the same person.**
 
 {{media:holmes}}
@@ -36,10 +40,6 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 **The Lone Genius reasons well but runs out of doors.** Early in the case it narrows the culprit down to five suspects. However, the one clue that separates them is at an address it never reaches, so in the end it has to guess.
 
 {{media:solo}}
-
-**The Jev Swarm is fast but reaches agreement too early.** One boy commits to an answer, the boys near him copy it, and the vote snowballs until the case closes. The swarm gets the motive and the hideout right, but it names the wrong culprit: a woman who simply wore the right kind of boots.
-
-{{media:swarm}}
 
 **Where the decisions happen.** Figure 1 replays all three detectives side by side. Holmes makes a small number of deliberate plans, while his boys make many small decisions about where to go next. The Lone Genius has to spend an expensive decision by the large model on every single stop. The swarm makes thousands of decisions, but none of them takes all of the evidence into account.
 
