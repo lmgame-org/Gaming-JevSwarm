@@ -30,8 +30,8 @@ MEDIA = {
     "swarm": [video("irregulars_clip3_jev_swarm.mp4", "The Jev Swarm on case 57: each colour is one answer. It converges at 4h 15m, on the wrong culprit.")],
     "holmes": [video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm on case 57: Holmes plans at 221B, twelve Jev boys run "
                  "errands. Solved in 10.5 case hours.")],
-    "sg": ['<link rel="stylesheet" href="sg.css?v=2"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div>'
-           "<figcaption>Figure 1. Scatter and gather on case 57 (pick any of the 200 cases above). The key at the top explains every colour and mark. Then one wide window per detective: its "
+    "sg": ['<link rel="stylesheet" href="sg.css?v=3"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div>'
+           "<figcaption>Figure 1. Scatter and gather on case 57 (pick any of the 200 cases above). The key at the top explains every colour and mark. Then one wide window per detective (zoom in with + or a double-click; drag to pan): its "
            "12 case hours, one lane per agent. Lines fan out to every address checked (Holmes's lanes are read from his "
            "boys' positions each quarter-hour). Diamonds mark GPT6-Astra's decisions: Holmes's planning sessions, or "
            "each of the Lone Genius's stops. Ticks mark each Jev boy's decision every quarter-hour: move, share or "
@@ -40,7 +40,7 @@ MEDIA = {
            "votes: green for a fully right answer, red for a wrong one (30 matching votes close the case). Below: the "
            "evidence board, with each detective's working answer and the key clues it holds, and two progress "
            "charts.</figcaption></figure>"
-           '<script src="sg.js?v=2" defer></script>'],
+           '<script src="sg.js?v=3" defer></script>'],
     "t1": [image("irregulars_standard_setting_results.png", "Table 1. Standard cases, 100 each.")],
     "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Frame-up cases: somebody lies.")],
     "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice the time and visits, against the original budget.")],

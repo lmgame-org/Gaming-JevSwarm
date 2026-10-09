@@ -55,8 +55,10 @@
   kindSel.setAttribute("aria-label", "Case set"); seedSel.setAttribute("aria-label", "Case number");
   slider.setAttribute("aria-label", "Case time");
   const legend = h("div", "sg-key", root);
+  h("div", "sg-zhint", root, "Zoom any window with + / −, a double-click, a pinch or ⌘/Ctrl-scroll; drag to move around when zoomed in.");
   const panels = h("div", "sg-grid", root);
   h("div", "sg-head", root, "Evidence board");
+  const boardKey = h("div", "sg-bkey", root);
   const boards = h("div", "sg-grid", root);
   const charts = h("div", "sg-charts", root);
 
@@ -87,10 +89,55 @@
       [lineK(BAD), "Jev Swarm: a vote for a wrong answer"]]) +
     group("Answer node (culprit · motive · hideout)", [
       [slotK(OK), "this part of the working answer is right"], [slotK(BAD), "this part is wrong"], [slotK("#ddd"), "no answer yet"]]) +
-    group("Evidence board", [
-      [pinK("on", PART.motive), "clue in hand (filled, clue colour)"], [pinK("", PART.motive), "clue not found yet (dashed)"],
-      [pinK("lie on", LIE), "a lie picked up"]]) +
     `</div>`;
+  boardKey.innerHTML = [[pinK("on", PART.motive), "clue in hand (filled, in its clue colour)"],
+    [pinK("", PART.motive), "clue not found yet (dashed)"], [pinK("lie on", LIE), "a lie picked up"]]
+    .map(([m, t]) => `<div class="sg-ki">${m}<span>${t}</span></div>`).join("");
+
+  // zoom a timeline window: + / − / reset buttons, double-click, pinch or ctrl/⌘-scroll; drag to pan once zoomed
+  function zoomable(svg, title) {
+    let vb = [0, 0, W, H];
+    const tools = h("span", "sg-zoom", title);
+    const set = () => {
+      svg.setAttribute("viewBox", vb.join(" "));
+      const z = W / vb[2];
+      svg.classList.toggle("zoomed", z > 1.01);
+      lvl.textContent = z > 1.01 ? `${z.toFixed(1)}×` : "";
+    };
+    const zoomAt = (f, px, py) => {
+      const nw = Math.min(W, Math.max(W / 16, vb[2] / f)), nh = nw * H / W;
+      vb = [px - (px - vb[0]) * nw / vb[2], py - (py - vb[1]) * nh / vb[3], nw, nh];
+      vb[0] = Math.max(0, Math.min(W - nw, vb[0])); vb[1] = Math.max(0, Math.min(H - nh, vb[1]));
+      set();
+    };
+    const pt = e => { const r = svg.getBoundingClientRect();
+      return [vb[0] + (e.clientX - r.left) / r.width * vb[2], vb[1] + (e.clientY - r.top) / r.height * vb[3]]; };
+    const mid = () => [vb[0] + vb[2] / 2, vb[1] + vb[3] / 2];
+    const btn = (t, label, f) => { const b = h("button", "", tools, t); b.type = "button"; b.title = label; b.setAttribute("aria-label", label); b.onclick = f; };
+    btn("+", "Zoom in", () => zoomAt(2, ...mid()));
+    btn("−", "Zoom out", () => zoomAt(0.5, ...mid()));
+    btn("reset", "Reset zoom", () => { vb = [0, 0, W, H]; set(); });
+    const lvl = h("span", "sg-zl", tools);
+    svg.addEventListener("dblclick", e => { e.preventDefault(); zoomAt(2, ...pt(e)); });
+    svg.addEventListener("wheel", e => {
+      if (!e.ctrlKey && !e.metaKey) return;  // plain scrolling still scrolls the page
+      e.preventDefault(); zoomAt(Math.exp(-e.deltaY * 0.01), ...pt(e));
+    }, { passive: false });
+    let drag = null;
+    svg.addEventListener("pointerdown", e => {
+      if (vb[2] >= W) return;
+      drag = { x: e.clientX, y: e.clientY, vb: vb.slice() }; svg.setPointerCapture(e.pointerId);
+    });
+    svg.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const r = svg.getBoundingClientRect();
+      vb[0] = Math.max(0, Math.min(W - vb[2], drag.vb[0] - (e.clientX - drag.x) / r.width * vb[2]));
+      vb[1] = Math.max(0, Math.min(H - vb[3], drag.vb[1] - (e.clientY - drag.y) / r.height * vb[3]));
+      set();
+    });
+    const end = () => { drag = null; };
+    svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+  }
 
   let C = null, T = 0, playing = true, last = null, items = [];
 
@@ -126,6 +173,7 @@
       h("b", "", title, w.name);
       h("div", "sg-how", card, w.how);
       const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${w.name}: scatter and gather` }, card);
+      zoomable(svg, title);
       const n = r.lanes, ly = i => n === 1 ? (Y0 + Y1) / 2 : Y0 + (i + 0.5) * (Y1 - Y0) / n;
       const ym = (Y0 + Y1) / 2;
       // time axis
