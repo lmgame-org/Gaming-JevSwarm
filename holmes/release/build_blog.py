@@ -9,7 +9,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 def inline(s):
     s = html.escape(s, quote=False)
-    s = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r'<a href="\2">\1</a>', s)
+    s = re.sub(r"\[([^\]]+)\]\(((?:https?://|[\w-]+\.html)[^)\s]*)\)", r'<a href="\2">\1</a>', s)
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"\*(.+?)\*", r"<i>\1</i>", s)
     return s

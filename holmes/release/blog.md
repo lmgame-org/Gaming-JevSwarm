@@ -19,7 +19,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 1. **When the evidence is honest,** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
 2. **When the evidence conflicts,** you need both. Neither the swarm nor the reasoner is enough on its own, and a simple counting rule fails completely.
 
-**The data.** Every run is fully logged, and no model decision ever fell back to a scripted rule. Readers can replay any case on the results page.
+**The data.** Every run is fully logged, and readers can replay any case on the [results page](results.html).
 
 ---
 
