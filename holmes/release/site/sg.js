@@ -72,8 +72,7 @@
   const group = (title, rows) => `<div class="sg-kg"><div class="sg-kt">${title}</div>` +
     rows.map(([m, t]) => `<div class="sg-ki">${m}<span>${t}</span></div>`).join("") + `</div>`;
   legend.innerHTML = `<div class="sg-kh">How to read the colours</div><div class="sg-kgrid">` +
-    group("Detective (panel dot, fan lines, chart lines)", WHO.map(w => [lineK(w.color), w.name])) +
-    group("Address checked (dots on a lane)", [
+    group("Dots: an address checked (in every window)", [
       [dotK(PART.culprit), "key clue to the <b>culprit</b>"], [dotK(PART.motive), "key clue to the <b>motive</b>"],
       [dotK(PART.hideout), "key clue to the <b>hideout</b>"], [dotK("#b9ad94"), "nothing decisive there"],
       [dotK("#fff", LIE), "a <b>lie</b> (frame-up cases)"]]) +
@@ -172,6 +171,14 @@
       const dot = h("span", "sg-dot", title); dot.style.background = w.color;
       h("b", "", title, w.name);
       h("div", "sg-how", card, w.how);
+      // the dots, explained in place: what each colour found
+      const dl = h("div", "sg-dots", card);
+      dl.innerHTML = (w.key === "swarm"
+        ? "<b>Dots</b> (stacked at 0h): the 100 boys start one per address, so the whole city is checked at once; zoom in to see them. "
+        : "<b>Dots</b>: each address checked. ") +
+        [[PART.culprit, "culprit clue"], [PART.motive, "motive clue"], [PART.hideout, "hideout clue"], ["#b9ad94", "nothing decisive"]]
+          .map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join("") +
+        `<span><i class="lie" style="border-color:${LIE}"></i>lie</span>`;
       const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${w.name}: scatter and gather` }, card);
       zoomable(svg, title);
       const n = r.lanes, ly = i => n === 1 ? (Y0 + Y1) / 2 : Y0 + (i + 0.5) * (Y1 - Y0) / n;
