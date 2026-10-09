@@ -21,7 +21,7 @@ All numbers come from fully logged runs (no model decision fell back to a script
 
 ---
 
-## 1. Case Study: The Soho Physician, One Murder and Three Detectives
+## 1. Case Study: The Soho Physician. How Does Each Technique Perform?
 
 Case 57. Florence Fenwick, a physician, is found dead in Soho. The truth: **Beatrice Jessop**, out of **revenge**, hiding in an **opium den in Kensington**.
 
