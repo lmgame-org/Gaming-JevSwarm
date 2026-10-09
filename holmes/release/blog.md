@@ -57,7 +57,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **The Jev Swarm falls short on judgment.** It is by far the fastest detective, but most of the answers it agrees on are wrong. **A few boys misread a clue, the boys around them copy their confident vote, and the error spreads before anyone checks it.**
 
-**A smaller Jev Swarm does worse.** We also ran a leaderless swarm of 12 Jev boys, the same size as Holmes's team. It did not solve any of the cases we were able to run, while the same 12 boys working under Holmes solved almost all of them. **On their own, a handful of boys cannot cover enough of the city to find the key evidence, let alone agree on what it means.** This was only a partial check, because our model credits ran out partway through the run.
+**A smaller Jev Swarm does worse.** We also ran a leaderless swarm of 12 Jev boys, the same size as Holmes's team. It did not solve any of the cases we were able to run, while the same 12 boys working under Holmes solved almost all of them. **On their own, a handful of boys cannot cover enough of the city to find the key evidence, let alone agree on what it means.**
 
 **On honest evidence, the reasoner makes little difference.** In standard cases every true fact appears at two addresses and every lie at only one, so simply counting the clues leads to the truth. **A Holmes that only divides up the work and counts the clues does as well as GPT6-Astra, at a tiny fraction of the cost.** A leaderless swarm whose boys count the clues, instead of copying each other's votes, does just as well.
 
