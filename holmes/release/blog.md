@@ -2,7 +2,7 @@
 
 By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
-*A Sherlock Holmes detective game study. A large reasoning model (GPT6-Astra) leading a swarm of small, fast agents (Jev) solved 96 of 100 standard murder cases and 93 of 100 cases built on lies. That is far ahead of the Astra model working alone (57 and 59) and the swarm working alone (38 and 42).*
+*Jev is good at making fast decisions in real time. But can a swarm of Jev agents gather clues and name a murderer? We put three detectives into a Sherlock Holmes game based on Arthur Conan Doyle's A Study in Scarlet and The Sign of Four: a swarm of Jev agents on its own, a large reasoning model (GPT6-Astra) on its own, and GPT6-Astra leading a Jev swarm. The leader with the swarm solved 96 of 100 standard murder cases and 93 of 100 cases built on lies. That is far ahead of GPT6-Astra working alone (57 and 59) and the swarm working alone (38 and 42).*
 
 ---
 
