@@ -67,7 +67,6 @@
   const dotK = (fill, stroke) => sw(`<circle cx="11" cy="7" r="4.5" fill="${fill}" ${stroke ? `stroke="${stroke}" stroke-width="1.6"` : ""}/>`);
   const lineK = (c, dash) => sw(`<line x1="1" y1="7" x2="21" y2="7" stroke="${c}" stroke-width="2.4" ${dash ? 'stroke-dasharray="3 2"' : ""}/>`);
   const tickK = c => sw(`<line x1="11" y1="1" x2="11" y2="13" stroke="${c}" stroke-width="2.4"/>`);
-  const slotK = c => sw(`<rect x="7" y="2" width="8" height="10" rx="1.5" fill="${c}"/>`);
   const pinK = (cls, c) => `<span class="sg-pin ${cls}" style="--c:${c}">clue</span>`;
   const group = (title, rows) => `<div class="sg-kg"><div class="sg-kt">${title}</div>` +
     rows.map(([m, t]) => `<div class="sg-ki">${m}<span>${t}</span></div>`).join("") + `</div>`;
@@ -86,8 +85,6 @@
       [lineK(LIE, true), "a lie carried to the answer"],
       [lineK(OK), "Jev Swarm: a vote for a fully right answer"],
       [lineK(BAD), "Jev Swarm: a vote for a wrong answer"]]) +
-    group("Answer node (culprit · motive · hideout)", [
-      [slotK(OK), "this part of the working answer is right"], [slotK(BAD), "this part is wrong"], [slotK("#ddd"), "no answer yet"]]) +
     `</div>`;
   boardKey.innerHTML = [[pinK("on", PART.motive), "clue in hand (filled, in its clue colour)"],
     [pinK("", PART.motive), "clue not found yet (dashed)"], [pinK("lie on", LIE), "a lie picked up"]]
@@ -264,15 +261,17 @@
         });
       }
       // the answer node: three slots, coloured by whether the working answer is right
-      const ring = el("circle", { cx: XV, cy: vy, r: 13, fill: "#fff", stroke: w.color, "stroke-width": 2 }, svg);
-      const slots = [0, 1, 2].map(i => el("rect", { x: XV - 9 + i * 6.5, y: vy - 4, width: 5, height: 8, rx: 1, fill: "#ddd" }, svg));
-      el("text", { x: XV, y: vy + 25, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
-      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - 19, class: "sg-lbl" }, svg) : null;
+      // the answer node: culprit, motive, hideout, each a tick when right and a cross when wrong
+      const ring = el("circle", { cx: XV, cy: vy, r: 16, fill: "#fff", stroke: w.color, "stroke-width": 2 }, svg);
+      el("title", {}, ring).textContent = "Working answer: culprit · motive · hideout (✓ right, ✗ wrong)";
+      const slots = [0, 1, 2].map(i => el("text", { x: XV - 8.5 + i * 8.5, y: vy + 4, class: "sg-mark" }, svg));
+      el("text", { x: XV, y: vy + 28, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
+      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - 22, class: "sg-lbl" }, svg) : null;
       const status = h("div", "sg-status", card);
       items.push({ update(t) {
         const cur = pickAt(r.picks, t);
         const ok = cur ? cur[2] : null;
-        slots.forEach((s, i) => s.setAttribute("fill", !cur ? "#ddd" : ok[i] ? OK : BAD));
+        slots.forEach((s, i) => { s.textContent = !cur ? "·" : ok[i] ? "✓" : "✗"; s.setAttribute("fill", !cur ? "#bbb" : ok[i] ? OK : BAD); });
         ring.setAttribute("stroke-width", t >= r.end ? 4 : 2);
         if (votes) {
           const v = voteAt(r.votes, t);

@@ -59,3 +59,4 @@ figure.wide { width: min(1040px, calc(100vw - 32px)); position: relative; left: 
 .sg-dots span { white-space: nowrap; margin-right: 10px; }
 .sg-dots i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: 0; }
 .sg-dots i.lie { background: #fff; border: 1.5px solid; width: 6px; height: 6px; }
+#sg .sg-mark { font: 700 11px Inter, sans-serif; text-anchor: middle; }
