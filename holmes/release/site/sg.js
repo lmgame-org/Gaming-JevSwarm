@@ -7,10 +7,10 @@
   const NS = "http://www.w3.org/2000/svg";
   const END = 720;                       // 12 case hours, in minutes
   // timeline windows: one per row and wide on a desktop, compact on a phone (set per build from the figure's width)
-  let W, H, X0, X1, XV, Y0 = 18, Y1;
+  let W, H, X0, X1, XV, CW, CH, Y0 = 18, Y1;
   const size = () => {
     const wide = root.clientWidth >= 640;
-    W = wide ? 900 : 300; H = wide ? 250 : 210; X0 = wide ? 44 : 34; XV = W - 22; X1 = XV - (wide ? 52 : 32); Y1 = H - 22;
+    W = wide ? 900 : 300; H = wide ? 250 : 210; X0 = wide ? 44 : 34; CW = wide ? 96 : 72; CH = wide ? 60 : 52; XV = W - CW / 2 - 8; X1 = XV - CW / 2 - (wide ? 36 : 14); Y1 = H - 22;
     panels.classList.toggle("sg-rows", wide);
   };
   const WHO = [
@@ -64,17 +64,12 @@
 
   // the colour key, drawn with the same marks the figure uses
   const sw = (svg) => `<svg viewBox="0 0 22 14" width="22" height="14" aria-hidden="true">${svg}</svg>`;
-  const dotK = (fill, stroke) => sw(`<circle cx="11" cy="7" r="4.5" fill="${fill}" ${stroke ? `stroke="${stroke}" stroke-width="1.6"` : ""}/>`);
   const lineK = (c, dash) => sw(`<line x1="1" y1="7" x2="21" y2="7" stroke="${c}" stroke-width="2.4" ${dash ? 'stroke-dasharray="3 2"' : ""}/>`);
   const tickK = c => sw(`<line x1="11" y1="1" x2="11" y2="13" stroke="${c}" stroke-width="2.4"/>`);
   const pinK = (cls, c) => `<span class="sg-pin ${cls}" style="--c:${c}">clue</span>`;
   const group = (title, rows) => `<div class="sg-kg"><div class="sg-kt">${title}</div>` +
     rows.map(([m, t]) => `<div class="sg-ki">${m}<span>${t}</span></div>`).join("") + `</div>`;
   legend.innerHTML = `<div class="sg-kh">How to read the colours</div><div class="sg-kgrid">` +
-    group("Dots: an address checked (in every window)", [
-      [dotK(PART.culprit), "key clue to the <b>culprit</b>"], [dotK(PART.motive), "key clue to the <b>motive</b>"],
-      [dotK(PART.hideout), "key clue to the <b>hideout</b>"], [dotK("#b9ad94"), "nothing decisive there"],
-      [dotK("#fff", LIE), "a <b>lie</b> (frame-up cases)"]]) +
     group("Decision points", [
       [sw(`<path d="${diamond(11, 7, 5.5)}" fill="${ASTRA}"/>`), "GPT6-Astra decides (Holmes plans, or the Lone Genius picks its next stop)"],
       [tickK(KCOL.go), "a Jev boy decides to <b>move</b> (check, go, tail)"],
@@ -171,8 +166,8 @@
       // the dots, explained in place: what each colour found
       const dl = h("div", "sg-dots", card);
       dl.innerHTML = (w.key === "swarm"
-        ? "<b>Dots</b> (stacked at 0h): the 100 boys start one per address, so the whole city is checked at once; zoom in to see them. "
-        : "<b>Dots</b>: each address checked. ") +
+        ? "<b>Dots</b> (stacked at 0h): the 100 boys start one per address, so the whole city is checked at once; zoom in to see them."
+        : "<b>Dots</b>: each address checked.") + "<br>" +
         [[PART.culprit, "culprit clue"], [PART.motive, "motive clue"], [PART.hideout, "hideout clue"], ["#b9ad94", "nothing decisive"]]
           .map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join("") +
         `<span><i class="lie" style="border-color:${LIE}"></i>lie</span>`;
@@ -248,7 +243,7 @@
           if (!k && !lie) return;
           const [sx, sy] = where[a] || [x(t), vy];
           const fx = w.key === "baker" ? x(t) : sx;
-          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 21},${vy}`,
+          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - CW / 2 - 1},${vy}`,
             class: "sg-gather", stroke: lie ? LIE : PART[k], "stroke-dasharray": lie ? "3 2" : "none" }, g), t);
         });
       }
@@ -256,24 +251,30 @@
         (r.ballots || []).forEach(([t, boy, i]) => {
           const right = r.answers[i] && r.answers[i].ok.every(Boolean);
           const sy = ly(boy), fx = x(t);
-          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 21},${vy}`,
+          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - CW / 2 - 1},${vy}`,
             class: "sg-vote", stroke: right ? OK : BAD }, g), t);
         });
       }
-      // the answer node: three slots, coloured by whether the working answer is right
-      // the answer node: culprit, motive, hideout, each a tick when right and a cross when wrong
-      const ring = el("rect", { x: XV - 20, y: vy - 15, width: 40, height: 30, rx: 5, fill: "#fff", stroke: w.color, "stroke-width": 2 }, svg);
-      el("title", {}, ring).textContent = "Working answer: culprit · motive · hideout (✓ right, ✗ wrong)";
-      const slots = [-12, 0, 12].map(dx => el("text", { x: XV + dx, y: vy + 3, class: "sg-mark" }, svg));
-      ["C", "M", "H"].forEach((t, i) => { el("text", { x: XV - 12 + i * 12, y: vy + 11.5, class: "sg-cmh" }, svg).textContent = t; });
-      el("text", { x: XV, y: vy + 26, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
-      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - 20, class: "sg-lbl" }, svg) : null;
+      // the answer node: a card with one labelled row each for culprit, motive and hideout, a tick when that part
+      // of the working answer is right and a cross when it is wrong; it pops up a size when the case closes
+      const node = el("g", { class: "sg-ans" }, svg);
+      const ring = el("rect", { x: XV - CW / 2, y: vy - CH / 2, width: CW, height: CH, rx: 6, fill: "#fff", stroke: w.color, "stroke-width": 2 }, node);
+      el("title", {}, node).textContent = "Working answer: culprit, motive, hideout (✓ right, ✗ wrong)";
+      const fs = CW > 80 ? 12 : 10, rowH = (CH - 10) / 3;
+      const slots = ["culprit", "motive", "hideout"].map((lbl, i) => {
+        const y = vy - CH / 2 + 5 + rowH * (i + 0.5) + fs * 0.36;
+        el("text", { x: XV - CW / 2 + 22, y, class: "sg-arow", "font-size": fs }, node).textContent = lbl;
+        return el("text", { x: XV - CW / 2 + 12, y, class: "sg-mark", "font-size": fs + 2 }, node);
+      });
+      el("text", { x: XV, y: vy + CH / 2 + 14, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
+      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - CH / 2 - 8, class: "sg-lbl" }, svg) : null;
       const status = h("div", "sg-status", card);
       items.push({ update(t) {
         const cur = pickAt(r.picks, t);
         const ok = cur ? cur[2] : null;
         slots.forEach((s, i) => { s.textContent = !cur ? "?" : ok[i] ? "✓" : "✗"; s.setAttribute("fill", !cur ? "#bbb" : ok[i] ? OK : BAD); });
-        ring.setAttribute("stroke-width", t >= r.end ? 4 : 2);
+        ring.setAttribute("stroke-width", t >= r.end ? 3.5 : 2);
+        node.classList.toggle("done", t >= r.end);
         if (votes) {
           const v = voteAt(r.votes, t);
           votes.textContent = v ? `${Math.max(...v)}/30` : "";
