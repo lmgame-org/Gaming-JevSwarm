@@ -1,4 +1,4 @@
-# One Leader, Many Minds: Why a Reasoning Leader with an AI Swarm Wins
+# Catch Murderer with Jev Swarm — A Detective Game Case Study
 
 By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 

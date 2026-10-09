@@ -133,7 +133,7 @@ def write(name, title, body, width=720):
 
 def main():
     blog = convert(open(os.path.join(HERE, "blog.md")).read())
-    write("blog.html", "One Leader, Many Minds: A Sherlock Holmes Detective Game Study",
+    write("blog.html", "Catch Murderer with Jev Swarm — A Detective Game Case Study",
           blog + '<p class="back"><a href="trailer.html">Watch the trailer</a> \u00b7 '
           '<a href="results.html">Results, and a replay of every case (try case 57): every move, clue and vote &rarr;</a></p>')
     write("trailer.html", "Trailer | The Irregulars", """
