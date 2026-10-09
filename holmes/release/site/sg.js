@@ -1,0 +1,288 @@
+// Scatter and gather: the blog's side-by-side figure of how each detective spreads out over the city and how the
+// evidence comes back together into an answer, with an evidence board and two progress charts beneath.
+// Data: data/sg/<kind>_<seed>.json, written by release/export_scatter.py from the logged runs.
+(function () {
+  const root = document.getElementById("sg");
+  if (!root) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const END = 720;                       // 12 case hours, in minutes
+  const W = 300, H = 210, X0 = 34, X1 = 246, XV = 278, Y0 = 18, Y1 = H - 22;
+  const WHO = [
+    { key: "solo", name: "The Lone Genius (GPT6-Astra)", color: "#3d6a99", how: "one mind, one cab, visit after visit" },
+    { key: "swarm", name: "Jev Swarm", color: "#c08a2e", how: "100 boys, no leader; the answer is a vote" },
+    { key: "baker", name: "Holmes (GPT6-Astra) + Jev Swarm", color: "#8a1c1c", how: "12 boys search; reports come back to Holmes" },
+  ];
+  const PART = { culprit: "#6a3d8f", motive: "#2e7d6b", hideout: "#a0522d" };
+  const LIE = "#d03030", OK = "#2e7d32", BAD = "#c62828";
+  const x = m => X0 + (Math.min(m, END) / END) * (X1 - X0);
+  const hm = m => `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, "0")}m`;
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  const h = (tag, cls, parent, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+
+  // ---------------------------------------------------------------- controls and layout
+  const bar = h("div", "sg-bar", root);
+  const kindSel = h("select", "", bar);
+  [["standard", "Standard cases"], ["frameup", "Frame-up cases"]].forEach(([v, t]) => {
+    const o = h("option", "", kindSel, t); o.value = v;
+  });
+  const seedSel = h("select", "", bar);
+  for (let i = 1; i <= 100; i++) { const o = h("option", "", seedSel, `Case ${i}`); o.value = i; }
+  const play = h("button", "", bar, "Pause");
+  const replay = h("button", "", bar, "Replay");
+  const slider = h("input", "", bar); slider.type = "range"; slider.min = 0; slider.max = END; slider.step = 1;
+  const clock = h("span", "sg-clock", bar);
+  kindSel.setAttribute("aria-label", "Case set"); seedSel.setAttribute("aria-label", "Case number");
+  slider.setAttribute("aria-label", "Case time");
+  const panels = h("div", "sg-grid", root);
+  h("div", "sg-head", root, "Evidence board");
+  const boards = h("div", "sg-grid", root);
+  const charts = h("div", "sg-charts", root);
+
+  let C = null, T = 0, playing = true, last = null, items = [];
+
+  function load(kind, seed) {
+    return fetch(`data/sg/${kind}_${seed}.json`).then(r => r.json()).then(d => { C = d; build(); T = 0; playing = true; });
+  }
+
+  // in hand at minute t: the Lone Genius once it has been there, Holmes once a report reached Baker Street,
+  // the swarm once any boy has been there (they start one at every address)
+  function inHand(w, d) {
+    const m = {};
+    if (w === "baker") d.baker.reports.forEach(([t, a]) => { if (!(a in m)) m[a] = t; });
+    else d[w].visits.forEach(([t, , a]) => { if (!(a in m)) m[a] = t; });
+    return m;
+  }
+
+  // ---------------------------------------------------------------- build one case
+  function build() {
+    panels.innerHTML = ""; boards.innerHTML = ""; charts.innerHTML = ""; items = [];
+    const d = C, keyPart = {}, isLie = {};
+    d.keys.forEach(([a, p]) => { keyPart[a] = p; });
+    d.lies.forEach(([a]) => { isLie[a] = true; });
+    const ends = WHO.map(w => d[w.key].end);
+    const last = Math.max(...ends);
+    slider.max = Math.ceil(Math.max(last, 60) / 15) * 15;
+
+    WHO.forEach(w => {
+      const r = d[w.key];
+      const card = h("div", "sg-panel", panels);
+      const title = h("div", "sg-title", card);
+      const dot = h("span", "sg-dot", title); dot.style.background = w.color;
+      h("b", "", title, w.name);
+      h("div", "sg-how", card, w.how);
+      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${w.name}: scatter and gather` }, card);
+      const n = r.lanes, ly = i => n === 1 ? (Y0 + Y1) / 2 : Y0 + (i + 0.5) * (Y1 - Y0) / n;
+      const ym = (Y0 + Y1) / 2;
+      // time axis
+      for (let hr = 0; hr <= 12; hr += 3) {
+        el("line", { x1: x(hr * 60), x2: x(hr * 60), y1: Y0 - 6, y2: Y1 + 4, class: "sg-grid-line" }, svg);
+        el("text", { x: x(hr * 60), y: H - 6, class: "sg-tick" }, svg).textContent = `${hr}h`;
+      }
+      const g = el("g", {}, svg);
+      const add = (node, t) => { items.push({ node, t }); return node; };
+      // scatter: from the start out over the lanes
+      const src = el("circle", { cx: 12, cy: ym, r: 5, fill: w.color }, svg);
+      el("text", { x: 12, y: ym - 9, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "city" : "221B";
+      const laneFirst = {};
+      r.visits.forEach(v => { if (!(v[1] in laneFirst)) laneFirst[v[1]] = v; });
+      Object.values(laneFirst).forEach(([t, lane]) => {
+        const y = ly(lane);
+        add(el("path", { d: `M12,${ym} C${X0 - 6},${ym} ${X0 - 14},${y} ${x(t)},${y}`, class: "sg-fan",
+          stroke: w.color }, g), t);
+      });
+      if (w.key === "solo") {  // one chain, one stop after another
+        let px = x(0), py = ym;
+        r.visits.forEach(([t]) => {
+          add(el("line", { x1: px, y1: py, x2: x(t), y2: ym, stroke: w.color, class: "sg-chain" }, g), t);
+          px = x(t); py = ym;
+        });
+      }
+      const dotR = n > 50 ? 1.6 : n > 1 ? 2.6 : 3.4;
+      const where = {};
+      r.visits.forEach(([t, lane, a]) => {
+        const cx = x(t) + (w.key === "swarm" ? (lane % 4) * 1.2 : 0), cy = ly(lane);
+        where[a] = [cx, cy];
+        const k = keyPart[a], lie = isLie[a];
+        add(el("circle", { cx, cy, r: k || lie ? dotR + 1.2 : dotR, fill: k ? PART[k] : lie ? "#fff" : "#b9ad94",
+          stroke: lie ? LIE : "none", "stroke-width": lie ? 1.4 : 0 }, g), t);
+      });
+      // gather: evidence travelling to the answer
+      const vy = ym;
+      if (w.key === "solo" || w.key === "baker") {
+        const sent = w.key === "solo" ? r.visits.map(([t, , a]) => [t, a]) : r.reports;
+        sent.forEach(([t, a]) => {
+          const k = keyPart[a], lie = isLie[a];
+          if (!k && !lie) return;
+          const [sx, sy] = where[a] || [x(t), vy];
+          const fx = w.key === "baker" ? x(t) : sx;
+          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 12},${vy}`,
+            class: "sg-gather", stroke: lie ? LIE : PART[k], "stroke-dasharray": lie ? "3 2" : "none" }, g), t);
+        });
+      }
+      if (w.key === "swarm") {  // no centre: the only gathering is each boy casting a vote for a full answer
+        (r.ballots || []).forEach(([t, boy, i]) => {
+          const right = r.answers[i] && r.answers[i].ok.every(Boolean);
+          const sy = ly(boy), fx = x(t);
+          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 12},${vy}`,
+            class: "sg-vote", stroke: right ? OK : BAD }, g), t);
+        });
+      }
+      // the answer node: three slots, coloured by whether the working answer is right
+      const ring = el("circle", { cx: XV, cy: vy, r: 13, fill: "#fff", stroke: w.color, "stroke-width": 2 }, svg);
+      const slots = [0, 1, 2].map(i => el("rect", { x: XV - 9 + i * 6.5, y: vy - 4, width: 5, height: 8, rx: 1, fill: "#ddd" }, svg));
+      el("text", { x: XV, y: vy + 25, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
+      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - 19, class: "sg-lbl" }, svg) : null;
+      const status = h("div", "sg-status", card);
+      items.push({ update(t) {
+        const cur = pickAt(r.picks, t);
+        const ok = cur ? cur[2] : null;
+        slots.forEach((s, i) => s.setAttribute("fill", !cur ? "#ddd" : ok[i] ? OK : BAD));
+        ring.setAttribute("stroke-width", t >= r.end ? 4 : 2);
+        if (votes) {
+          const v = voteAt(r.votes, t);
+          votes.textContent = v ? `${Math.max(...v)}/30` : "";
+        }
+        const solved = Object.values(r.ok).every(Boolean);
+        status.innerHTML = t >= r.end
+          ? `<b class="${solved ? "ok" : "bad"}">${solved ? "Solved" : "Unsolved"}</b> at ${hm(r.end)}`
+          : `Working… ${r.visits.filter(v => v[0] <= t).length} addresses so far`;
+      } });
+
+      // the evidence board for this detective
+      const b = h("div", "sg-board", boards);
+      const bt = h("div", "sg-title", b);
+      const bd = h("span", "sg-dot", bt); bd.style.background = w.color;
+      h("b", "", bt, w.name);
+      const ans = h("div", "sg-answer", b);
+      const rows = ["Culprit", "Motive", "Hideout"].map(lbl => {
+        const row = h("div", "sg-row", ans); h("span", "sg-k", row, lbl); return h("span", "sg-v", row, "—");
+      });
+      const pins = h("div", "sg-pins", b);
+      const have = inHand(w.key, d);
+      const pinEls = d.keys.map(([a, p, label]) => {
+        const e = h("span", "sg-pin", pins, label); e.style.setProperty("--c", PART[p]); return [e, have[a]];
+      }).concat(d.lies.map(([a, label]) => {
+        const e = h("span", "sg-pin lie", pins, "lie: " + label); e.style.setProperty("--c", LIE); return [e, have[a]];
+      }));
+      const tally = h("div", "sg-tally", b);
+      items.push({ update(t) {
+        const cur = pickAt(r.picks, t);
+        const ok = cur ? cur[2] : null;
+        rows.forEach((e, i) => {
+          e.textContent = cur ? (cur[1][i] || "—") : "—";
+          e.className = "sg-v " + (cur ? (ok[i] ? "ok" : "bad") : "");
+        });
+        let k = 0, l = 0;
+        pinEls.forEach(([e, at], i) => {
+          const on = at != null && at <= t;
+          e.classList.toggle("on", on);
+          if (on) { if (i < d.keys.length) k++; else l++; }
+        });
+        tally.textContent = `Key evidence in hand ${k}/${d.keys.length}` + (d.lies.length ? ` · lies picked up ${l}` : "");
+      } });
+    });
+
+    // two charts side by side: key evidence in hand, and how much of the working answer is right
+    const mk = (title, yMax, ylabels) => {
+      const box = h("div", "sg-chart", charts);
+      h("div", "sg-ctitle", box, title);
+      const s = el("svg", { viewBox: "0 0 320 150", role: "img", "aria-label": title }, box);
+      const cx = m => 34 + (Math.min(m, END) / END) * 276, cy = v => 128 - (v / yMax) * 110;
+      for (let hr = 0; hr <= 12; hr += 3) {
+        el("line", { x1: cx(hr * 60), x2: cx(hr * 60), y1: 18, y2: 128, class: "sg-grid-line" }, s);
+        el("text", { x: cx(hr * 60), y: 143, class: "sg-tick" }, s).textContent = `${hr}h`;
+      }
+      ylabels.forEach(v => {
+        el("line", { x1: 34, x2: 310, y1: cy(v), y2: cy(v), class: "sg-grid-line" }, s);
+        el("text", { x: 28, y: cy(v) + 3, class: "sg-tick", "text-anchor": "end" }, s).textContent = v;
+      });
+      const cursor = el("line", { x1: 34, x2: 34, y1: 14, y2: 128, class: "sg-cursor" }, s);
+      return { s, cx, cy, cursor };
+    };
+    const A = mk("Key evidence in hand", d.keys.length, [0, Math.round(d.keys.length / 2), d.keys.length]);
+    const B = mk("Parts of the working answer that are right", 3, [0, 1, 2, 3]);
+    WHO.forEach(w => {
+      const r = d[w.key];
+      const have = inHand(w.key, d);
+      const times = d.keys.map(([a]) => have[a]).filter(t => t != null).sort((p, q) => p - q);
+      const stepA = [[0, 0]]; times.forEach((t, i) => stepA.push([t, i + 1]));
+      const stepB = [[0, 0]].concat(r.picks.map(([t, , ok]) => [t, ok.filter(Boolean).length]));
+      [[A, stepA], [B, stepB]].forEach(([c, pts]) => {
+        const path = el("path", { fill: "none", stroke: w.color, "stroke-width": 2 }, c.s);
+        const head = el("circle", { r: 3, fill: w.color }, c.s);
+        items.push({ update(t) {
+          const end = Math.min(t, r.end);
+          let dd = "", y = 0;
+          pts.forEach(([pt, v], i) => {
+            if (pt > end) return;
+            dd += (i ? ` L${c.cx(pt)},${c.cy(y)} L${c.cx(pt)},${c.cy(v)}` : `M${c.cx(pt)},${c.cy(v)}`);
+            y = v;
+          });
+          dd += ` L${c.cx(end)},${c.cy(y)}`;
+          path.setAttribute("d", dd);
+          head.setAttribute("cx", c.cx(end)); head.setAttribute("cy", c.cy(y));
+        } });
+      });
+    });
+    items.push({ update(t) { [A, B].forEach(c => { c.cursor.setAttribute("x1", c.cx(t)); c.cursor.setAttribute("x2", c.cx(t)); }); } });
+    const key = h("div", "sg-legend", charts);
+    key.innerHTML = WHO.map(w => `<span><i class="line" style="background:${w.color}"></i>${w.name}</span>`).join("") + `<span><i style="background:${PART.culprit}"></i>culprit clue</span><span><i style="background:${PART.motive}"></i>motive clue</span>` +
+      `<span><i style="background:${PART.hideout}"></i>hideout clue</span><span><i class="ring"></i>lie</span>` +
+      `<span><i style="background:${OK}"></i>right</span><span><i style="background:${BAD}"></i>wrong</span>`;
+  }
+
+  function pickAt(picks, t) {
+    let cur = null;
+    for (const p of picks) { if (p[0] <= t) cur = p; else break; }
+    return cur;
+  }
+  function voteAt(votes, t) {
+    let cur = null;
+    for (const v of votes) { if (v[0] <= t) cur = v[1]; else break; }
+    return cur;
+  }
+  function render() {
+    items.forEach(it => it.update ? it.update(T) : (it.node.style.opacity = it.t <= T ? 1 : 0));
+    slider.value = T;
+    clock.textContent = `case time ${hm(T)}`;
+  }
+  function frame(ts) {
+    if (last != null && playing && C) {
+      T = Math.min(+slider.max, T + (ts - last) / 1000 * 36);  // 36 case minutes a second: 12 hours in 20 s
+      if (T >= +slider.max) { playing = false; play.textContent = "Play"; }
+    }
+    last = ts;
+    if (C) render();
+    requestAnimationFrame(frame);
+  }
+  play.onclick = () => { if (T >= +slider.max) T = 0; playing = !playing; play.textContent = playing ? "Pause" : "Play"; };
+  replay.onclick = () => { T = 0; playing = true; play.textContent = "Pause"; };
+  slider.oninput = () => { T = +slider.value; playing = false; play.textContent = "Play"; };
+  const change = () => load(kindSel.value, seedSel.value).then(() => { play.textContent = "Pause"; });
+  kindSel.onchange = change; seedSel.onchange = change;
+
+  seedSel.value = root.dataset.seed || 57;
+  kindSel.value = root.dataset.kind || "standard";
+  load(kindSel.value, seedSel.value).then(() => {
+    playing = false; play.textContent = "Play";
+    // start playing the first time the figure scrolls into view
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver(es => {
+        if (es.some(e => e.isIntersecting)) { T = 0; playing = true; play.textContent = "Pause"; io.disconnect(); }
+      }, { threshold: 0.35 });
+      io.observe(root);
+    } else { playing = true; play.textContent = "Pause"; }
+    requestAnimationFrame(frame);
+  });
+})();

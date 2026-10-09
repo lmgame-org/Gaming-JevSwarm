@@ -37,6 +37,10 @@ Case 57. Florence Fenwick, a physician, is found dead in Soho. The truth: **Beat
 
 {{media:holmes}}
 
+Figure 1 replays all three side by side. Watch how each one **scatters** over the city and how the evidence is **gathered** back into an answer:
+
+{{media:sg}}
+
 That is the whole study in one case. The genius reasons well about what it finds but cannot knock on enough doors. The swarm covers the city but votes on half the evidence. The leader with a swarm gets both: twelve pairs of legs to find the decisive clue, and one mind to weigh it.
 
 ---
