@@ -248,7 +248,7 @@
           if (!k && !lie) return;
           const [sx, sy] = where[a] || [x(t), vy];
           const fx = w.key === "baker" ? x(t) : sx;
-          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 12},${vy}`,
+          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 21},${vy}`,
             class: "sg-gather", stroke: lie ? LIE : PART[k], "stroke-dasharray": lie ? "3 2" : "none" }, g), t);
         });
       }
@@ -256,22 +256,23 @@
         (r.ballots || []).forEach(([t, boy, i]) => {
           const right = r.answers[i] && r.answers[i].ok.every(Boolean);
           const sy = ly(boy), fx = x(t);
-          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 12},${vy}`,
+          add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - 21},${vy}`,
             class: "sg-vote", stroke: right ? OK : BAD }, g), t);
         });
       }
       // the answer node: three slots, coloured by whether the working answer is right
       // the answer node: culprit, motive, hideout, each a tick when right and a cross when wrong
-      const ring = el("circle", { cx: XV, cy: vy, r: 16, fill: "#fff", stroke: w.color, "stroke-width": 2 }, svg);
+      const ring = el("rect", { x: XV - 20, y: vy - 15, width: 40, height: 30, rx: 5, fill: "#fff", stroke: w.color, "stroke-width": 2 }, svg);
       el("title", {}, ring).textContent = "Working answer: culprit · motive · hideout (✓ right, ✗ wrong)";
-      const slots = [0, 1, 2].map(i => el("text", { x: XV - 8.5 + i * 8.5, y: vy + 4, class: "sg-mark" }, svg));
-      el("text", { x: XV, y: vy + 28, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
-      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - 22, class: "sg-lbl" }, svg) : null;
+      const slots = [-12, 0, 12].map(dx => el("text", { x: XV + dx, y: vy + 3, class: "sg-mark" }, svg));
+      ["C", "M", "H"].forEach((t, i) => { el("text", { x: XV - 12 + i * 12, y: vy + 11.5, class: "sg-cmh" }, svg).textContent = t; });
+      el("text", { x: XV, y: vy + 26, class: "sg-lbl" }, svg).textContent = w.key === "swarm" ? "vote" : "answer";
+      const votes = w.key === "swarm" ? el("text", { x: XV, y: vy - 20, class: "sg-lbl" }, svg) : null;
       const status = h("div", "sg-status", card);
       items.push({ update(t) {
         const cur = pickAt(r.picks, t);
         const ok = cur ? cur[2] : null;
-        slots.forEach((s, i) => { s.textContent = !cur ? "·" : ok[i] ? "✓" : "✗"; s.setAttribute("fill", !cur ? "#bbb" : ok[i] ? OK : BAD); });
+        slots.forEach((s, i) => { s.textContent = !cur ? "?" : ok[i] ? "✓" : "✗"; s.setAttribute("fill", !cur ? "#bbb" : ok[i] ? OK : BAD); });
         ring.setAttribute("stroke-width", t >= r.end ? 4 : 2);
         if (votes) {
           const v = voteAt(r.votes, t);
@@ -304,7 +305,7 @@
         const cur = pickAt(r.picks, t);
         const ok = cur ? cur[2] : null;
         rows.forEach((e, i) => {
-          e.textContent = cur ? (cur[1][i] || "—") : "—";
+          e.textContent = cur ? `${ok[i] ? "✓" : "✗"} ${cur[1][i] || "—"}` : "—";
           e.className = "sg-v " + (cur ? (ok[i] ? "ok" : "bad") : "");
         });
         let k = 0, l = 0;
