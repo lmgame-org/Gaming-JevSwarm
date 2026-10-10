@@ -578,9 +578,9 @@ function casebook2(u) {
   text(`solved, out of ${TB.n || 100}`, cols.bar + 100, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
   text("case time", cols.sim, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
   text("real time", cols.wall, 270, {size: 28, color: "rgba(42,29,18,0.7)", style: "italic", alpha: al});
-  const rows = [["The Lone Genius (GPT6-Astra)", R.solo, INK], ["Holmes (GPT6-Astra) + Jev Swarm", R.baker, RED], ["Jev Swarm", R.swarm, INK]];
+  const rows = [["The Lone Genius (GPT6-Astra)", R.solo, INK], ["Holmes (GPT6-Astra) + Jev Swarm", R.baker, RED], ["Jev Swarm", R.swarm, INK]]
+    .filter(([, v]) => v).sort((a, b) => b[1].solved - a[1].solved);   // most cases solved first
   rows.forEach(([who, v, col], i) => {
-    if (!v) return;
     const y = 400 + i * 170, r = ease(prog(u, 0.8 + i * 0.6, 2.6 + i * 0.6));
     text(who, 320, y, {size: 40, color: INK, align: "left", alpha: prog(u, 0.6 + i * 0.6, 1.0 + i * 0.6)});
     g.fillStyle = "rgba(42,29,18,0.12)"; g.fillRect(cols.bar, y - 26, 270, 52);
@@ -599,10 +599,10 @@ function frameup(u) {                          // the same three methods when so
   text("Then somebody lies.", W / 2, 150, {size: 76, alpha: al});
   text("100 more murders. Each time the murderer bribes his servants to frame an innocent man.", W / 2, 240, {size: 32, color: DIM, alpha: al * prog(u, 0.5, 1.0)});
   const rows = [["The Lone Genius (GPT6-Astra)", F.solo, CREAM], ["Holmes (GPT6-Astra) + Jev Swarm", F.baker, GOLD], ["Jev Swarm", F.swarm, CREAM],
-    ["Holmes (heuristic) + heuristic Swarm", F.counting, "#e4836f"]];
-  rows.forEach(([who, n, col], i) => {
+    ["Holmes (heuristic) + heuristic Swarm", F.counting, "#e4836f", true]].sort((a, b) => (b[1] || 0) - (a[1] || 0));   // most solved first
+  rows.forEach(([who, n, col, counting], i) => {
     const y = 380 + i * 120, r = al * ease(prog(u, 1.2 + i * 0.5, 2.6 + i * 0.5));
-    text(who, 880, y, {size: i === 3 ? 36 : 42, align: "right", alpha: al * prog(u, 1.0 + i * 0.5, 1.4 + i * 0.5), color: i === 3 ? "#e4836f" : CREAM});
+    text(who, 880, y, {size: counting ? 36 : 42, align: "right", alpha: al * prog(u, 1.0 + i * 0.5, 1.4 + i * 0.5), color: counting ? "#e4836f" : CREAM});
     g.fillStyle = "rgba(239,230,207,0.12)"; g.fillRect(920, y - 24, 600, 48);
     g.fillStyle = col; g.fillRect(920, y - 24, 600 * (n || 0) / 100 * r, 48);
     text(`${Math.round((n || 0) * r)}`, 1550, y, {size: 50, color: col, align: "left", alpha: r > 0 ? al : 0});
