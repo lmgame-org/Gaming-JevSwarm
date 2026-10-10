@@ -121,3 +121,15 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 ---
 
 **Methods in brief.** Each case is generated from a random seed. It has 100 addresses on a street graph, 10 suspects with six visible traits, 6 possible motives and 8 candidate hideouts. In standard cases, each true key fact appears at two addresses and each lie at one. Frame-up cases add coordinated lies, a planted clue, timed alibis and witnesses to the bribe, and every case is checked to make sure a careful reader can solve it. All detectives get 12 hours of case time. Holmes's boys travel on foot, and the Lone Genius travels by cab, with a limit of 20 visits. The Jev Swarm uses a communication range of 2 km and closes a case when 30 boys cast identical votes. The smaller-swarm check used 12 boys with a 4-vote quorum on 29 standard cases. Each model call was allowed 30 seconds, and no decision fell back to a scripted rule. The tables report 95% Wilson confidence intervals.
+
+---
+
+## More Jev Games
+
+**The detective game is one of several.** The same question, what a swarm of fast Jev agents can do on its own and what it needs a leader for, runs through the other games in the [jev-swarm-games repository](https://github.com/snyhlx/jev-swarm-games). Each one runs from the same launcher, with presets you can change.
+
+- **[Circuit](https://github.com/snyhlx/jev-swarm-games/tree/main/circuit):** a hardware bug hides in a small pipelined CPU. One debugger, Holmes directing a dozen street boys, or 100 Irregulars with no leader race to name the broken block and the fix.
+- **[Fish schooling](https://github.com/snyhlx/jev-swarm-games/tree/main/fish):** every fish picks its next move with Jev from its own local view while a predator attacks. There is no central planner and no messages between fish.
+- **[Honeybee nest-site selection](https://github.com/snyhlx/jev-swarm-games/tree/main/honeybee):** scouts inspect possible homes and waggle-dance for the ones they like, until a quorum forms and the swarm lifts off. You can watch noisy individual judgments become one collective choice, and then break that process on purpose.
+- **[The Irregulars](https://github.com/snyhlx/jev-swarm-games/tree/main/holmes):** the detective game from this post, with every case, preset and replay.
+
