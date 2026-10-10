@@ -34,8 +34,8 @@ predator attack), **honeybee** (nest-site selection) and **circuit** (hunting a 
 Python 3 and one dependency.
 
 ```
-git clone https://github.com/lmgame-org/jev-swarm-games.git
-cd jev-swarm-games
+git clone https://github.com/lmgame-org/Gaming-JevSwarm.git
+cd Gaming-JevSwarm
 python3 -m pip install -r requirements.txt      # numpy
 ```
 
@@ -263,6 +263,6 @@ docs/project_history.md  decisions, results and open work across all games
   title  = {Jev Swarm Games: collective behaviour from many fast local decisions},
   author = {LMGame Team},
   year   = {2026},
-  howpublished = {\url{https://github.com/lmgame-org/jev-swarm-games}}
+  howpublished = {\url{https://github.com/lmgame-org/Gaming-JevSwarm}}
 }
 ```
