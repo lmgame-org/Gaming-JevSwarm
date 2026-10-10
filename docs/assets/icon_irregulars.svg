@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect x="4" y="4" width="192" height="192" rx="16" fill="#f6ecd6" stroke="#b9a37a" stroke-width="3" stroke-dasharray="10 7"/>
+  <text x="100" y="94" text-anchor="middle" font-family="Georgia, serif" font-size="20" fill="#5a4630">The Irregulars</text>
+  <text x="100" y="122" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#8a7658">icon placeholder</text>
+</svg>

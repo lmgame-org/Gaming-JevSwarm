@@ -11,6 +11,16 @@ the swarm is compared with a single `gpt-6-astra` reasoner, a leader directing a
 share one launcher and one settings interface: **holmes** (a Sherlock Holmes case), **fish** (schooling under
 predator attack), **honeybee** (nest-site selection) and **circuit** (hunting a CPU bug).
 
+<table align="center">
+  <tr>
+    <td align="center" width="260"><img src="docs/assets/icon_holmes.svg" width="160" alt="Holmes icon"><br><b>Holmes</b>, the one who reasons and decides<br><sub>played by <code>gpt-6-astra</code>, Jev, a counting rule, or nobody (a leaderless swarm)</sub></td>
+    <td align="center" width="260"><img src="docs/assets/icon_irregulars.svg" width="160" alt="The Irregulars icon"><br><b>The Irregulars</b>, the many who search<br><sub>played by Jev agents, a heuristic rule, or random moves</sub></td>
+  </tr>
+</table>
+
+Each role can be played by a different model or algorithm, so one game compares a lone reasoner, a leader with a
+swarm, and a swarm on its own. Holmes and circuit use both roles; fish and honeybee are swarms of Irregulars alone.
+
 ## Contents
 
 - [Introduction](#introduction)
