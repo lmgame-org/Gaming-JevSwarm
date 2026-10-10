@@ -17,7 +17,7 @@ STYLE = ("Narrate a film trailer for a Victorian detective mystery. Deep, calm, 
 LINES = [
     (0.6, "01_london", "London. Eighteen ninety."),
     (5.3, "02_secret", "Holmes's secret was never one mind."),
-    (10.8, "03_jev_missing", "Can a swarm of Jev catch a murderer? If not, what are the missing ingredients?"),
+    (10.8, "03_jev_whatmissing", "Can a swarm of Jev catch a murderer? If not, then what is missing?"),
     (16.9, "04_setup", "We sent AI to Baker Street. A hundred murders. Find the culprit, the motive, and the hideout."),
     (27.8, "09_swarm_first", "First, the Jev swarm. A hundred boys, no leader. They vote."),
     (37.9, "10_wrong", "Unsolved. The wrong man."),
@@ -30,7 +30,7 @@ LINES = [
 ]
 
 
-TEMPO = {"03_jev_missing": 1.15, "11_casebook": 1.05, "12_lies": 1.2}  # lines played slightly faster so they finish before the next scene
+TEMPO = {"11_casebook": 1.05, "12_lies": 1.2}  # lines played slightly faster so they finish before the next scene
 
 
 def tts(text, out):
