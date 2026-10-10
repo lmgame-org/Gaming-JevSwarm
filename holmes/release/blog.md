@@ -126,10 +126,10 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## More Jev Games
 
-**The detective game is one of several.** The same question, what a swarm of fast Jev agents can do on its own and what it needs a leader for, runs through the other games in the [jev-swarm-games repository](https://github.com/snyhlx/jev-swarm-games). Each one runs from the same launcher, with presets you can change.
+**The detective game is one of several.** The same question, what a swarm of fast Jev agents can do on its own and what it needs a leader for, runs through the other games in the [jev-swarm-games repository](https://github.com/lmgame-org/jev-swarm-games). Each one runs from the same launcher, with presets you can change.
 
-- **[Circuit](https://github.com/snyhlx/jev-swarm-games/tree/main/circuit):** a hardware bug hides in a small pipelined CPU. One debugger, Holmes directing a dozen street boys, or 100 Irregulars with no leader race to name the broken block and the fix.
-- **[Fish schooling](https://github.com/snyhlx/jev-swarm-games/tree/main/fish):** every fish picks its next move with Jev from its own local view while a predator attacks. There is no central planner and no messages between fish.
-- **[Honeybee nest-site selection](https://github.com/snyhlx/jev-swarm-games/tree/main/honeybee):** scouts inspect possible homes and waggle-dance for the ones they like, until a quorum forms and the swarm lifts off. You can watch noisy individual judgments become one collective choice, and then break that process on purpose.
-- **[The Irregulars](https://github.com/snyhlx/jev-swarm-games/tree/main/holmes):** the detective game from this post, with every case, preset and replay.
+- **[Circuit](https://github.com/lmgame-org/jev-swarm-games/tree/main/circuit):** a hardware bug hides in a small pipelined CPU. One debugger, Holmes directing a dozen street boys, or 100 Irregulars with no leader race to name the broken block and the fix.
+- **[Fish schooling](https://github.com/lmgame-org/jev-swarm-games/tree/main/fish):** every fish picks its next move with Jev from its own local view while a predator attacks. There is no central planner and no messages between fish.
+- **[Honeybee nest-site selection](https://github.com/lmgame-org/jev-swarm-games/tree/main/honeybee):** scouts inspect possible homes and waggle-dance for the ones they like, until a quorum forms and the swarm lifts off. You can watch noisy individual judgments become one collective choice, and then break that process on purpose.
+- **[The Irregulars](https://github.com/lmgame-org/jev-swarm-games/tree/main/holmes):** the detective game from this post, with every case, preset and replay.
 
