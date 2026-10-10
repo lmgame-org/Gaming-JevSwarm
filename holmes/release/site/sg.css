@@ -63,3 +63,6 @@ figure.wide { width: min(1040px, calc(100vw - 32px)); position: relative; left: 
 #sg .sg-arow { font-family: Inter, sans-serif; fill: #4d4030; text-anchor: start; }
 #sg .sg-ans { transform-box: fill-box; transform-origin: center; transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
 #sg .sg-ans.done { transform: scale(1.08); }
+#sg .sg-band { font: 8.5px Inter, sans-serif; fill: #7a6b52; text-anchor: end; }
+#sg .sg-path { fill: none; stroke-opacity: 0.45; }
+#sg .sg-path.solo { stroke-width: 1.8; stroke-opacity: 0.8; }

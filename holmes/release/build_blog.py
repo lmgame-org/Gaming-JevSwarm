@@ -32,11 +32,11 @@ MEDIA = {
     "solo": [video("irregulars_clip1_astra.mp4", "The Lone Genius on case 57. It never reaches the address that holds the deciding clue.")],
     "swarm": [video("irregulars_clip3_jev_swarm.mp4", "The Jev Swarm on case 57. Each colour shows one answer that the boys are voting for.")],
     "holmes": [video("irregulars_clip2_astra_jev_swarm.mp4", "Holmes (GPT6-Astra) + Jev Swarm on case 57. Holmes plans at 221B while the boys search the city.")],
-    "sg": ['<link rel="stylesheet" href="sg.css?v=9"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div>'
+    "sg": ['<link rel="stylesheet" href="sg.css?v=10"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div>'
            "<figcaption>Figure 1. How each detective spreads out over the city and gathers the evidence back into an answer, shown for case 57 "
-           "(you can pick any other case). Each lane is one agent, the diamonds and ticks mark decisions, and the lines carry evidence to the answer. "
+           "(you can pick any other case). Each row is a district of London and each thin line is one agent moving through the city; the diamonds and ticks mark decisions, and the coloured lines carry evidence to the answer. "
            "You can zoom in with the + button or a double-click.</figcaption></figure>"
-           '<script src="sg.js?v=9" defer></script>'],
+           '<script src="sg.js?v=10" defer></script>'],
     "case": [image("case57_soho.jpg", "Soho, the night of the murder: the doctor's bag, the bootprints and the knife, suspects in the street, and a red glow far to the west.")],
     "t1": [image("irregulars_standard_setting_results.png", "Table 1. Results on the 100 standard cases.")],
     "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Results on the 100 frame-up cases, in which somebody lies.")],
@@ -104,6 +104,7 @@ h1 {{ font-size: 34px; line-height: 1.25; margin-bottom: 8px; }} h2 {{ font-size
 hr {{ border: none; border-top: 1px solid #d8ccb0; margin: 32px 0; }}
 table {{ border-collapse: collapse; width: 100%; font: 15px/1.4 Inter, sans-serif; margin: 18px 0; }}
 th, td {{ border-bottom: 1px solid #d8ccb0; padding: 8px; text-align: right; }} th:first-child, td:first-child {{ text-align: left; }}
+@media (max-width: 520px) {{ table {{ font-size: 12.5px; }} th, td {{ padding: 6px 4px; }} }}
 li {{ margin: 6px 0; }} a {{ color: #8a1c1c; }}
 figure {{ margin: 22px 0 30px; }} figure img, figure video {{ width: 100%; border-radius: 6px; display: block; background: #111; }}
 figcaption {{ font: 14px/1.5 Inter, sans-serif; color: #6b5c45; margin-top: 8px; }}

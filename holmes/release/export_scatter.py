@@ -208,6 +208,28 @@ def main():
                           "quorum": swarm["quorum"],
                           "accused": accused(swarm_dir, brief) or (swarm["answers"][0]["parts"] if swarm["answers"] else None)},
             }
+            # districts as rows, west to east; every agent's district each quarter-hour as one digit per tick
+            cmap = case["map"]
+            addr_d = {x["id"]: x["district"] for x in cmap["addresses"]}
+            names = [x["name"] for x in sorted(cmap["districts"], key=lambda z: z["x"])]
+            idx = {nm: i for i, nm in enumerate(names)}
+            pts = list(zip(d["map"]["addresses"], d["map"]["ids"]))
+
+            def band(p):
+                a = min(pts, key=lambda q: (q[0][0] - p[0]) ** 2 + (q[0][1] - p[1]) ** 2)[1]
+                return idx[addr_d[a]]
+
+            def paths(ticks):
+                nb = len(ticks[0]["boys"]) if ticks else 0
+                return ["".join(str(band(t["boys"][i])) for t in ticks) for i in range(nb)]
+            out["districts"] = names
+            out["dist"] = {a: idx[nm] for a, nm in addr_d.items()}
+            out["home"] = idx[addr_d[cmap["baker"]]]
+            out["scene"] = idx[addr_d[cmap["scene"]]]
+            out["hide"] = idx[addr_d[cmap["hideouts"][secret["truth"]["hideout"]]]]
+            for key, src in (("baker", baker), ("swarm", swarm)):
+                out[key]["paths"] = paths(src["ticks"])
+                out[key]["tmin"] = [t["minute"] for t in src["ticks"]]
             with open(os.path.join(OUT, name), "w") as f:
                 json.dump(et.rnd(out), f, separators=(",", ":"))
             n += 1

@@ -10,7 +10,7 @@
   let W, H, X0, X1, XV, CW, CH, Y0 = 18, Y1;
   const size = () => {
     const wide = root.clientWidth >= 640;
-    W = wide ? 900 : 300; H = wide ? 250 : 210; X0 = wide ? 44 : 34; CW = wide ? 96 : 72; CH = wide ? 60 : 52; XV = W - CW / 2 - 8; X1 = XV - CW / 2 - (wide ? 36 : 14); Y1 = H - 22;
+    W = wide ? 900 : 300; H = wide ? 300 : 250; X0 = wide ? 92 : 70; CW = wide ? 96 : 72; CH = wide ? 60 : 52; XV = W - CW / 2 - 8; X1 = XV - CW / 2 - (wide ? 36 : 14); Y1 = H - 22;
     panels.classList.toggle("sg-rows", wide);
   };
   const WHO = [
@@ -167,72 +167,93 @@
       const dl = h("div", "sg-dots", card);
       dl.innerHTML = (w.key === "swarm"
         ? "<b>Dots</b> (stacked at 0h): the 100 boys start one per address, so the whole city is checked at once; zoom in to see them."
-        : "<b>Dots</b>: each address checked.") + "<br>" +
+        : "<b>Dots</b>: each address checked.") + ` <b>Rows</b> are London's districts (${w.key === "swarm" ? "" : "★ 221B, "}✕ murder scene, ⌂ hideout).` + "<br>" +
         [[PART.culprit, "culprit clue"], [PART.motive, "motive clue"], [PART.hideout, "hideout clue"], ["#b9ad94", "nothing decisive"]]
           .map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join("") +
         `<span><i class="lie" style="border-color:${LIE}"></i>lie</span>`;
       const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${w.name}: scatter and gather` }, card);
       zoomable(svg, title);
-      const n = r.lanes, ly = i => n === 1 ? (Y0 + Y1) / 2 : Y0 + (i + 0.5) * (Y1 - Y0) / n;
+      // rows are London's districts, west to east; each agent is a thin line moving through them
+      const NB = C.districts.length, bandH = (Y1 - Y0) / NB, n = r.lanes;
+      const by = b => Y0 + (b + 0.5) * bandH;
+      const jit = i => w.key === "solo" ? 0 : ((i % 10) / 9 - 0.5) * bandH * 0.7;
       const ym = (Y0 + Y1) / 2;
+      C.districts.forEach((nm, b) => {
+        const fill = b === C.scene ? "rgba(208,48,48,0.10)" : b === C.hide ? "rgba(160,82,45,0.13)" : b % 2 ? "#faf5e9" : null;
+        if (fill) el("rect", { x: X0, y: Y0 + b * bandH, width: X1 - X0, height: bandH, fill }, svg);
+        el("text", { x: X0 - 4, y: by(b) + 3, class: "sg-band" }, svg).textContent =
+          nm + (b === C.scene ? " ✕" : b === C.hide ? " ⌂" : b === C.home && w.key !== "swarm" ? " ★" : "");
+      });
       // time axis
       for (let hr = 0; hr <= 12; hr += 3) {
-        el("line", { x1: x(hr * 60), x2: x(hr * 60), y1: Y0 - 6, y2: Y1 + 4, class: "sg-grid-line" }, svg);
+        el("line", { x1: x(hr * 60), x2: x(hr * 60), y1: Y0 - 2, y2: Y1 + 4, class: "sg-grid-line" }, svg);
         el("text", { x: x(hr * 60), y: H - 6, class: "sg-tick" }, svg).textContent = `${hr}h`;
       }
       const g = el("g", {}, svg);
       const add = (node, t) => { items.push({ node, t }); return node; };
-      // scatter: from the start out over the lanes
-      const src = el("circle", { cx: 12, cy: ym, r: 5, fill: w.color }, svg);
-      if (w.key === "swarm") el("text", { x: 2, y: Y0 - 7, class: "sg-lbl", style: "text-anchor: start" }, svg).textContent = "everywhere in the city";
-      else el("text", { x: 12, y: ym - 9, class: "sg-lbl" }, svg).textContent = "221B";
-      const laneFirst = {};
-      r.visits.forEach(v => { if (!(v[1] in laneFirst)) laneFirst[v[1]] = v; });
-      Object.values(laneFirst).forEach(([t, lane]) => {
-        const y = ly(lane);
-        add(el("path", { d: `M12,${ym} C${X0 - 6},${ym} ${X0 - 14},${y} ${x(t)},${y}`, class: "sg-fan",
-          stroke: w.color }, g), t);
-      });
-      if (w.key === "solo") {  // one chain, one stop after another
-        let px = x(0), py = ym;
-        r.visits.forEach(([t]) => {
-          add(el("line", { x1: px, y1: py, x2: x(t), y2: ym, stroke: w.color, class: "sg-chain" }, g), t);
-          px = x(t); py = ym;
+      if (w.key === "swarm") el("text", { x: 2, y: Y0 - 5, class: "sg-lbl", style: "text-anchor: start" }, svg).textContent = "everywhere in the city";
+      // where each agent is at minute t: Jev boys from their logged positions, the Lone Genius from its stops
+      const bandAt = (i, t) => {
+        if (w.key === "solo") { let b = C.home; r.visits.forEach(([tv, , a]) => { if (tv <= t) b = C.dist[a]; }); return b; }
+        const p = r.paths[i]; let b = w.key === "baker" ? C.home : +p[0];
+        r.tmin.forEach((tm, k) => { if (tm <= t) b = +p[k]; });
+        return b;
+      };
+      const yAt = (i, t) => by(bandAt(i, t)) + jit(i);
+      // the paths, drawn a quarter-hour at a time so they grow with the clock
+      if (w.key === "solo") {
+        let pt = 0, pb = C.home;
+        r.visits.forEach(([t, , a]) => {
+          const b = C.dist[a];
+          add(el("path", { d: `M${x(pt)},${by(pb)} H${x(t)} V${by(b)}`, class: "sg-path solo", stroke: w.color }, g), t);
+          pt = t; pb = b;
+        });
+      } else {
+        r.paths.forEach((p, i) => {
+          let pt = 0, pb = w.key === "baker" ? C.home : +p[0];
+          r.tmin.forEach((tm, k) => {
+            const b = +p[k];
+            add(el("path", { d: `M${x(pt)},${by(pb) + jit(i)} H${x(tm)} V${by(b) + jit(i)}`, class: "sg-path",
+              stroke: w.color, "stroke-width": n > 50 ? 0.5 : 0.9 }, g), tm);
+            pt = tm; pb = b;
+          });
+        });
+      }
+      if (w.key === "baker") {  // Holmes stays at 221B and plans
+        let ht = 0;
+        r.tmin.forEach(tm => { if (tm > r.end) return;
+          add(el("line", { x1: x(ht), x2: x(tm), y1: by(C.home), y2: by(C.home), stroke: ASTRA, "stroke-width": 2.2, opacity: 0.55 }, g), tm); ht = tm; });
+        (r.plans || []).forEach(([t, k]) => {
+          add(el("line", { x1: x(t), x2: x(t), y1: Y0, y2: Y1, class: "sg-plan" }, g), t);
+          const dm = add(el("path", { d: diamond(x(t), by(C.home), 5), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
+          el("title", {}, dm).textContent = `Holmes (GPT6-Astra) plans at 221B at ${hm(t)}: ${k} errand${k === 1 ? "" : "s"}`;
         });
       }
       const dotR = n > 50 ? 1.6 : n > 1 ? 2.6 : 3.4;
       const where = {};
       r.visits.forEach(([t, lane, a]) => {
-        const cx = x(t) + (w.key === "swarm" ? (lane % 4) * 1.2 : 0), cy = ly(lane);
+        const cx = x(t), cy = by(C.dist[a]) + jit(lane);
         where[a] = [cx, cy];
         const k = keyPart[a], lie = isLie[a];
         add(el("circle", { cx, cy, r: k || lie ? dotR + 1.2 : dotR, fill: k ? PART[k] : lie ? "#fff" : "#b9ad94",
           stroke: lie ? LIE : "none", "stroke-width": lie ? 1.4 : 0 }, g), t);
       });
-      // decision points: GPT6-Astra's as diamonds, every Jev boy's as a short tick on its lane
+      // decision points: GPT6-Astra's as diamonds, every Jev boy's as a short tick where he is
       if (r.decisions && w.key !== "solo") {
-        const hgt = Math.max(1.2, Math.min(5, (Y1 - Y0) / n * 0.8));
+        const hgt = Math.max(1.2, Math.min(4, bandH * 0.3));
         r.decisions.forEach(([t, row]) => {
-          const by = { go: "", talk: "", wait: "" };
+          const byk = { go: "", talk: "", wait: "" };
           for (let i = 0; i < row.length; i++) {
             const k = KIND[row[i]];
-            if (k) by[k] += `M${x(t)},${ly(i) - hgt / 2} v${hgt} `;
+            if (k) byk[k] += `M${x(t)},${yAt(i, t) - hgt / 2} v${hgt} `;
           }
-          for (const k in by) if (by[k]) add(el("path", { d: by[k], stroke: KCOL[k], "stroke-width": n > 50 ? 0.9 : 1.4 }, g), t);
+          for (const k in byk) if (byk[k]) add(el("path", { d: byk[k], stroke: KCOL[k], "stroke-width": n > 50 ? 0.9 : 1.4 }, g), t);
         });
       }
       if (w.key === "solo") {
         (r.decisions || []).forEach(t => {
-          const dm = add(el("path", { d: diamond(x(t), ym, 4.2), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
+          const dm = add(el("path", { d: diamond(x(t), yAt(0, t), 4.2), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
           el("title", {}, dm).textContent = `GPT6-Astra decides at ${hm(t)}`;
-        });
-      }
-      if (w.key === "baker") {
-        el("text", { x: 2, y: 11, class: "sg-lbl", style: "text-anchor: start" }, svg).textContent = "Astra";
-        (r.plans || []).forEach(([t, k]) => {
-          add(el("line", { x1: x(t), x2: x(t), y1: 13, y2: Y1, class: "sg-plan" }, g), t);
-          const dm = add(el("path", { d: diamond(x(t), 8, 5), fill: ASTRA, stroke: "#fff", "stroke-width": 0.8 }, g), t);
-          el("title", {}, dm).textContent = `Holmes (GPT6-Astra) plans at ${hm(t)}: ${k} errand${k === 1 ? "" : "s"}`;
         });
       }
       // gather: evidence travelling to the answer
@@ -251,7 +272,7 @@
       if (w.key === "swarm") {  // no centre: the only gathering is each boy casting a vote for a full answer
         (r.ballots || []).forEach(([t, boy, i]) => {
           const right = r.answers[i] && r.answers[i].ok.every(Boolean);
-          const sy = ly(boy), fx = x(t);
+          const sy = yAt(boy, t), fx = x(t);
           add(el("path", { d: `M${fx},${sy} C${(fx + XV) / 2},${sy} ${(fx + XV) / 2},${vy} ${XV - CW / 2 - 1},${vy}`,
             class: "sg-vote", stroke: right ? OK : BAD }, g), t);
         });
