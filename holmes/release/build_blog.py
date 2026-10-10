@@ -31,9 +31,9 @@ def image(src, cap):
 ROLES = """<figure class="roles" id="roles">
 <div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (nobody lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (somebody lies)</button></div>
 <div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b><span>the one who reasons and decides:</span>
-<select class="pick" data-role="h" aria-label="Who plays Holmes"><option value="astra">GPT6-Astra</option><option value="jev">Jev</option><option value="rule">a rule-based heuristic</option><option value="none">nobody at all</option></select></div>
+<select class="pick" data-role="h" autocomplete="off" aria-label="Who plays Holmes"><option value="astra">GPT6-Astra</option><option value="jev">Jev</option><option value="rule">a rule-based heuristic</option><option value="none">nobody at all</option></select></div>
 <div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b><span>the many who search:</span>
-<select class="pick" data-role="i" aria-label="Who plays the Irregulars"><option value="jev">Jev agents</option><option value="rule">a rule-based heuristic</option><option value="none">nobody (Holmes works alone)</option></select></div>
+<select class="pick" data-role="i" autocomplete="off" aria-label="Who plays the Irregulars"><option value="jev">Jev agents</option><option value="rule">a rule-based heuristic</option><option value="none">nobody (Holmes works alone)</option></select></div>
 <figcaption><span id="roles-out"></span><br>Two roles, and we let different models and algorithms play each one. Choose a case set and one player for each role.</figcaption></figure>
 <script>
 (function () {
