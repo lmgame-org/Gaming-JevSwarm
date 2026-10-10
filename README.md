@@ -37,7 +37,7 @@ selection), **holmes** (a Sherlock Holmes case) and **circuit** (hunting a CPU b
 Python 3 and one dependency.
 
 ```
-git clone https://github.com/snyhlx/jev-swarm-games.git
+git clone https://github.com/lmgame-org/jev-swarm-games.git
 cd jev-swarm-games
 python3 -m pip install -r requirements.txt      # numpy
 ```
@@ -263,6 +263,6 @@ docs/project_history.md  decisions, results and open work across all games
   title  = {Jev Swarm Games: collective behaviour from many fast local decisions},
   author = {LMGame Team},
   year   = {2026},
-  howpublished = {\url{https://github.com/snyhlx/jev-swarm-games}}
+  howpublished = {\url{https://github.com/lmgame-org/jev-swarm-games}}
 }
 ```
