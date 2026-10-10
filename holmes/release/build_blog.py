@@ -38,6 +38,11 @@ MEDIA = {
            "You can zoom in with the + button or a double-click.</figcaption></figure>"
            '<script src="sg.js?v=10" defer></script>'],
     "case": [image("case57_soho.jpg", "Soho, the night of the murder: the doctor's bag, the bootprints and the knife, suspects in the street, and a red glow far to the west.")],
+    "roles": ['<figure class="roles"><div class="role"><img src="media/role_holmes.svg" alt="Holmes"><b>Holmes</b>'
+              '<span>the one who reasons and decides: GPT6-Astra, a counting rule, or nobody at all</span></div>'
+              '<div class="role"><img src="media/role_irregulars.svg" alt="The Irregulars"><b>The Irregulars</b>'
+              '<span>the many who search: Jev agents or a counting rule</span></div>'
+              '<figcaption>Two roles, and we let different models and algorithms play each one.</figcaption></figure>'],
     "t1": [image("irregulars_standard_setting_results.png", "Table 1. Results on the 100 standard cases.")],
     "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Results on the 100 frame-up cases, in which somebody lies.")],
     "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice as much time and twice as many visits.")],
@@ -114,6 +119,7 @@ nav.top b {{ font-family: "Libre Baskerville", Georgia, serif; font-weight: 400;
 nav.top a {{ text-decoration: none; }} nav.top a.on {{ color: #241a10; border-bottom: 2px solid #8a1c1c; }}
 .back {{ font: 14px Inter, sans-serif; }} video {{ width: 100%; border-radius: 6px; }}
 .lead {{ font-size: 17px; color: #4a3d2c; }}
+figure.roles {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 48px; }} .role {{ width: 220px; text-align: center; font: 15px/1.4 Inter, sans-serif; }} .role img {{ width: 160px; height: 160px; display: block; margin: 0 auto 8px; background: none; }} .role b {{ display: block; font: 700 18px "Libre Baskerville", Georgia, serif; }} .role span {{ color: #6b5c45; }} figure.roles figcaption {{ flex-basis: 100%; text-align: center; }} @media (max-width: 520px) {{ figure.roles {{ gap: 12px 16px; }} .role {{ width: 150px; font-size: 13px; }} .role img {{ width: 120px; height: 120px; }} }}
 p > b:first-child, li > b:first-child {{ font-weight: 700; color: #8a1c1c; }}
 </style></head><body><main>
 """
