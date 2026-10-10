@@ -19,18 +19,19 @@ nav.top b { font-family: "Libre Baskerville", Georgia, serif; font-weight: 400; 
 nav.top a { text-decoration: none; } nav.top a.on { color: #241a10; border-bottom: 2px solid #8a1c1c; }
 .back { font: 14px Inter, sans-serif; } video { width: 100%; border-radius: 6px; }
 .lead { font-size: 17px; color: #4a3d2c; }
-figure.roles { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 48px; } .role { width: 230px; text-align: center; font: 15px/1.4 Inter, sans-serif; } .role img { width: 190px; height: 190px; display: block; margin: 0 auto 8px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.18); } .role b { display: block; font: 700 18px "Libre Baskerville", Georgia, serif; } .role span { color: #6b5c45; } figure.roles figcaption { flex-basis: 100%; text-align: center; } .pick { display: block; margin: 6px auto 0; max-width: 100%; font: 14px Inter, sans-serif; padding: 5px 8px; border: 1px solid #cdbf9f; border-radius: 6px; background: #fff; color: #241a10; cursor: pointer; } .pick:hover, .pick:focus { border-color: #8a1c1c; outline: none; } #roles-out { display: inline-block; margin-top: 4px; font-size: 15px; color: #241a10; } @media (max-width: 520px) { figure.roles { gap: 12px 16px; } .role { width: 150px; font-size: 13px; } .role img { width: 120px; height: 120px; } }
+figure.roles { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 48px; } .role { width: 230px; text-align: center; font: 15px/1.4 Inter, sans-serif; } .role img { width: 190px; height: 190px; display: block; margin: 0 auto 8px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.18); } .role b { display: block; font: 700 18px "Libre Baskerville", Georgia, serif; } .role span { color: #6b5c45; } figure.roles figcaption { flex-basis: 100%; text-align: center; } .case-tabs { flex-basis: 100%; display: flex; justify-content: center; gap: 0; margin-bottom: 4px; } .case-tabs button { font: 14px Inter, sans-serif; padding: 6px 12px; border: 1px solid #cdbf9f; background: #fff; color: #4a3d2c; cursor: pointer; } .case-tabs button:first-child { border-radius: 6px 0 0 6px; } .case-tabs button:last-child { border-radius: 0 6px 6px 0; border-left: 0; } .case-tabs button[aria-selected="true"] { background: #8a1c1c; border-color: #8a1c1c; color: #fff; } .pick { display: block; margin: 6px auto 0; max-width: 100%; font: 14px Inter, sans-serif; padding: 5px 8px; border: 1px solid #cdbf9f; border-radius: 6px; background: #fff; color: #241a10; cursor: pointer; } .pick:hover, .pick:focus { border-color: #8a1c1c; outline: none; } #roles-out { display: inline-block; margin-top: 4px; font-size: 15px; color: #241a10; } @media (max-width: 520px) { figure.roles { gap: 12px 16px; } .role { width: 150px; font-size: 13px; } .role img { width: 120px; height: 120px; } }
 p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 </style></head><body><main>
 <nav class="top"><b>The Irregulars</b><a href="index.html" class="">Home</a><a href="trailer.html" class="">Trailer</a><a href="blog.html" class="on">Blog</a><a href="results.html" class="">Results</a></nav><h1>Catch Murderer with Jev Swarm — A Detective Game Case Study</h1>
 <p>By <b><a href="https://lmgame.org/#/aboutus">the LMGame Team</a></b></p>
 <p><i>Jev is good at making fast decisions. But can a swarm of Jev agents gather clues and name a murderer? We put three detectives into a Sherlock Holmes game based on Arthur Conan Doyle's A Study in Scarlet and The Sign of Four: a swarm of Jev agents on its own, a large reasoning model (GPT6-Astra) on its own, and GPT6-Astra leading a Jev swarm.</i></p>
 <figure class="roles" id="roles">
+<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (nobody lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (somebody lies)</button></div>
 <div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b><span>the one who reasons and decides:</span>
 <select class="pick" data-role="h" aria-label="Who plays Holmes"><option value="astra">GPT6-Astra</option><option value="jev">Jev</option><option value="rule">a rule-based heuristic</option><option value="none">nobody at all</option></select></div>
 <div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b><span>the many who search:</span>
 <select class="pick" data-role="i" aria-label="Who plays the Irregulars"><option value="jev">Jev agents</option><option value="rule">a rule-based heuristic</option><option value="none">nobody (Holmes works alone)</option></select></div>
-<figcaption><span id="roles-out"></span><br>Two roles, and we let different models and algorithms play each one. Pick one for each role.</figcaption></figure>
+<figcaption><span id="roles-out"></span><br>Two roles, and we let different models and algorithms play each one. Choose a case set and one player for each role.</figcaption></figure>
 <script>
 (function () {
   const R = {  // [name, standard solved /100, frame-up solved /100]
@@ -38,13 +39,15 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
     "jev|none": ["The Lone Genius (Jev)", 25, 14], "rule|jev": ["Holmes (heuristic) + Jev Swarm", 95, 0],
     "rule|rule": ["Holmes (heuristic) + heuristic Swarm", 97, 1], "rule|none": ["The Lone Genius (heuristic)", 61, 4],
     "none|jev": ["Jev Swarm (100 boys, no leader)", 38, 42], "none|rule": ["heuristic Swarm (100 boys, no leader)", 95, 1]};
-  const pick = {h: "astra", i: "jev"}, out = document.getElementById("roles-out");
+  const pick = {h: "astra", i: "jev", c: "std"}, out = document.getElementById("roles-out");
   function show() {
-    const k = pick.h + "|" + pick.i, r = R[k];
-    out.innerHTML = k === "none|none" ? "Somebody has to do the work: pick a Holmes or some Irregulars."
-      : r ? `<b>${r[0]}</b>: solved <b>${r[1]}</b> of 100 standard cases and <b>${r[2]}</b> of 100 frame-ups.`
+    document.querySelectorAll("#roles .case-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.c === pick.c));
+    const k = pick.h + "|" + pick.i, r = R[k], std = pick.c === "std";
+    out.innerHTML = k === "none|none" ? "Somebody has to do the work, so choose a Holmes, some Irregulars, or both."
+      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, in which nobody lies" : "frame-up cases, in which somebody lies"}.`
       : "We did not run this pairing.";
   }
+  document.querySelectorAll("#roles .case-tabs button").forEach(b => b.addEventListener("click", () => { pick.c = b.dataset.c; show(); }));
   document.querySelectorAll("#roles .pick").forEach(sel => { sel.value = pick[sel.dataset.role];
     sel.addEventListener("change", () => { pick[sel.dataset.role] = sel.value; show(); }); });
   show();
