@@ -19,7 +19,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 **The finding.** **The Jev swarm supplies evidence coverage, while the leader reasons.** How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:
 
 1. **When the evidence is honest,** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
-2. **When the evidence conflicts,** you need both. Neither the swarm nor the reasoner is enough on its own, and a simple counting rule fails completely.
+2. **When the evidence conflicts,** you need both. Neither the swarm nor the reasoner is enough on its own, and a rule-based heuristic fails completely.
 
 **The data.** Every run is fully logged, and readers can replay any case on the [results page](results.html).
 

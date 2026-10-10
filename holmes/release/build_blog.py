@@ -27,6 +27,36 @@ def image(src, cap):
     return f'<figure><a href="media/{src}"><img src="media/{src}" alt="{html.escape(cap)}"></a><figcaption>{cap}</figcaption></figure>'
 
 
+# the two roles, each with clickable choices; the pairing picked shows its results (Tables 1 and 2)
+ROLES = """<figure class="roles" id="roles">
+<div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b><span>the one who reasons and decides:</span>
+<div class="chips" data-role="h"><button data-v="astra">GPT6-Astra</button><button data-v="jev">Jev</button><button data-v="rule">a rule-based heuristic</button><button data-v="none">nobody at all</button></div></div>
+<div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b><span>the many who search:</span>
+<div class="chips" data-role="i"><button data-v="jev">Jev agents</button><button data-v="rule">a rule-based heuristic</button><button data-v="none">nobody (Holmes works alone)</button></div></div>
+<figcaption><span id="roles-out"></span><br>Two roles, and we let different models and algorithms play each one. Pick one for each.</figcaption></figure>
+<script>
+(function () {
+  const R = {  // [name, standard solved /100, frame-up solved /100]
+    "astra|jev": ["Holmes (GPT6-Astra) + Jev Swarm", 96, 93], "astra|none": ["The Lone Genius (GPT6-Astra)", 57, 59],
+    "jev|none": ["The Lone Genius (Jev)", 25, 14], "rule|jev": ["Holmes (heuristic) + Jev Swarm", 95, 0],
+    "rule|rule": ["Holmes (heuristic) + heuristic Swarm", 97, 1], "rule|none": ["The Lone Genius (heuristic)", 61, 4],
+    "none|jev": ["Jev Swarm (100 boys, no leader)", 38, 42], "none|rule": ["heuristic Swarm (100 boys, no leader)", 95, 1]};
+  const pick = {h: "astra", i: "jev"}, out = document.getElementById("roles-out");
+  function show() {
+    document.querySelectorAll("#roles .chips").forEach(c => c.querySelectorAll("button").forEach(b =>
+      b.classList.toggle("on", b.dataset.v === pick[c.dataset.role])));
+    const k = pick.h + "|" + pick.i, r = R[k];
+    out.innerHTML = k === "none|none" ? "Somebody has to do the work: pick a Holmes or some Irregulars."
+      : r ? `<b>${r[0]}</b>: solved <b>${r[1]}</b> of 100 standard cases and <b>${r[2]}</b> of 100 frame-ups.`
+      : "We did not run this pairing.";
+  }
+  document.querySelectorAll("#roles .chips").forEach(c => c.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return; pick[c.dataset.role] = b.dataset.v; show(); }));
+  show();
+})();
+</script>"""
+
+
 # what each section shows, placed right under its heading
 MEDIA = {
     "solo": [video("irregulars_clip1_astra.mp4", "The Lone Genius on case 57. It never reaches the address that holds the deciding clue.")],
@@ -38,11 +68,7 @@ MEDIA = {
            "You can zoom in with the + button or a double-click.</figcaption></figure>"
            '<script src="sg.js?v=10" defer></script>'],
     "case": [image("case57_soho.jpg", "Soho, the night of the murder: the doctor's bag, the bootprints and the knife, suspects in the street, and a red glow far to the west.")],
-    "roles": ['<figure class="roles"><div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b>'
-              '<span>the one who reasons and decides: GPT6-Astra, a counting rule, or nobody at all</span></div>'
-              '<div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b>'
-              '<span>the many who search: Jev agents or a counting rule</span></div>'
-              '<figcaption>Two roles, and we let different models and algorithms play each one.</figcaption></figure>'],
+    "roles": [ROLES],
     "t1": [image("irregulars_standard_setting_results.png", "Table 1. Results on the 100 standard cases.")],
     "t2": [image("irregulars_challenging_setting_results.png", "Table 2. Results on the 100 frame-up cases, in which somebody lies.")],
     "t3": [image("irregulars_solo_24h_table.png", "Table 3. The Lone Genius with twice as much time and twice as many visits.")],
@@ -119,7 +145,7 @@ nav.top b {{ font-family: "Libre Baskerville", Georgia, serif; font-weight: 400;
 nav.top a {{ text-decoration: none; }} nav.top a.on {{ color: #241a10; border-bottom: 2px solid #8a1c1c; }}
 .back {{ font: 14px Inter, sans-serif; }} video {{ width: 100%; border-radius: 6px; }}
 .lead {{ font-size: 17px; color: #4a3d2c; }}
-figure.roles {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 48px; }} .role {{ width: 230px; text-align: center; font: 15px/1.4 Inter, sans-serif; }} .role img {{ width: 190px; height: 190px; display: block; margin: 0 auto 8px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.18); }} .role b {{ display: block; font: 700 18px "Libre Baskerville", Georgia, serif; }} .role span {{ color: #6b5c45; }} figure.roles figcaption {{ flex-basis: 100%; text-align: center; }} @media (max-width: 520px) {{ figure.roles {{ gap: 12px 16px; }} .role {{ width: 150px; font-size: 13px; }} .role img {{ width: 120px; height: 120px; }} }}
+figure.roles {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 48px; }} .role {{ width: 230px; text-align: center; font: 15px/1.4 Inter, sans-serif; }} .role img {{ width: 190px; height: 190px; display: block; margin: 0 auto 8px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.18); }} .role b {{ display: block; font: 700 18px "Libre Baskerville", Georgia, serif; }} .role span {{ color: #6b5c45; }} figure.roles figcaption {{ flex-basis: 100%; text-align: center; }} .chips {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 6px; }} .chips button {{ font: 13px Inter, sans-serif; padding: 3px 9px; border: 1px solid #cdbf9f; border-radius: 999px; background: #fff; color: #4a3d2c; cursor: pointer; }} .chips button:hover {{ border-color: #8a1c1c; }} .chips button.on {{ background: #8a1c1c; border-color: #8a1c1c; color: #fff; }} #roles-out {{ display: inline-block; margin-top: 4px; font-size: 15px; color: #241a10; }} @media (max-width: 520px) {{ figure.roles {{ gap: 12px 16px; }} .role {{ width: 150px; font-size: 13px; }} .role img {{ width: 120px; height: 120px; }} }}
 p > b:first-child, li > b:first-child {{ font-weight: 700; color: #8a1c1c; }}
 </style></head><body><main>
 """
