@@ -10,8 +10,8 @@ Viewer options, the same for every game (see common/swarmcore/cli.py):
     --list-presets  --list-params  --print-config
 
 Examples:
-    python3 run.py fish --preset two_predators --set n_fish=128 policy=local_react
     python3 run.py holmes --list-params
+    python3 run.py fish --preset two_predators --set n_fish=128 policy=local_react
     python3 run.py circuit --print-config --preset solo_genius
 """
 import os
@@ -22,9 +22,9 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 # game: (folder, package, default port, description)
 GAMES = {
+    "holmes": ("holmes", "irregulars", 8781, "The Irregulars: a Holmes case, Solo detective or Irregular swarm"),
     "fish": ("fish", "jevswarm", 8777, "Fish schooling under predator attack (one Jev decision per fish)"),
     "honeybee": ("honeybee", "beeswarm", 8779, "Honeybee nest-site selection (one Jev decision per scout)"),
-    "holmes": ("holmes", "irregulars", 8781, "The Irregulars: a Holmes case, Solo detective or Irregular swarm"),
     "circuit": ("circuit", "cpudebug", 8783, "CPU debugging: Holmes, Wiggins and Jev Irregulars hunt one hardware bug"),
 }
 ALIASES = {"bee": "honeybee", "bees": "honeybee", "school": "fish", "irregulars": "holmes", "sherlock": "holmes",

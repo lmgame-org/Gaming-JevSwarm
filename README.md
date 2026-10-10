@@ -82,9 +82,9 @@ Every game starts the same way from the repo root, then you open the printed URL
 
 ```
 python3 run.py list                      # games, ports, usage
+python3 run.py holmes                    # http://127.0.0.1:8781
 python3 run.py fish                      # http://127.0.0.1:8777
 python3 run.py honeybee                  # http://127.0.0.1:8779
-python3 run.py holmes                    # http://127.0.0.1:8781
 python3 run.py circuit                   # http://127.0.0.1:8783
 ```
 
@@ -118,13 +118,13 @@ rejected with a pointer to `--list-params`.
 Examples:
 
 ```
+python3 run.py holmes --set mode=swarm difficulty=holmesian seed=9
 python3 run.py fish --preset two_predators --set n_fish=128 policy=local_react
 python3 run.py honeybee --preset close_call --set n_scouts=200 sampling=argmax
-python3 run.py holmes --set mode=swarm difficulty=holmesian seed=9
 python3 run.py circuit --preset baker_genius --set tier=v3
 ```
 
-Fish and honeybee call their presets *scenarios* (the setting is `scenario`); holmes and circuit call them presets.
+Holmes and circuit call these presets; fish and honeybee call them *scenarios* (the setting is `scenario`).
 `--preset` works for both.
 
 ### Live controls
@@ -139,9 +139,9 @@ deterministically from their seed. Run logs go to `<game>/runs/`.
 Headless experiments use the same setting names:
 
 ```
+python3 run.py holmes batch --mode swarm --policies rule jev --seeds 20 --max-usd 5 --set difficulty=holmesian
 python3 run.py fish batch --policies local_rule jev --seeds 10 --scenario flank --set n_fish=64
 python3 run.py honeybee batch --policies local_rule jev --seeds 10 --vary quality_gap=0.05,0.2
-python3 run.py holmes batch --mode swarm --policies rule jev --seeds 20 --max-usd 5 --set difficulty=holmesian
 python3 run.py circuit batch --list
 python3 run.py circuit batch --settings solo_rule,baker_rule_rule --seeds 1-20 --set tier=v3
 ```
@@ -154,9 +154,9 @@ python3 run.py circuit batch --settings solo_rule,baker_rule_rule --seeds 1-20 -
 Offline correctness checks (no API calls, no keys) for every game:
 
 ```
+python3 run.py holmes test
 python3 run.py fish test
 python3 run.py honeybee test
-python3 run.py holmes test
 python3 run.py circuit test
 ```
 
@@ -194,8 +194,8 @@ Every viewer serves a small JSON API on its port (all JSON in and out; nothing r
 | GET | `/api/stream` | Server-Sent Events: one frame per message while the run is live |
 | POST | `/api/cmd` | live control, for example `{"op": "pause"}`, `{"op": "resume"}`, `{"op": "step"}`, `{"op": "stop"}`, `{"op": "set", "key": "speed", "value": 4}` (keys in `LIVE_KEYS`), plus each game's interventions |
 
-Game-specific extras: fish `/api/fish`, `/api/runs`, `/api/predict`, `/api/analyst`; honeybee `/api/scout`,
-`/api/predict`, `/api/analyst`; holmes `/api/preview`, `/api/irregular`, `/api/observation`, `/api/guess`; circuit
+Game-specific extras: holmes `/api/preview`, `/api/irregular`, `/api/observation`, `/api/guess`; fish `/api/fish`,
+`/api/runs`, `/api/predict`, `/api/analyst`; honeybee `/api/scout`, `/api/predict`, `/api/analyst`; circuit
 `/api/preview`, `/api/static`, `/api/agent`, `/api/inspect`, `/api/guess`.
 
 ```
@@ -238,9 +238,9 @@ common/swarmcore/      shared code
     keys.py            key sources (files, env:NAME) and read_key
     llm.py             JevClient and LLMClient (OpenRouter, OpenAI, TypeSafe)
     web.py             HTTP and Server-Sent Events helpers, redaction
+holmes/                irregulars package, web/, tests/, docs/, trailer/, release/
 fish/                  jevswarm package, web/, tests/, docs/
 honeybee/              beeswarm package, web/, tests/, docs/
-holmes/                irregulars package, web/, tests/, docs/, trailer/, release/
 circuit/               cpudebug package, web/, tests/, docs/, tools/
 docs/project_history.md  decisions, results and open work across all games
 ```
