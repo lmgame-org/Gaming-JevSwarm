@@ -1,18 +1,15 @@
 <div align="center"> <h1>Jev Swarm Games</h1> </div>
 
 <p align="center">
-  <a href="docs/project_history.md"><b>📜 Project history</b></a> |
-  <a href="holmes/release/blog.md"><b>🕵️ Holmes write-up</b></a> |
-  <a href="holmes/trailer/the_irregulars_trailer.mp4"><b>📺 Trailer</b></a> |
-  <a href="circuit/docs/benchmark_v3_100seeds_2026-10-08.md"><b>🏆 Circuit benchmark</b></a>
+  <a href="https://snyhlx.github.io/the_irregulars_detective_game/"><b>🕵️ Holmes and the Irregulars</b></a>
 </p>
 
 ## Introduction
 
 Collective-behaviour games where **every agent picks its next action with Jev** from its own local information, and
 the swarm is compared with a single `gpt-6-astra` reasoner, a leader directing a swarm, and plain rules. Four games
-share one launcher and one settings interface: **fish** (schooling under predator attack), **honeybee** (nest-site
-selection), **holmes** (a Sherlock Holmes case) and **circuit** (hunting a CPU bug).
+share one launcher and one settings interface: **holmes** (a Sherlock Holmes case), **fish** (schooling under
+predator attack), **honeybee** (nest-site selection) and **circuit** (hunting a CPU bug).
 
 ## Contents
 
@@ -167,17 +164,20 @@ python3 run.py circuit test
 
 Each game has its own README with the full design, the meaning of every setting, and results.
 
+- [**holmes/**](holmes/README.md): *The Irregulars*. A seeded London murder (culprit, motive, hideout) with lies and
+  frame-ups, solved Solo, at Baker Street (Holmes plus 12 Jev boys) or by a 100-agent Jev swarm with limited range
+  and quorum voting. Package `irregulars`, port 8781.
+  [Project page and trailer](https://snyhlx.github.io/the_irregulars_detective_game/) ·
+  [🕵️ Holmes write-up](holmes/release/blog.md).
 - [**fish/**](fish/README.md): fish schooling under predator attack. Local vision with occlusion and noise, Jev
   picks from candidate actions (school, flee, follow an escaping neighbour, recover); metrics for survival,
   polarization, fragmentation and escape waves. Package `jevswarm`, port 8777.
 - [**honeybee/**](honeybee/README.md): nest-site selection. Scouts inspect cavities, dance, follow dances and sense
   quorum; break it with misinformation, fake dances, stubborn or biased scouts. Package `beeswarm`, port 8779.
-- [**holmes/**](holmes/README.md): *The Irregulars*. A seeded London murder (culprit, motive, hideout) with lies and
-  frame-ups, solved Solo, at Baker Street (Holmes plus 12 Jev boys) or by a 100-agent Jev swarm with limited range
-  and quorum voting. Package `irregulars`, port 8781.
 - [**circuit/**](circuit/README.md): CPU debugging. One bug in a 96-block pipelined CPU or a 12-core chip; probes,
   bench drives and fixes under a clock and a spend cap, solo, at Baker Street or as a swarm. Package `cpudebug`,
   port 8783.
+  [🏆 Circuit benchmark](circuit/docs/benchmark_v3_100seeds_2026-10-08.md).
 
 ## Programmatic interfaces
 
