@@ -57,15 +57,15 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 {{media:t1}}
 
-**The Lone Genius falls short on coverage.** One cab can visit only so many doors, and the deciding clue is often behind a door it never reaches (section 4).
+**The Lone Genius falls short on coverage.** One cab can reach only so many doors, and the deciding clue is often behind one it never reaches (section 4).
 
-**The Jev Swarm falls short on judgment.** It is by far the fastest detective, but most of the answers it agrees on are wrong: a few boys misread a clue, the boys around them copy the confident vote, and the error spreads before anyone checks it. Jev also cannot hold a whole case in mind. As a lone detective it solves only 25 of 100, and a leaderless swarm of 12 boys, the size of Holmes's team, solved none of the cases we ran, while the same 12 boys under Holmes solved almost all of them. **That is why, in the winning team, Jev only makes small local decisions, such as where to look next and what to report, while the reasoning model keeps track of the case.**
+**The Jev Swarm falls short on judgment.** It is the fastest detective, but most of the answers it agrees on are wrong: a few boys misread a clue, their neighbours copy the confident vote, and the error spreads. Jev also cannot hold a whole case in mind: alone it solves 25 of 100, and a leaderless swarm of 12 boys solved none of the cases we ran. **So in the winning team, Jev only makes small local decisions, and the reasoning model keeps track of the case.**
 
-**On honest evidence, a simple rule is best.** Every true fact appears at two addresses and every lie at only one, so counting the clues finds the truth. **A rule-based Holmes leading rule-based boys solves 97 of 100, at no cost and in under a tenth of a second per case.** If the evidence can be taken at face value, use rules.
+**On honest evidence, a simple rule is best.** True facts appear at two addresses and lies at one, so counting clues finds the truth: **a rule-based Holmes with rule-based boys solves 97 of 100, at no cost.** If the evidence can be taken at face value, use rules.
 
 **Finding 1.** **When the analysis is simple, the architecture does most of the work: the swarm covers the evidence in parallel, and a simple rule combines what it finds.**
 
-**Why not code a smart rule-based solver?** Because a counting rule only works while the evidence is honest. The models were told, and the rules are built on, the same rule of thumb: witnesses sometimes lie, so trust facts that turn up at more than one address. When somebody lies on purpose, as in the frame-up cases below, that rule points the wrong way, because the lie becomes the fact that repeats. A rule-based solver could be written to catch bribery, but only by someone who already knows that bribery is the trick, and every new kind of deception would need new code. **Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.**
+**Why not code a smart rule-based solver?** Because a counting rule only works while the evidence is honest. The models were told, and the rules are built on, the same rule of thumb: trust facts that turn up at more than one address. When somebody lies on purpose, as in the frame-ups below, the lie becomes the fact that repeats, and the rule points the wrong way. A solver could be written to catch bribery, but only by someone who already knows the trick, and each new kind of deception would need new code. **Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.**
 
 ---
 
@@ -112,7 +112,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 - **For simple analysis, a simple centre will do.** If the evidence can be taken at face value, divide up the work and combine the results with a simple rule.
 - **For hard analysis, put a reasoner at the centre.** When sources conflict or try to deceive, both voting and counting follow the majority, so a strong reasoner has to make the final judgment.
 
-**Games are the right test bed for this question.** At LMGame, we have found that reasoning puzzles of this kind are everywhere in games, and that many of them can be solved by divide and conquer: explore widely, solve the small pieces locally, and reason carefully when the pieces are put back together. Games also run on a clock and keep score, so they let us measure both how often an approach succeeds and how much time and money it costs. **That makes games an ideal place to study the trade-off between capability and efficiency when fast-decision models like Jev are deployed on real-time challenges.**
+**Games are the right test bed for this question.** At LMGame, we have found that reasoning puzzles of this kind are everywhere in games, and that many of them can be solved by divide and conquer: explore widely, solve the small pieces locally, and reason carefully when the pieces are put back together. **That makes games an ideal place to study the trade-off between capability and efficiency when fast-decision models like Jev are deployed on real-time challenges.**
 
 **The answer.** Should we choose one genius or many minds? **The best choice is one genius leading many minds.**
 
