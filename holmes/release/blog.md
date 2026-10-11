@@ -55,15 +55,13 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## 2. Standard Cases: The Leader with a Swarm Wins, and a Simple Centre Is Enough
 
-**The winner among the three detectives.** Holmes (GPT6-Astra) + Jev Swarm solves nearly every standard case (Table 1).
+**Holmes (GPT6-Astra) + Jev Swarm solves nearly every standard case** (Table 1).
 
 {{media:t1}}
 
 **The Lone Genius falls short on coverage.** One cab can visit only so many doors, and the deciding clue is often behind a door it never reaches (section 4).
 
-**The Jev Swarm falls short on judgment.** It is by far the fastest detective, but most of the answers it agrees on are wrong. **A few boys misread a clue, the boys around them copy the confident vote, and the error spreads before anyone checks it.**
-
-**Jev needs a leader.** On its own, Jev cannot hold a whole case in mind: as a lone detective it solves only 25 of 100, and a leaderless swarm of 12 boys solved none of the cases we ran. In the winning team, Jev only makes small local decisions, and the reasoning model keeps track of the case.
+**The Jev Swarm falls short on judgment.** It is by far the fastest detective, but most of the answers it agrees on are wrong: a few boys misread a clue, the boys around them copy the confident vote, and the error spreads before anyone checks it. Jev also cannot hold a whole case in mind. As a lone detective it solves only 25 of 100, and a leaderless swarm of 12 boys, the size of Holmes's team, solved none of the cases we ran, while the same 12 boys under Holmes solved almost all of them. **That is why, in the winning team, Jev only makes small local decisions, such as where to look next and what to report, while the reasoning model keeps track of the case.**
 
 **On honest evidence, a simple rule is best.** Every true fact appears at two addresses and every lie at only one, so counting the clues finds the truth. **A rule-based Holmes leading rule-based boys solves 97 of 100, at no cost and in under a tenth of a second per case.** If the evidence can be taken at face value, use rules.
 
@@ -77,7 +75,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **The setup.** In these cases the murderer bribes servants to describe an innocent man, and plants a clue to support their story. The lie is now repeated more often than the truth, and only two honest witnesses saw the bribe being paid.
 
-**The winner.** Holmes (GPT6-Astra) + Jev Swarm solves almost as many of these cases as it does standard ones (Table 2).
+**Holmes (GPT6-Astra) + Jev Swarm solves almost as many of these cases as it does standard ones** (Table 2).
 
 {{media:t2}}
 
@@ -91,7 +89,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## 4. Why the Lone Genius Loses: Efficiency, Not Capability
 
-**The winner on efficiency.** Holmes (GPT6-Astra) + Jev Swarm solves the most cases within the 12-hour limit, and it finishes with time to spare.
+**Holmes (GPT6-Astra) + Jev Swarm solves the most cases within the 12-hour limit,** and it finishes with time to spare.
 
 **The genius is capable.** When we give it twice as much time and twice as many visits, it nearly catches up (Table 3). **What helps is the extra visits, not the extra hours.**
 
