@@ -59,25 +59,23 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 {{media:t1}}
 
-**The Lone Genius falls short on evidence coverage.** A single cab can visit only so many doors, and the deciding clue is often behind a door it never reaches. Section 4 looks at this in more detail.
+**The Lone Genius falls short on coverage.** One cab can visit only so many doors, and the deciding clue is often behind a door it never reaches (section 4).
 
-**The Jev Swarm falls short on judgment.** It is by far the fastest detective, but most of the answers it agrees on are wrong. **A few boys misread a clue, the boys around them copy their confident vote, and the error spreads before anyone checks it.**
+**The Jev Swarm falls short on judgment.** It is by far the fastest detective, but most of the answers it agrees on are wrong. **A few boys misread a clue, the boys around them copy the confident vote, and the error spreads before anyone checks it.**
 
-**A smaller Jev Swarm does worse.** We also ran a leaderless swarm of 12 Jev boys, the same size as Holmes's team. It did not solve any of the cases we were able to run, while the same 12 boys working under Holmes solved almost all of them. **On their own, a handful of boys cannot cover enough of the city to find the key evidence, let alone agree on what it means.**
+**Jev needs a leader.** On its own, Jev cannot hold a whole case in mind: as a lone detective it solves only 25 of 100, and a leaderless swarm of 12 boys solved none of the cases we ran. In the winning team, Jev only makes small local decisions, and the reasoning model keeps track of the case.
 
-**Jev cannot hold a whole case in mind.** Playing the Lone Genius on its own, Jev solves only 25 of 100 standard cases (Table 1). That is why, in the winning team, Jev only makes small local decisions, such as where to look next and what to report, while the reasoning model keeps track of the case.
-
-**On honest evidence, a hand-written rule is the best choice.** In standard cases every true fact appears at two addresses and every lie at only one, so simply counting the clues leads to the truth. **A rule-based Holmes leading rule-based boys solves 97 of 100, slightly more than GPT6-Astra leading Jev (96), at no cost and in under a tenth of a second per case.** A leaderless swarm whose boys count the clues, instead of copying each other's votes, solves 95. If the evidence can be taken at face value, use rules.
+**On honest evidence, a simple rule is best.** Every true fact appears at two addresses and every lie at only one, so counting the clues finds the truth. **A rule-based Holmes leading rule-based boys solves 97 of 100, at no cost and in under a tenth of a second per case.** If the evidence can be taken at face value, use rules.
 
 **Finding 1.** **When the analysis is simple, the architecture does most of the work: the swarm covers the evidence in parallel, and a simple rule combines what it finds.**
+
+**Why not code a smart rule-based solver?** Because a counting rule only works while the evidence is honest. The models were told, and the rules are built on, the same rule of thumb: witnesses sometimes lie, so trust facts that turn up at more than one address. When somebody lies on purpose, as in the frame-up cases below, that rule points the wrong way, because the lie becomes the fact that repeats. A rule-based solver could be written to catch bribery, but only by someone who already knows that bribery is the trick, and every new kind of deception would need new code. **Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.**
 
 ---
 
 ## 3. Frame-Up Cases: When Somebody Lies, You Need Both
 
 **The setup.** In these cases the murderer bribes servants to describe an innocent man, and plants a clue to support their story. The lie is now repeated more often than the truth, and only two honest witnesses saw the bribe being paid.
-
-**Why not hand-code a smarter solver?** The models were told, and the rules are built on, the same rule of thumb: witnesses sometimes lie, so trust facts that turn up at more than one address. In a frame-up that rule points the wrong way, because the lie is now the fact that repeats. A hand-written solver could be built to catch bribery, but only by someone who already knows that bribery is the trick, and every new kind of deception would need new code. **Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.**
 
 **The winner.** Holmes (GPT6-Astra) + Jev Swarm solves almost as many of these cases as it does standard ones (Table 2).
 
