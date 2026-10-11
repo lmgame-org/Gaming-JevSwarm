@@ -112,8 +112,6 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **A detective case is a divide-and-conquer problem.** The investigation splits naturally into many small, local subproblems: where to look next, and what a particular witness or footprint means. Each of these can be solved quickly and in parallel. The answers then have to be combined into a single verdict, and that combining step is where the hard reasoning lives. **Fast agents are well suited to the divide step, and a strong reasoner is needed for the conquer step whenever the pieces disagree.**
 
-**Holmes knew it in 1890.** The street boys were never meant to solve the case, only to find the pieces. The genius was never meant to walk every street, only to see the shape that the pieces make.
-
 **The design rule.** Divide the labour according to how hard the combining step is:
 
 - **Always use the swarm for evidence coverage.** Small, fast agents can make the many local decisions about where to look next, all in parallel.
