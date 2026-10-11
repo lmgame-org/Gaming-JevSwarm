@@ -128,7 +128,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## More Jev Games
 
-**The detective game is one of several.** The same question, what a swarm of fast Jev agents can do on its own and what it needs a leader for, runs through the other games in the [Gaming-JevSwarm repository](https://github.com/lmgame-org/Gaming-JevSwarm). Each one runs from the same launcher, with presets you can change.
+**The detective game is one of several.** The same question runs through every game in the [repository](https://github.com/lmgame-org/Gaming-JevSwarm): what can a swarm of fast Jev agents do on its own, and what does it need to succeed in each environment? Each one runs from the same launcher, with presets you can change.
 
 - **[Circuit](https://github.com/lmgame-org/Gaming-JevSwarm/tree/main/circuit):** a hardware bug hides in a small pipelined CPU. One debugger, Holmes directing a dozen street boys, or 100 Irregulars with no leader race to name the broken block and the fix.
 - **[Fish schooling](https://github.com/lmgame-org/Gaming-JevSwarm/tree/main/fish):** every fish picks its next move with Jev from its own local view while a predator attacks. There is no central planner and no messages between fish.
