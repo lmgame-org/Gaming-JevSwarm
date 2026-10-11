@@ -55,8 +55,6 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## 2. Standard Cases: The Leader with a Swarm Wins, and a Simple Centre Is Enough
 
-**Holmes (GPT6-Astra) + Jev Swarm solves nearly every standard case** (Table 1).
-
 {{media:t1}}
 
 **The Lone Genius falls short on coverage.** One cab can visit only so many doors, and the deciding clue is often behind a door it never reaches (section 4).
@@ -74,8 +72,6 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 ## 3. Frame-Up Cases: When Somebody Lies, You Need Both
 
 **The setup.** In these cases the murderer bribes servants to describe an innocent man, and plants a clue to support their story. The lie is now repeated more often than the truth, and only two honest witnesses saw the bribe being paid.
-
-**Holmes (GPT6-Astra) + Jev Swarm solves almost as many of these cases as it does standard ones** (Table 2).
 
 {{media:t2}}
 
