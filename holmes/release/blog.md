@@ -16,6 +16,8 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 - **The Lone Genius (GPT6-Astra):** a single large reasoning model travels from door to door by cab and does all the searching and reasoning itself.
 - **Jev Swarm:** 100 Jev boys with no leader. They share clues with the boys around them and vote on the answer.
 
+**The baselines.** We also test hand-written baselines: a rule-based searcher that divides up the addresses, and a clue counter that picks the answer repeated most often. They can play every role (alone, as Holmes, or as a leaderless swarm), they cost nothing, and they run in under a tenth of a second per case.
+
 **The finding.** **The Jev swarm supplies evidence coverage, while the leader reasons.** How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:
 
 1. **When the evidence is honest,** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
@@ -53,7 +55,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ## 2. Standard Cases: The Leader with a Swarm Wins, and a Simple Centre Is Enough
 
-**The winner.** Holmes (GPT6-Astra) + Jev Swarm solves nearly every standard case (Table 1).
+**The winner among the three detectives.** Holmes (GPT6-Astra) + Jev Swarm solves nearly every standard case (Table 1).
 
 {{media:t1}}
 
@@ -63,7 +65,9 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **A smaller Jev Swarm does worse.** We also ran a leaderless swarm of 12 Jev boys, the same size as Holmes's team. It did not solve any of the cases we were able to run, while the same 12 boys working under Holmes solved almost all of them. **On their own, a handful of boys cannot cover enough of the city to find the key evidence, let alone agree on what it means.**
 
-**On honest evidence, the reasoner makes little difference.** In standard cases every true fact appears at two addresses and every lie at only one, so simply counting the clues leads to the truth. **A Holmes that only divides up the work and counts the clues does as well as GPT6-Astra, at a tiny fraction of the cost.** A leaderless swarm whose boys count the clues, instead of copying each other's votes, does just as well.
+**Jev cannot hold a whole case in mind.** Playing the Lone Genius on its own, Jev solves only 25 of 100 standard cases (Table 1). That is why, in the winning team, Jev only makes small local decisions, such as where to look next and what to report, while the reasoning model keeps track of the case.
+
+**On honest evidence, a hand-written rule is the best choice.** In standard cases every true fact appears at two addresses and every lie at only one, so simply counting the clues leads to the truth. **A rule-based Holmes leading rule-based boys solves 97 of 100, slightly more than GPT6-Astra leading Jev (96), at no cost and in under a tenth of a second per case.** A leaderless swarm whose boys count the clues, instead of copying each other's votes, solves 95. If the evidence can be taken at face value, use rules.
 
 **Finding 1.** **When the analysis is simple, the architecture does most of the work: the swarm covers the evidence in parallel, and a simple rule combines what it finds.**
 
@@ -72,6 +76,8 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 ## 3. Frame-Up Cases: When Somebody Lies, You Need Both
 
 **The setup.** In these cases the murderer bribes servants to describe an innocent man, and plants a clue to support their story. The lie is now repeated more often than the truth, and only two honest witnesses saw the bribe being paid.
+
+**Why not hand-code a smarter solver?** The models were told, and the rules are built on, the same rule of thumb: witnesses sometimes lie, so trust facts that turn up at more than one address. In a frame-up that rule points the wrong way, because the lie is now the fact that repeats. A hand-written solver could be built to catch bribery, but only by someone who already knows that bribery is the trick, and every new kind of deception would need new code. **Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.**
 
 **The winner.** Holmes (GPT6-Astra) + Jev Swarm solves almost as many of these cases as it does standard ones (Table 2).
 
