@@ -118,10 +118,6 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ---
 
-**Methods in brief.** Each case is generated from a random seed. It has 100 addresses on a street graph, 10 suspects with six visible traits, 6 possible motives and 8 candidate hideouts. In standard cases, each true key fact appears at two addresses and each lie at one. Frame-up cases add coordinated lies, a planted clue, timed alibis and witnesses to the bribe, and every case is checked to make sure a careful reader can solve it. All detectives get 12 hours of case time. Holmes's boys travel on foot, and the Lone Genius travels by cab, with a limit of 20 visits. The Jev Swarm uses a communication range of 2 km and closes a case when 30 boys cast identical votes. The smaller-swarm check used 12 boys with a 4-vote quorum on 29 standard cases. Each model call was allowed 30 seconds, and no decision fell back to a scripted rule. The tables report 95% Wilson confidence intervals.
-
----
-
 ## More Jev Games
 
 **The detective game is one of several.** The same question runs through every game in the [repository](https://github.com/lmgame-org/Gaming-JevSwarm): what can a swarm of fast Jev agents do on its own, and what does it need to succeed in each environment? Each one runs from the same launcher, with presets you can change.
