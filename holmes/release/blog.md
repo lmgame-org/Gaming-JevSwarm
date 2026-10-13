@@ -57,13 +57,13 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **The Lone Genius falls short on coverage.** One cab can reach only so many doors, and the deciding clue is often behind one it never reaches (section 4).
 
-**The Jev Swarm falls short on judgment.** It is the fastest detective, but most of the answers it agrees on are wrong: a few boys misread a clue, their neighbours copy the confident vote, and the error spreads. Jev also cannot hold a whole case in mind: alone it solves 25 of 100, and a leaderless swarm of 12 boys solved none of the cases we ran. **So in the winning team, Jev only makes small local decisions, and the reasoning model keeps track of the case.**
+**The Jev Swarm falls short on judgment.** It is the fastest detective, but most of the answers it agrees on are wrong: a few boys misread a clue, their neighbours copy the confident vote, and the error spreads. Jev also cannot hold a whole case in mind: alone it solves 25 of 100, and a leaderless swarm of 12 boys solved none of the cases we ran. So in the winning team, Jev only makes small local decisions, and the reasoning model keeps track of the case.
 
-**On honest evidence, a simple rule is best.** True facts appear at two addresses and lies at one, so counting clues finds the truth: **a rule-based Holmes with rule-based boys solves 97 of 100, at no cost.** If the evidence can be taken at face value, use rules.
+**On honest evidence, a simple rule is best.** True facts appear at two addresses and lies at one, so counting clues finds the truth: a rule-based Holmes with rule-based boys solves 97 of 100, at no cost. If the evidence can be taken at face value, use rules.
 
 **Finding 1.** **When the analysis is simple, the architecture does most of the work: the swarm covers the evidence in parallel, and a simple rule combines what it finds.**
 
-**Why not code a smart rule-based solver?** Because a counting rule only works while the evidence is honest. The models were told, and the rules are built on, the same rule of thumb: trust facts that turn up at more than one address. When somebody lies on purpose, as in the frame-ups below, the lie becomes the fact that repeats, and the rule points the wrong way. A solver could be written to catch bribery, but only by someone who already knows the trick, and each new kind of deception would need new code. **Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.**
+**Why not code a smart rule-based solver?** Because a counting rule only works while the evidence is honest. The models were told, and the rules are built on, the same rule of thumb: trust facts that turn up at more than one address. When somebody lies on purpose, as in the frame-ups below, the lie becomes the fact that repeats, and the rule points the wrong way. A solver could be written to catch bribery, but only by someone who already knows the trick, and each new kind of deception would need new code. Deciding which testimony to trust, without being told how the lie works, is the judgment we want from the reasoner.
 
 ---
 
@@ -73,7 +73,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 {{media:t2}}
 
-**Counting collapses, because the majority is lying.** **GPT6-Astra, by contrast, asks who is giving the evidence and why.** In one frame-up, Holmes wrote: "Pargeter's servants supply both his alibi and evidence against Leopold; the dry snuff-box suggests planting."
+**Counting collapses, because the majority is lying.** GPT6-Astra, by contrast, asks who is giving the evidence and why. In one frame-up, Holmes wrote: "Pargeter's servants supply both his alibi and evidence against Leopold; the dry snuff-box suggests planting."
 
 **The other two detectives fall short for the same reasons as before.** The Lone Genius can see through the lies, but it still misses evidence at addresses it never reaches. The Jev Swarm does better than every detective that only counts, because some of its boys doubt the testimony. Without anyone to weigh those doubts, however, it often settles on the framed man.
 
