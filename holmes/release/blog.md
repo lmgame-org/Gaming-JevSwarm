@@ -49,8 +49,6 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 {{media:sg}}
 
-**The lesson of one case.** The genius can weigh evidence, but it cannot gather enough of it. The swarm gathers evidence from everywhere, but it cannot weigh what it finds. **The leader with a swarm gets both.**
-
 ---
 
 ## 2. Standard Cases: The Leader with a Swarm Wins, and a Simple Centre Is Enough
