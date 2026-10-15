@@ -52,14 +52,14 @@ A few agents misread a clue, their neighbours copy the confident vote, and the e
 [media: irregulars_clip3_jev_swarm.mp4]
 
 **4/**
-3️⃣ On honest evidence, a simple rule is best.
+3️⃣ With few lies, a simple leader is enough.
 
-When every true fact turns up twice and each lie only once, counting clues finds the truth: a rule-based leader with rule-based agents solves 97/100 at zero cost.
+In standard cases each lie is a lone witness while every true fact turns up twice, so counting clues finds the truth: a rule-based leader with rule-based agents solves 97/100 at zero cost.
 
-If you can take the evidence at face value, use rules.
+[media: case57_soho.jpg]
 
 **5/**
-4️⃣ When somebody lies, you need a reasoning leader.
+4️⃣ With organized lies, you need a reasoning leader.
 
 In 100 frame-ups, bribed witnesses outnumber honest ones:
 • GPT6-Astra + Jev swarm: 93
