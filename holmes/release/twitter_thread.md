@@ -65,7 +65,7 @@ In 100 frame-ups, bribed witnesses outnumber honest ones:
 • GPT6-Astra + Jev swarm: 93
 • GPT6-Astra alone: 59
 • Jev swarm alone: 42
-• Rule-based counting: 0–1
+• Rule-based: 0–1
 
 Counting follows the lying majority; GPT6-Astra asks who's speaking.
 
