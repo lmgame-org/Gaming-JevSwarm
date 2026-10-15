@@ -67,7 +67,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ---
 
-## 3. Frame-Up Cases: When Somebody Lies, You Need Both
+## 3. Frame-Up Cases: When Somebody Lies, You Need a Reasoning Leader
 
 **The setup.** In these cases the murderer bribes servants to describe an innocent man, and plants a clue to support their story. The lie is now repeated more often than the truth, and only two honest witnesses saw the bribe being paid.
 
