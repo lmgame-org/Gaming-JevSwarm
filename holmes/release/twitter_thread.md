@@ -20,7 +20,7 @@
 
 ## Twitter / X thread
 
-Six tweets. The first leads with the trailer; each of the others carries one main conclusion. Each is under 280 characters (a link counts as 23). Media files are in `~/Downloads/irregulars_release/site/media/`.
+Seven tweets. The first leads with the trailer, tweets 2–6 carry the five main conclusions, and the last has the links. Each is under 280 characters (a link counts as 23). Media files are in `~/Downloads/irregulars_release/site/media/`.
 
 **1/**
 Can a swarm of small, fast AI agents catch a murderer? 🕵️
@@ -33,14 +33,12 @@ https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 [media: the_irregulars_trailer.mp4]
 
 **2/**
-1️⃣ The swarm supplies evidence coverage, while the leader reasons.
+1️⃣ The swarm supplies evidence coverage; the leader reasons.
 
-On 100 standard cases:
+On 100 easier cases, where few witnesses lie:
 • GPT6-Astra leading 12 Jev agents: 96
 • GPT6-Astra alone: 57
 • Jev swarm alone: 38
-
-The genius alone runs out of doors; the swarm alone covers the city but can't weigh what it finds.
 
 [media: irregulars_standard_setting_results.png]
 
@@ -52,16 +50,23 @@ A few agents misread a clue, their neighbours copy the confident vote, and the e
 [media: irregulars_clip3_jev_swarm.mp4]
 
 **4/**
-3️⃣ With few lies, a simple leader is enough.
+3️⃣ A genius on its own runs out of doors.
 
-In standard cases each lie is a lone witness while every true fact turns up twice, so counting clues finds the truth: a rule-based leader with rule-based agents solves 97/100 at zero cost.
+GPT6-Astra reasons well, but one cab reaches only so many addresses, and the deciding clue is often behind a door it never knocks on. The swarm covers the whole city but can't weigh what it finds. Together, they get both.
+
+[media: irregulars_clip1_astra.mp4]
+
+**5/**
+4️⃣ With few lies, a simple leader is enough.
+
+In the easier cases, each lie comes from a lone witness while every true fact turns up twice, so counting clues finds the truth: a rule-based leader with rule-based agents solves 97/100 at zero cost.
 
 [media: case57_soho.jpg]
 
-**5/**
-4️⃣ With organized lies, you need a reasoning leader.
+**6/**
+5️⃣ With organized lies, you need a reasoning leader.
 
-In 100 frame-ups, bribed witnesses outnumber honest ones:
+In 100 harder cases, bribed witnesses outnumber honest ones:
 • GPT6-Astra + Jev swarm: 93
 • GPT6-Astra alone: 59
 • Jev swarm alone: 42
@@ -71,8 +76,8 @@ Counting follows the lying majority; GPT6-Astra asks who's speaking.
 
 [media: irregulars_challenging_setting_results.png]
 
-**6/**
-5️⃣ Divide and conquer: fast agents cover the evidence, and a strong reasoner judges it whenever the pieces disagree.
+**7/**
+The lesson: divide and conquer. Fast agents cover the evidence, and a strong reasoner judges it whenever the pieces disagree.
 
 Replay all 200 cases:
 https://snyhlx.github.io/the_irregulars_detective_game/results.html
