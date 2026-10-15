@@ -10,7 +10,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **The question.** Holmes never worked alone. His street boys, the Baker Street Irregulars, could "go everywhere, see everything." AI faces the same choice today: should a task go to one large reasoning model, or to a swarm of small, fast agents? We tested both, and the two working together, in a detective game we call *The Irregulars*.
 
-**Preliminaries.** Each case takes place in a simulated Victorian London with 100 addresses and 10 suspects. Every address holds one lead, which may be a witness, a footprint, a red herring or a lie. A case counts as **solved** only if the detective names the right culprit, motive and hideout within 12 hours of case time. Three detectives play every case:
+**Preliminaries.** Each case takes place in a simulated Victorian London with 100 addresses and 10 suspects. Every address holds one lead, which may be a witness, a footprint, a red herring or a lie. A case counts as **solved** only if the detective names the right culprit, motive and hideout within 12 hours of case time. We test two sets of 100 cases. In standard cases, any lie is a lone witness, while every true fact turns up at two addresses. In the harder frame-up cases, the murderer bribes several witnesses to frame an innocent suspect, so the lie turns up more often than the truth. Three detectives play every case:
 
 - **Holmes (GPT6-Astra) + Jev Swarm:** GPT6-Astra stays at 221B Baker Street and plans the investigation, while 12 Jev boys run the errands and report back to him.
 - **The Lone Genius (GPT6-Astra):** a single large reasoning model travels from door to door by cab and does all the searching and reasoning itself.
@@ -20,8 +20,8 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 **The finding.** **The Jev swarm supplies evidence coverage, while the leader reasons.** How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:
 
-1. **When the evidence is honest,** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
-2. **When the evidence conflicts,** you need both. Neither the swarm nor the reasoner is enough on its own, and a rule-based heuristic fails completely.
+1. **When the evidence is honest (standard cases),** evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.
+2. **When the evidence conflicts (frame-up cases),** you need both. Neither the swarm nor the reasoner is enough on its own, and a rule-based heuristic fails completely.
 
 **The data.** Every run is fully logged, and readers can replay any case on the [results page](results.html).
 

@@ -26,7 +26,7 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 <p>By <b><a href="https://lmgame.org/#/aboutus">the LMGame Team</a></b></p>
 <p><i>Jev is good at making fast decisions. But can a swarm of Jev agents gather clues and name a murderer? We put three detectives into a Sherlock Holmes game based on Arthur Conan Doyle's A Study in Scarlet and The Sign of Four: a swarm of Jev agents on its own, a large reasoning model (GPT6-Astra) on its own, and GPT6-Astra leading a Jev swarm.</i></p>
 <figure class="roles" id="roles">
-<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (nobody lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (somebody lies)</button></div>
+<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (rare, isolated lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (organised lies)</button></div>
 <div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b><span>the one who reasons and decides:</span>
 <select class="pick" data-role="h" autocomplete="off" aria-label="Who plays Holmes"><option value="astra">GPT6-Astra</option><option value="jev">Jev</option><option value="rule">a rule-based heuristic</option><option value="none">nobody at all</option></select></div>
 <div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b><span>the many who search:</span>
@@ -44,7 +44,7 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
     document.querySelectorAll("#roles .case-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.c === pick.c));
     const k = pick.h + "|" + pick.i, r = R[k], std = pick.c === "std";
     out.innerHTML = k === "none|none" ? "Somebody has to do the work, so choose a Holmes, some Irregulars, or both."
-      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, in which nobody lies" : "frame-up cases, in which somebody lies"}.`
+      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, in which any lie is a lone witness" : "frame-up cases, in which bribed witnesses tell the same lie"}.`
       : "We did not run this pairing.";
   }
   document.querySelectorAll("#roles .case-tabs button").forEach(b => b.addEventListener("click", () => { pick.c = b.dataset.c; show(); }));
@@ -55,11 +55,11 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 </script>
 <hr>
 <p><b>The question.</b> Holmes never worked alone. His street boys, the Baker Street Irregulars, could "go everywhere, see everything." AI faces the same choice today: should a task go to one large reasoning model, or to a swarm of small, fast agents? We tested both, and the two working together, in a detective game we call <i>The Irregulars</i>.</p>
-<p><b>Preliminaries.</b> Each case takes place in a simulated Victorian London with 100 addresses and 10 suspects. Every address holds one lead, which may be a witness, a footprint, a red herring or a lie. A case counts as <b>solved</b> only if the detective names the right culprit, motive and hideout within 12 hours of case time. Three detectives play every case:</p>
+<p><b>Preliminaries.</b> Each case takes place in a simulated Victorian London with 100 addresses and 10 suspects. Every address holds one lead, which may be a witness, a footprint, a red herring or a lie. A case counts as <b>solved</b> only if the detective names the right culprit, motive and hideout within 12 hours of case time. We test two sets of 100 cases. In standard cases, any lie is a lone witness, while every true fact turns up at two addresses. In the harder frame-up cases, the murderer bribes several witnesses to frame an innocent suspect, so the lie turns up more often than the truth. Three detectives play every case:</p>
 <ul><li><b>Holmes (GPT6-Astra) + Jev Swarm:</b> GPT6-Astra stays at 221B Baker Street and plans the investigation, while 12 Jev boys run the errands and report back to him.</li><li><b>The Lone Genius (GPT6-Astra):</b> a single large reasoning model travels from door to door by cab and does all the searching and reasoning itself.</li><li><b>Jev Swarm:</b> 100 Jev boys with no leader. They share clues with the boys around them and vote on the answer.</li></ul>
 <p><b>The baselines.</b> We also test hand-written baselines: a rule-based searcher that divides up the addresses, and a clue counter that picks the answer repeated most often. They can play every role (alone, as Holmes, or as a leaderless swarm), they cost nothing, and they run in under a tenth of a second per case.</p>
 <p><b>The finding.</b> <b>The Jev swarm supplies evidence coverage, while the leader reasons.</b> How much of the leader's reasoning a case needs depends on how hard its evidence is to interpret:</p>
-<ol><li><b>When the evidence is honest,</b> evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.</li><li><b>When the evidence conflicts,</b> you need both. Neither the swarm nor the reasoner is enough on its own, and a rule-based heuristic fails completely.</li></ol>
+<ol><li><b>When the evidence is honest (standard cases),</b> evidence coverage is the bottleneck, and a simple rule at the centre is enough to reach the right answer.</li><li><b>When the evidence conflicts (frame-up cases),</b> you need both. Neither the swarm nor the reasoner is enough on its own, and a rule-based heuristic fails completely.</li></ol>
 <p><b>The data.</b> Every run is fully logged, and readers can replay any case on the <a href="results.html">results page</a>.</p>
 <hr>
 <h2>1. Case Study: The Soho Physician</h2>
@@ -84,7 +84,7 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 <hr>
 <h2>3. Frame-Up Cases: When Somebody Lies, You Need a Reasoning Leader</h2>
 <p><b>The setup.</b> In these cases the murderer bribes servants to describe an innocent man, and plants a clue to support their story. The lie is now repeated more often than the truth, and only two honest witnesses saw the bribe being paid.</p>
-<figure><a href="media/irregulars_challenging_setting_results.png"><img src="media/irregulars_challenging_setting_results.png" alt="Table 2. Results on the 100 frame-up cases, in which somebody lies."></a><figcaption>Table 2. Results on the 100 frame-up cases, in which somebody lies.</figcaption></figure>
+<figure><a href="media/irregulars_challenging_setting_results.png"><img src="media/irregulars_challenging_setting_results.png" alt="Table 2. Results on the 100 frame-up cases, in which bribed witnesses tell the same lie."></a><figcaption>Table 2. Results on the 100 frame-up cases, in which bribed witnesses tell the same lie.</figcaption></figure>
 <p><b>Counting collapses, because the majority is lying.</b> GPT6-Astra, by contrast, asks who is giving the evidence and why. In one frame-up, Holmes wrote: "Pargeter's servants supply both his alibi and evidence against Leopold; the dry snuff-box suggests planting."</p>
 <p><b>The other two detectives fall short for the same reasons as before.</b> The Lone Genius can see through the lies, but it still misses evidence at addresses it never reaches. The Jev Swarm does better than every detective that only counts, because some of its boys doubt the testimony. Without anyone to weigh those doubts, however, it often settles on the framed man.</p>
 <p><b>Finding 2.</b> <b>When the analysis is hard, evidence coverage and judgment are both necessary, and neither is enough on its own.</b></p>
