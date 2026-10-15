@@ -51,7 +51,7 @@ By **[the LMGame Team](https://lmgame.org/#/aboutus)**
 
 ---
 
-## 2. Standard Cases: The Leader with a Swarm Wins, and a Simple Centre Is Enough
+## 2. Standard Cases: A Simple Leader Is Enough
 
 {{media:t1}}
 

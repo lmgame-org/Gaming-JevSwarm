@@ -26,7 +26,7 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 <p>By <b><a href="https://lmgame.org/#/aboutus">the LMGame Team</a></b></p>
 <p><i>Jev is good at making fast decisions. But can a swarm of Jev agents gather clues and name a murderer? We put three detectives into a Sherlock Holmes game based on Arthur Conan Doyle's A Study in Scarlet and The Sign of Four: a swarm of Jev agents on its own, a large reasoning model (GPT6-Astra) on its own, and GPT6-Astra leading a Jev swarm.</i></p>
 <figure class="roles" id="roles">
-<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (rare, isolated lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (organised lies)</button></div>
+<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (few lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (organized lies)</button></div>
 <div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b><span>the one who reasons and decides:</span>
 <select class="pick" data-role="h" autocomplete="off" aria-label="Who plays Holmes"><option value="astra">GPT6-Astra</option><option value="jev">Jev</option><option value="rule">a rule-based heuristic</option><option value="none">nobody at all</option></select></div>
 <div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b><span>the many who search:</span>
@@ -44,7 +44,7 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
     document.querySelectorAll("#roles .case-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.c === pick.c));
     const k = pick.h + "|" + pick.i, r = R[k], std = pick.c === "std";
     out.innerHTML = k === "none|none" ? "Somebody has to do the work, so choose a Holmes, some Irregulars, or both."
-      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, in which any lie is a lone witness" : "frame-up cases, in which bribed witnesses tell the same lie"}.`
+      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, which have few lies" : "frame-up cases, which have organized lies"}.`
       : "We did not run this pairing.";
   }
   document.querySelectorAll("#roles .case-tabs button").forEach(b => b.addEventListener("click", () => { pick.c = b.dataset.c; show(); }));
@@ -74,7 +74,7 @@ p > b:first-child, li > b:first-child { font-weight: 700; color: #8a1c1c; }
 <p><b>Where the decisions happen.</b> Figure 1 replays all three detectives side by side. Holmes makes a small number of deliberate plans, while his boys make many small decisions about where to go next. The Lone Genius has to spend an expensive decision by the large model on every single stop. The swarm makes thousands of decisions, but none of them takes all of the evidence into account.</p>
 <link rel="stylesheet" href="sg.css?v=10"><figure class="wide"><div id="sg" data-kind="standard" data-seed="57"></div><figcaption>Figure 1. How each detective spreads out over the city and gathers the evidence back into an answer, shown for case 57 (you can pick any other case). Each row is a district of London and each thin line is one agent moving through the city; the diamonds and ticks mark decisions, and the coloured lines carry evidence to the answer. You can zoom in with the + button or a double-click.</figcaption></figure><script src="sg.js?v=10" defer></script>
 <hr>
-<h2>2. Standard Cases: The Leader with a Swarm Wins, and a Simple Centre Is Enough</h2>
+<h2>2. Standard Cases: A Simple Leader Is Enough</h2>
 <figure><a href="media/irregulars_standard_setting_results.png"><img src="media/irregulars_standard_setting_results.png" alt="Table 1. Results on the 100 standard cases."></a><figcaption>Table 1. Results on the 100 standard cases.</figcaption></figure>
 <p><b>The Lone Genius falls short on coverage.</b> One cab can reach only so many doors, and the deciding clue is often behind one it never reaches (section 4).</p>
 <p><b>The Jev Swarm falls short on judgment.</b> It is the fastest detective, but most of the answers it agrees on are wrong: a few boys misread a clue, their neighbours copy the confident vote, and the error spreads. Jev also cannot hold a whole case in mind: alone it solves 25 of 100, and a leaderless swarm of 12 boys solved none of the cases we ran. So in the winning team, Jev only makes small local decisions, and the reasoning model keeps track of the case.</p>

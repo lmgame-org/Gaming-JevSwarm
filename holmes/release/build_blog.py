@@ -29,7 +29,7 @@ def image(src, cap):
 
 # the two roles, each with clickable choices; the pairing picked shows its results (Tables 1 and 2)
 ROLES = """<figure class="roles" id="roles">
-<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (rare, isolated lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (organised lies)</button></div>
+<div class="case-tabs" role="tablist" aria-label="Case set"><button role="tab" data-c="std" aria-selected="true">Standard cases (few lies)</button><button role="tab" data-c="lie" aria-selected="false">Frame-up cases (organized lies)</button></div>
 <div class="role"><img src="media/role_holmes.jpg" alt="Holmes"><b>Holmes</b><span>the one who reasons and decides:</span>
 <select class="pick" data-role="h" autocomplete="off" aria-label="Who plays Holmes"><option value="astra">GPT6-Astra</option><option value="jev">Jev</option><option value="rule">a rule-based heuristic</option><option value="none">nobody at all</option></select></div>
 <div class="role"><img src="media/role_irregulars.jpg" alt="The Irregulars"><b>The Irregulars</b><span>the many who search:</span>
@@ -47,7 +47,7 @@ ROLES = """<figure class="roles" id="roles">
     document.querySelectorAll("#roles .case-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.c === pick.c));
     const k = pick.h + "|" + pick.i, r = R[k], std = pick.c === "std";
     out.innerHTML = k === "none|none" ? "Somebody has to do the work, so choose a Holmes, some Irregulars, or both."
-      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, in which any lie is a lone witness" : "frame-up cases, in which bribed witnesses tell the same lie"}.`
+      : r ? `<b>${r[0]}</b> solved <b>${std ? r[1] : r[2]}</b> of 100 ${std ? "standard cases, which have few lies" : "frame-up cases, which have organized lies"}.`
       : "We did not run this pairing.";
   }
   document.querySelectorAll("#roles .case-tabs button").forEach(b => b.addEventListener("click", () => { pick.c = b.dataset.c; show(); }));

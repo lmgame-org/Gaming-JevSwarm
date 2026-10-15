@@ -48,7 +48,7 @@ That gives three main detectives:
 
 **Results (solved out of 100)**
 
-| Detective | Standard cases (rare, isolated lies) | Frame-up cases (organised lies) |
+| Detective | Standard cases (few lies) | Frame-up cases (organized lies) |
 |---|---|---|
 | Holmes (GPT6-Astra) + Jev Swarm | **96** | **93** |
 | The Lone Genius (GPT6-Astra) | 57 | 59 |
