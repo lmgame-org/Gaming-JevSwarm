@@ -20,64 +20,64 @@
 
 ## Twitter / X thread
 
-Six tweets, each under 280 characters (a link counts as 23). Media files are in `~/Downloads/irregulars_release/site/media/`.
+Six tweets. The first leads with the trailer; each of the others carries one main conclusion. Each is under 280 characters (a link counts as 23). Media files are in `~/Downloads/irregulars_release/site/media/`.
 
 **1/**
 Can a swarm of small, fast AI agents catch a murderer? 🕵️
 
 We built a Sherlock Holmes game and let three detectives solve 200 cases: a Jev swarm on its own, GPT6-Astra on its own, and GPT6-Astra leading a Jev swarm.
 
-Blog and trailer 👇
+Blog 👇
 https://snyhlx.github.io/the_irregulars_detective_game/blog.html?v=lmgame-holmes-game
 
 [media: the_irregulars_trailer.mp4]
 
 **2/**
-Each case: 100 addresses, 10 suspects, and 12 hours to name the culprit, motive and hideout.
+1️⃣ The swarm supplies evidence coverage, while the leader reasons.
 
-Results on 100 standard cases:
-• Holmes (GPT6-Astra) + Jev Swarm: 96
+On 100 standard cases:
+• GPT6-Astra leading 12 Jev agents: 96
 • GPT6-Astra alone: 57
-• Jev Swarm alone: 38
+• Jev swarm alone: 38
 
-The swarm supplies evidence coverage, while the leader reasons.
+The genius alone runs out of doors; the swarm alone covers the city but can't weigh what it finds.
 
 [media: irregulars_standard_setting_results.png]
 
 **3/**
-Alone, each falls short:
+2️⃣ A swarm on its own agrees too early.
 
-• The swarm is fast but agrees too early. A few agents misread a clue, their neighbours copy the confident vote, and the error spreads.
-• The genius reasons well but runs out of doors. The deciding clue is often behind one it never reaches.
+A few agents misread a clue, their neighbours copy the confident vote, and the error spreads. Jev also can't hold a whole case in mind (25/100 alone), so in the winning team it only makes small local decisions.
 
 [media: irregulars_clip3_jev_swarm.mp4]
 
 **4/**
-Then somebody lies. In 100 frame-up cases, bribed witnesses outnumber honest ones.
+3️⃣ On honest evidence, a simple rule is best.
 
-• Holmes (GPT6-Astra) + Jev Swarm: 93
+When every true fact turns up twice and each lie only once, counting clues finds the truth: a rule-based leader with rule-based agents solves 97/100 at zero cost.
+
+If you can take the evidence at face value, use rules.
+
+**5/**
+4️⃣ When somebody lies, you need a reasoning leader.
+
+In 100 frame-ups, bribed witnesses outnumber honest ones:
+• GPT6-Astra + Jev swarm: 93
 • GPT6-Astra alone: 59
-• Jev Swarm alone: 42
-• Rule-based Holmes + Jev agents: 0
+• Jev swarm alone: 42
+• Rule-based counting: 0–1
 
-Counting follows the majority. GPT6-Astra asks who is speaking.
+Counting follows the lying majority; GPT6-Astra asks who's speaking.
 
 [media: irregulars_challenging_setting_results.png]
 
-**5/**
-The lesson: a detective case is a divide-and-conquer problem.
-
-Fast agents are well suited to the divide step: covering the evidence. A strong reasoner is needed for the conquer step whenever the pieces disagree.
-
-One genius leading many minds.
-
-[media: irregulars_clip2_astra_jev_swarm.mp4]
-
 **6/**
-Every run is logged. Replay any of the 200 cases, move by move:
+5️⃣ Divide and conquer: fast agents cover the evidence, and a strong reasoner judges it whenever the pieces disagree.
+
+Replay all 200 cases:
 https://snyhlx.github.io/the_irregulars_detective_game/results.html
 
-Code and more Jev games (CPU debugging, fish schooling, honeybee nest-site selection):
+Code and more Jev games:
 https://github.com/lmgame-org/Gaming-JevSwarm
 
 By the LMGame team.
