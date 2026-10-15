@@ -4,7 +4,7 @@ GitHub Pages does not hand out subdomains like `something.snyhlx.github.io`. Eve
 **path** on `snyhlx.github.io`, so the address will be:
 
     https://snyhlx.github.io/the_irregulars_detective_game/             (animated title page)
-    https://snyhlx.github.io/the_irregulars_detective_game/blog.html?v=lmgame-holmes-game    (the blog; share this URL)
+    https://snyhlx.github.io/the_irregulars_detective_game/blog.html    (the blog; share this URL)
     https://snyhlx.github.io/the_irregulars_detective_game/trailer.html (the trailer and clips)
     https://snyhlx.github.io/the_irregulars_detective_game/results.html (results tables and replays of all 200 cases)
 

@@ -27,7 +27,7 @@ Files are in `~/Downloads/irregulars_release/site/media/`.
 
 We built a Sherlock Holmes detective game to ask a simple question: **can a swarm of small, fast AI agents (Jev) gather clues and name a murderer, and if not, what does it take?**
 
-**Blog (with an interactive replay of a case):** https://snyhlx.github.io/the_irregulars_detective_game/blog.html?v=lmgame-holmes-game
+**Blog (with an interactive replay of a case):** https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 **Code and more games:** https://github.com/lmgame-org/Gaming-JevSwarm
 **Trailer:** https://snyhlx.github.io/the_irregulars_detective_game/trailer.html
 

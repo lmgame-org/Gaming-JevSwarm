@@ -2,7 +2,7 @@
 
 ## Links
 
-- Blog: https://snyhlx.github.io/the_irregulars_detective_game/blog.html?v=lmgame-holmes-game
+- Blog: https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 - Trailer: https://snyhlx.github.io/the_irregulars_detective_game/trailer.html
 - Replays of all 200 cases: https://snyhlx.github.io/the_irregulars_detective_game/results.html
 - Code and more Jev games: https://github.com/lmgame-org/Gaming-JevSwarm
@@ -28,7 +28,7 @@ Can a swarm of small, fast AI agents catch a murderer? 🕵️
 We built a Sherlock Holmes game and let three detectives solve 200 cases: a Jev swarm on its own, GPT6-Astra on its own, and GPT6-Astra leading a Jev swarm.
 
 Blog 👇
-https://snyhlx.github.io/the_irregulars_detective_game/blog.html?v=lmgame-holmes-game
+https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 
 [media: the_irregulars_trailer.mp4]
 
@@ -85,4 +85,4 @@ By the LMGame team.
 ## Short version (single post)
 
 Can a swarm of small, fast AI agents catch a murderer? In our Sherlock Holmes game, GPT6-Astra leading a Jev swarm solved 96/100 cases, against 57 for GPT6-Astra alone and 38 for the swarm alone. The swarm covers the evidence; the leader reasons.
-https://snyhlx.github.io/the_irregulars_detective_game/blog.html?v=lmgame-holmes-game
+https://snyhlx.github.io/the_irregulars_detective_game/blog.html
