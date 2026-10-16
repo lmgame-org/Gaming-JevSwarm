@@ -25,9 +25,9 @@ Seven tweets: the hook with a one-line takeaway, the setup, two tweets on the ea
 **1/**
 Happy Friday! 🕵️🔍
 
-Can a swarm of fast decision-making Jev agents catch a murderer?
+Can a swarm of fast decision agents catch a murderer?
 
-The swarm covers the evidence, a simple rule can count it, but it takes a reasoning leader to spot contradictions and dig deeper.
+Takeaway: the swarm covers the evidence, a simple rule can count it, but it takes a reasoning leader to spot contradictions and dig deeper.
 
 More in this thread 🧵 and the blog 👇
 https://snyhlx.github.io/the_irregulars_detective_game/blog.html
