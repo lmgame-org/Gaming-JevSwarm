@@ -23,9 +23,9 @@
 Seven tweets: the hook with a one-line takeaway, the setup, two tweets on the easier cases, one on simple rules, one on the harder cases, and the moral with links. Each is under 280 characters.
 
 **1/**
-The game's afoot! 🕵️🔍
+Happy Friday! The game's afoot 🕵️🔍
 
-Can a swarm of fast AI agents catch a murderer?
+Can an AI swarm catch a murderer?
 
 Takeaway: the swarm covers the evidence, a simple rule can count it, but it takes a reasoning leader to spot contradictions and dig deeper.
 
