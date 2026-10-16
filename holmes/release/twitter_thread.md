@@ -70,7 +70,7 @@ Elementary, my dear Watson.
 [media: tweet_5_soho_case.jpg]
 
 **6/**
-5️⃣ But when the servants have been bribed… 💰
+5️⃣ But when the servants are bribed… 💰
 
 In 100 harder cases, paid witnesses outnumber honest ones:
 • GPT6-Astra + Jev swarm: 93
@@ -78,7 +78,7 @@ In 100 harder cases, paid witnesses outnumber honest ones:
 • Jev swarm alone: 42
 • Rule-based: 0–1
 
-Counting trusts the crowd. GPT6-Astra asks who's talking.
+Takeaway: against organized lies, you need a reasoning leader who asks who's talking.
 
 [media: tweet_6_table2_harder_cases.png]
 
