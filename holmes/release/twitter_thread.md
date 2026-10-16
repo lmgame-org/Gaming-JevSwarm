@@ -35,7 +35,7 @@ https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 [media: tweet_1_trailer.mp4]
 
 **2/**
-The setup: every case has 100 addresses, 10 suspects and 12 hours to name the culprit, motive and hideout.
+Each case: 100 addresses, 10 suspects, and 12 hours to name the culprit, motive and hideout.
 
 Two roles, any player:
 🕵️ Holmes reasons and decides: GPT6-Astra, Jev, or an evidence-counting heuristic
