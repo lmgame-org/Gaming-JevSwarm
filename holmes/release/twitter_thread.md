@@ -27,7 +27,7 @@ Friday mystery time 🕵️🔍
 
 Can a swarm of small, fast AI agents catch a murderer?
 
-We sent three detectives into Victorian London for 200 cases: a Jev swarm, GPT6-Astra flying solo, and GPT6-Astra leading a gang of Jev street kids.
+We sent three detectives into Victorian London for 200 cases. The takeaway: the swarm covers the evidence, but it takes a reasoning leader to catch the liar.
 
 Whodunit? 👇
 https://snyhlx.github.io/the_irregulars_detective_game/blog.html
