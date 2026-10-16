@@ -38,8 +38,8 @@ https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 The setup: every case has 100 addresses, 10 suspects and 12 hours to name the culprit, motive and hideout.
 
 Two roles, any player:
-🕵️ Holmes reasons and decides: GPT6-Astra, Jev, a rule, or nobody
-👦 The Irregulars search: Jev agents, a rule, or nobody
+🕵️ Holmes reasons and decides: GPT6-Astra, Jev, or an evidence-counting heuristic
+👦 The Irregulars search: Jev agents, or an evidence-counting heuristic
 
 [media: tweet_2a_role_holmes.jpg + tweet_2b_role_irregulars.jpg]
 
