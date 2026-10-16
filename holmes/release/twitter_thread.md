@@ -20,7 +20,7 @@
 
 ## Twitter / X thread (Friday version)
 
-A lighter take on the same seven tweets, with the same numbers. Each is under 280 characters.
+Seven tweets: the hook with a one-line takeaway, the setup, two tweets on the easier cases, one on simple rules, one on the harder cases, and the moral with links. Each is under 280 characters.
 
 **1/**
 Friday mystery time 🕵️🔍
@@ -35,6 +35,15 @@ https://snyhlx.github.io/the_irregulars_detective_game/blog.html
 [media: tweet_1_trailer.mp4]
 
 **2/**
+The setup: every case has 100 addresses, 10 suspects and 12 hours to name the culprit, motive and hideout.
+
+Two roles, any player:
+🕵️ Holmes reasons and decides: GPT6-Astra, Jev, a rule, or nobody
+👦 The Irregulars search: Jev agents, a rule, or nobody
+
+[media: tweet_2a_role_holmes.jpg + tweet_2b_role_irregulars.jpg]
+
+**3/**
 1️⃣ Legs + brains wins.
 
 On 100 easier cases, where few witnesses lie:
@@ -44,24 +53,19 @@ On 100 easier cases, where few witnesses lie:
 
 The swarm knocks on doors. The leader does the thinking.
 
-[media: tweet_2_table1_easier_cases.png]
-
-**3/**
-2️⃣ A swarm with no leader is a rumour mill 🗣️
-
-One kid misreads a clue, his mates copy the confident vote, and soon the whole street agrees on the wrong answer. Jev alone can't hold a case in its head (25/100), so on the winning team it sticks to errands.
-
-[media: tweet_3_jev_swarm_clip.mp4]
+[media: tweet_3_table1_easier_cases.png]
 
 **4/**
-3️⃣ The lone genius runs out of shoe leather 👞
+2️⃣ Alone, each one fails in its own way.
 
-GPT6-Astra reasons beautifully, but one cab can only knock on so many doors, and the deciding clue is often behind the one it never reached.
+A leaderless swarm is a rumour mill 🗣️: one kid misreads a clue, his mates copy the vote, and the street agrees on the wrong answer.
 
-[media: tweet_4_lone_genius_clip.mp4]
+The lone genius runs out of shoe leather 👞: one cab never reaches the door with the deciding clue.
+
+[media: tweet_4_spatiotemporal_all_three.png]
 
 **5/**
-4️⃣ When lies are few, elementary counting wins 📏
+3️⃣ When lies are few, elementary counting wins 📏
 
 Every true fact turns up twice and each lie only once, so just count the clues: a rule-based leader with rule-based agents solves 97/100 for $0.
 
@@ -70,7 +74,7 @@ Elementary, my dear Watson.
 [media: tweet_5_soho_case.jpg]
 
 **6/**
-5️⃣ But when the servants are bribed… 💰
+4️⃣ But when the servants are bribed… 💰
 
 In 100 harder cases, paid witnesses outnumber honest ones:
 • GPT6-Astra + Jev swarm: 93
