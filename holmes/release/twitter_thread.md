@@ -27,7 +27,7 @@ Friday mystery time 🕵️🔍
 
 Can a swarm of small, fast AI agents catch a murderer?
 
-We sent three detectives into Victorian London for 200 cases. The takeaway: the swarm covers the evidence, but it takes a reasoning leader to catch the liar.
+Takeaway: the swarm covers the evidence and a simple heuristic can count it, but it takes a reasoning leader to spot contradictions and investigate closer.
 
 Whodunit? 👇
 https://snyhlx.github.io/the_irregulars_detective_game/blog.html
