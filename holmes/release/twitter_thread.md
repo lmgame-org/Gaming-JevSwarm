@@ -18,12 +18,12 @@
 6. **When somebody lies, you need both.** Counting follows the majority, and the majority is lying (0 of 100 solved). GPT6-Astra asks who is giving the evidence and why.
 7. **Divide and conquer.** Fast agents are well suited to the divide step; a strong reasoner is needed for the conquer step whenever the pieces disagree. One genius leading many minds.
 
-## Twitter / X thread (Saturday version)
+## Twitter / X thread (Friday version)
 
 A lighter take on the same seven tweets, with the same numbers. Each is under 280 characters.
 
 **1/**
-Saturday mystery time 🕵️🔍
+Friday mystery time 🕵️🔍
 
 Can a swarm of small, fast AI agents catch a murderer?
 
